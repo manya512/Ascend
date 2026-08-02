@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Ascend{% endblock %}
+
+{% block content %}
+<div class="navbar">
+  <span class="brand">Ascend</span>
+  <div>
+    <span style="margin-right: 16px;">{{ user.name }} <span class="role-badge">{{ user.role }}</span></span>
+    <a href="{{ url_for('logout') }}">Log out</a>
+  </div>
+</div>
+
+<div class="dashboard-body">
+  <h2>Hello, {{ user.name }}</h2>
+  <p style="color: var(--ink-500); margin-top: 8px;">
+    You're logged in as <strong>{{ user.role }}</strong>. This is where your certificates and actions will appear.
+  </p>
+</div>
+{% endblock %}git add .
