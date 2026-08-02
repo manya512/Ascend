@@ -162,3 +162,31 @@ button:hover {
   border-radius: 6px;
   text-transform: capitalize;
 }
+
+
+
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.action-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.action-card h3 {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.action-card p {
+  font-size: 13px;
+  color: var(--ink-500);
+  margin: 0;
+}
