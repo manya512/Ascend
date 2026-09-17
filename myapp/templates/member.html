@@ -85,97 +85,23 @@
     </div>
   </div>
 
+  {% if issued %}
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
-    
-    <!-- CERTIFICATE 1 -->
-    <div class="action-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; position: relative;">
-      <div style="position: absolute; top: 16px; right: 16px; background: rgba(38, 33, 92, 0.9); color: var(--gold-500); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 6px 12px; border-radius: 8px; z-index: 10;">
-        Latest Achievement
-      </div>
-      
-      <div style="background: #FAFAFA; padding: 40px; text-align: center; border-bottom: 1px solid var(--border); position: relative;">
-        <div style="width: 72px; height: 72px; background: #FDF3E3; color: var(--gold-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px auto;">
-          🎓
-        </div>
-        <h3 style="font-size: 22px; margin-bottom: 4px;">B.S. in Computer Science</h3>
-        <p style="font-size: 11px; font-weight: 600; color: var(--ink-500); text-transform: uppercase; letter-spacing: 1px; margin: 0;">Stanford University</p>
-      </div>
-
-      <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
-        <div style="display: flex; justify-content: space-between;">
-          <div>
-            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Issued by</p>
-            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Stanford University</p>
-          </div>
-          <div style="text-align: right;">
-            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Date</p>
-            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">June 12, 2025</p>
-          </div>
-        </div>
-        <div style="display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 20px;">
-          <button style="flex: 1; padding: 12px; border-radius: 12px;">View Full Credentials</button>
-          <button style="width: auto; padding: 12px 16px; background: #FDF3E3; color: var(--gold-500); border-radius: 12px;">QR</button>
-        </div>
+    {% for issued_cert, cert in issued %}
+    <div class="action-card" style="padding: 24px; overflow: hidden; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px rgba(38,33,92,0.05);">
+      <h3 style="margin-top: 0; margin-bottom: 8px; color: var(--gold-500); font-family: 'Fraunces', serif; font-size: 22px;">{{ cert.title }}</h3>
+      <p style="color: var(--ink-500); margin: 0 0 16px 0; flex-grow: 1;">{{ cert.description }}</p>
+      <div style="font-size: 14px; font-weight: 600; color: var(--indigo-900); padding-top: 16px; border-top: 1px solid var(--border);">
+        Issued on {{ issued_cert.issued_at.strftime('%Y-%m-%d') if issued_cert.issued_at else 'Unknown' }}
       </div>
     </div>
-
-    <!-- CERTIFICATE 2 -->
-    <div class="action-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-      <div style="background: #FAFAFA; padding: 40px; text-align: center; border-bottom: 1px solid var(--border);">
-        <div style="width: 64px; height: 64px; background: #F1EFE8; color: var(--ink-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px auto;">
-          📊
-        </div>
-        <h3 style="font-size: 20px; margin-bottom: 4px;">Data Analytics Specialist</h3>
-        <p style="font-size: 10px; font-weight: 600; color: var(--ink-500); text-transform: uppercase; letter-spacing: 1px; margin: 0;">Google Professional Certificates</p>
-      </div>
-
-      <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
-        <div style="display: flex; justify-content: space-between;">
-          <div>
-            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Issued by</p>
-            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Coursera / Google</p>
-          </div>
-          <div style="text-align: right;">
-            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Date</p>
-            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Jan 15, 2024</p>
-          </div>
-        </div>
-        <div style="display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 20px;">
-          <button style="flex: 1; padding: 12px; border-radius: 12px; background: #fff; color: var(--indigo-900); border: 1px solid var(--border);">View Full Credentials</button>
-          <button style="width: auto; padding: 12px 16px; background: #F1EFE8; color: var(--ink-500); border-radius: 12px;">QR</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- CERTIFICATE 3 -->
-    <div class="action-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-      <div style="background: #FAFAFA; padding: 40px; text-align: center; border-bottom: 1px solid var(--border);">
-        <div style="width: 64px; height: 64px; background: #F1EFE8; color: var(--ink-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px auto;">
-          💻
-        </div>
-        <h3 style="font-size: 20px; margin-bottom: 4px;">Full-Stack Web Dev</h3>
-        <p style="font-size: 10px; font-weight: 600; color: var(--ink-500); text-transform: uppercase; letter-spacing: 1px; margin: 0;">Ascend Academy</p>
-      </div>
-
-      <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
-        <div style="display: flex; justify-content: space-between;">
-          <div>
-            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Issued by</p>
-            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Ascend Academy</p>
-          </div>
-          <div style="text-align: right;">
-            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Date</p>
-            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Nov 02, 2023</p>
-          </div>
-        </div>
-        <div style="display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 20px;">
-          <button style="flex: 1; padding: 12px; border-radius: 12px; background: #fff; color: var(--indigo-900); border: 1px solid var(--border);">View Full Credentials</button>
-          <button style="width: auto; padding: 12px 16px; background: #F1EFE8; color: var(--ink-500); border-radius: 12px;">QR</button>
-        </div>
-      </div>
-    </div>
-
+    {% endfor %}
   </div>
+  {% else %}
+  <div style="padding: 40px; text-align: center; color: var(--ink-500); background-color: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px rgba(38,33,92,0.05);">
+    <p style="margin: 0; font-size: 16px;">No certificates yet.</p>
+  </div>
+  {% endif %}
 </div>
 
 <!-- VERIFICATION FOOTER -->

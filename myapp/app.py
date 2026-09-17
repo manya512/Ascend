@@ -70,7 +70,14 @@ def register():
 @login_required
 def dashboard():
     if current_user.role == 'member':
-        return render_template('member.html', user=current_user)
+        issued = db.session.query(IssuedCertificate, Certificate).join(
+            Certificate, IssuedCertificate.certificate_id == Certificate.id
+        ).filter(
+            IssuedCertificate.recipient_email == current_user.email
+        ).order_by(
+            IssuedCertificate.issued_at.desc()
+        ).all()
+        return render_template('member.html', user=current_user, issued=issued)
     elif current_user.role == 'institution':
         return render_template('institution.html', user=current_user)
     elif current_user.role == 'admin':
