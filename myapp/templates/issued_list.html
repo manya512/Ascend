@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Issued Certificates</h2>
+        <a href="{{ url_for('certificates_list') }}" class="btn btn-outline-primary">Back to Templates</a>
+    </div>
+
+    {% if issued %}
+        <div class="card shadow-sm" style="border-top: 4px solid #26215c;">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Certificate Title</th>
+                            <th>Recipient Email</th>
+                            <th>Issued Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for issued_cert, cert in issued %}
+                            <tr>
+                                <td style="color: #ef9f27; font-family: Georgia, serif; font-weight: 500;">{{ cert.title }}</td>
+                                <td>{{ issued_cert.recipient_email }}</td>
+                                <td>{{ issued_cert.issued_at.strftime('%Y-%m-%d %H:%M') if issued_cert.issued_at else 'Unknown' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You haven't issued any certificates yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

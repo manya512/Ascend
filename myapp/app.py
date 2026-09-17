@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from config import Config
-from models import db, User, Certificate
+from models import db, User, Certificate, IssuedCertificate
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -155,6 +155,48 @@ def delete_certificate(cert_id):
     db.session.commit()
     flash('Certificate deleted successfully!')
     return redirect(url_for('certificates_list'))
+
+@app.route('/certificates/<int:cert_id>/issue', methods=['GET', 'POST'])
+@login_required
+def issue_certificate(cert_id):
+    if current_user.role != 'institution':
+        return redirect(url_for('dashboard'))
+        
+    cert = Certificate.query.get(cert_id)
+    if not cert or cert.institution_id != current_user.id:
+        return redirect(url_for('certificates_list'))
+        
+    if request.method == 'POST':
+        recipient_email = request.form.get('recipient_email')
+        
+        issued_cert = IssuedCertificate(
+            certificate_id=cert_id,
+            institution_id=current_user.id,
+            recipient_email=recipient_email
+        )
+        db.session.add(issued_cert)
+        db.session.commit()
+        
+        flash(f'Certificate issued to {recipient_email}!')
+        return redirect(url_for('certificates_list'))
+        
+    return render_template('issue_certificate.html', user=current_user, certificate=cert)
+
+@app.route('/issued')
+@login_required
+def issued_list():
+    if current_user.role != 'institution':
+        return redirect(url_for('dashboard'))
+        
+    issued = db.session.query(IssuedCertificate, Certificate).join(
+        Certificate, IssuedCertificate.certificate_id == Certificate.id
+    ).filter(
+        IssuedCertificate.institution_id == current_user.id
+    ).order_by(
+        IssuedCertificate.issued_at.desc()
+    ).all()
+    
+    return render_template('issued_list.html', issued=issued, user=current_user)
 
 
 @app.route('/logout')

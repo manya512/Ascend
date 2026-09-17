@@ -40,3 +40,15 @@ class Certificate(db.Model):
 
     def __repr__(self):
         return f'<Certificate {self.title}>'
+
+class IssuedCertificate(db.Model):
+    __tablename__ = 'issued_certificates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    certificate_id = db.Column(db.Integer, db.ForeignKey('certificates.id'), nullable=False)
+    institution_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    recipient_email = db.Column(db.String(120), nullable=False)
+    issued_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def __repr__(self):
+        return f'<IssuedCertificate cert={self.certificate_id} to={self.recipient_email}>'
