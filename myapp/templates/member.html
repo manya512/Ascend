@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }} Profile — Ascend{% endblock %}
+
+{% block content %}
+<div class="navbar">
+  <span class="brand">Ascend</span>
+  <div style="display: flex; gap: 24px; align-items: center;">
+    <a href="#" style="font-size: 14px;">Verify a Certificate</a>
+    <a href="{{ url_for('logout') }}" style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 8px;">Log out</a>
+  </div>
+</div>
+
+<div class="dashboard-body" style="max-width: 1000px; padding-top: 60px;">
+  
+  {% if not user.is_profile_setup %}
+  <div class="card" style="margin: 0 auto; max-width: 600px; padding: 40px; background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 8px 24px rgba(38, 33, 92, 0.08);">
+    <h2 style="font-size: 24px; margin-bottom: 8px;">Complete Your Profile</h2>
+    <p style="color: var(--ink-500); font-size: 14px; margin-bottom: 24px;">Please provide your details to finish setting up your account.</p>
+    
+    <form action="{{ url_for('update_profile') }}" method="POST">
+      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Job Title</label>
+      <input type="text" name="job_title" placeholder="e.g. Software Engineer" required style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-family: 'Inter', sans-serif;">
+      
+      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Location</label>
+      <input type="text" name="location" placeholder="e.g. Palo Alto, CA" required style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-family: 'Inter', sans-serif;">
+      
+      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Alumni (University/Institution)</label>
+      <input type="text" name="alumni" placeholder="e.g. Stanford University" required style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-family: 'Inter', sans-serif;">
+      
+      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Portfolio URL</label>
+      <input type="url" name="portfolio_url" placeholder="e.g. https://portfolio.me/name" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 24px; font-family: 'Inter', sans-serif;">
+      
+      <button type="submit" style="width: 100%; padding: 12px; background: var(--indigo-900); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Profile</button>
+    </form>
+  </div>
+  {% else %}
+  
+  <!-- PROFILE HERO SECTION -->
+  <div style="display: flex; gap: 40px; align-items: flex-end; margin-bottom: 60px; flex-wrap: wrap;">
+    <!-- Avatar -->
+    <div style="position: relative;">
+      <div style="width: 160px; height: 160px; border-radius: 24px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 12px 24px rgba(38, 33, 92, 0.12);">
+        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <!-- Verified Badge -->
+      <div style="position: absolute; bottom: -10px; right: -10px; width: 48px; height: 48px; background: var(--gold-500); border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 12px rgba(239, 159, 39, 0.3);">
+        ✓
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div style="flex: 1;">
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
+        <h1 style="font-size: 42px; margin: 0; color: var(--indigo-900);">{{ user.name }}</h1>
+        <span style="background: #E0F2E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">Verified Member</span>
+      </div>
+      <p style="font-size: 18px; color: var(--ink-500); margin: 0 0 16px 0; font-weight: 500;">{{ user.job_title }}</p>
+      
+      <div style="display: flex; gap: 24px; color: var(--ink-500); font-size: 14px;">
+        <span>📍 {{ user.location }}</span>
+        <span>💼 {{ user.alumni }}</span>
+        {% if user.portfolio_url %}
+        <span>🔗 <a href="{{ user.portfolio_url }}" style="color: var(--gold-500); text-decoration: underline; text-decoration-color: var(--border);">{{ user.portfolio_url.split('://')[-1] }}</a></span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; gap: 12px;">
+      <button style="background: #fff; color: var(--ink-900); border: 1px solid var(--border); width: auto; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        Share
+      </button>
+      <button style="background: #fff; color: var(--ink-900); border: 1px solid var(--border); width: auto; padding: 12px 24px; border-radius: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        Export CV
+      </button>
+    </div>
+  </div>
+
+  <!-- CERTIFICATES GRID -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h2 style="font-size: 28px;">Verified Certificates</h2>
+    <div style="background: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--ink-500);">
+      ↓ Latest First
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+    
+    <!-- CERTIFICATE 1 -->
+    <div class="action-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; position: relative;">
+      <div style="position: absolute; top: 16px; right: 16px; background: rgba(38, 33, 92, 0.9); color: var(--gold-500); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 6px 12px; border-radius: 8px; z-index: 10;">
+        Latest Achievement
+      </div>
+      
+      <div style="background: #FAFAFA; padding: 40px; text-align: center; border-bottom: 1px solid var(--border); position: relative;">
+        <div style="width: 72px; height: 72px; background: #FDF3E3; color: var(--gold-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px auto;">
+          🎓
+        </div>
+        <h3 style="font-size: 22px; margin-bottom: 4px;">B.S. in Computer Science</h3>
+        <p style="font-size: 11px; font-weight: 600; color: var(--ink-500); text-transform: uppercase; letter-spacing: 1px; margin: 0;">Stanford University</p>
+      </div>
+
+      <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Issued by</p>
+            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Stanford University</p>
+          </div>
+          <div style="text-align: right;">
+            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Date</p>
+            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">June 12, 2025</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 20px;">
+          <button style="flex: 1; padding: 12px; border-radius: 12px;">View Full Credentials</button>
+          <button style="width: auto; padding: 12px 16px; background: #FDF3E3; color: var(--gold-500); border-radius: 12px;">QR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATE 2 -->
+    <div class="action-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+      <div style="background: #FAFAFA; padding: 40px; text-align: center; border-bottom: 1px solid var(--border);">
+        <div style="width: 64px; height: 64px; background: #F1EFE8; color: var(--ink-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px auto;">
+          📊
+        </div>
+        <h3 style="font-size: 20px; margin-bottom: 4px;">Data Analytics Specialist</h3>
+        <p style="font-size: 10px; font-weight: 600; color: var(--ink-500); text-transform: uppercase; letter-spacing: 1px; margin: 0;">Google Professional Certificates</p>
+      </div>
+
+      <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Issued by</p>
+            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Coursera / Google</p>
+          </div>
+          <div style="text-align: right;">
+            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Date</p>
+            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Jan 15, 2024</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 20px;">
+          <button style="flex: 1; padding: 12px; border-radius: 12px; background: #fff; color: var(--indigo-900); border: 1px solid var(--border);">View Full Credentials</button>
+          <button style="width: auto; padding: 12px 16px; background: #F1EFE8; color: var(--ink-500); border-radius: 12px;">QR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATE 3 -->
+    <div class="action-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+      <div style="background: #FAFAFA; padding: 40px; text-align: center; border-bottom: 1px solid var(--border);">
+        <div style="width: 64px; height: 64px; background: #F1EFE8; color: var(--ink-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px auto;">
+          💻
+        </div>
+        <h3 style="font-size: 20px; margin-bottom: 4px;">Full-Stack Web Dev</h3>
+        <p style="font-size: 10px; font-weight: 600; color: var(--ink-500); text-transform: uppercase; letter-spacing: 1px; margin: 0;">Ascend Academy</p>
+      </div>
+
+      <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; justify-content: space-between;">
+          <div>
+            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Issued by</p>
+            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Ascend Academy</p>
+          </div>
+          <div style="text-align: right;">
+            <p style="font-size: 11px; font-weight: 500; color: var(--ink-500); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0;">Date</p>
+            <p style="font-size: 14px; font-weight: 600; color: var(--indigo-900); margin: 0;">Nov 02, 2023</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 20px;">
+          <button style="flex: 1; padding: 12px; border-radius: 12px; background: #fff; color: var(--indigo-900); border: 1px solid var(--border);">View Full Credentials</button>
+          <button style="width: auto; padding: 12px 16px; background: #F1EFE8; color: var(--ink-500); border-radius: 12px;">QR</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- VERIFICATION FOOTER -->
+<div style="background: var(--indigo-900); padding: 80px 24px; margin-top: 80px; text-align: center; color: #fff;">
+  <div style="max-width: 800px; margin: 0 auto;">
+    <div style="width: 64px; height: 64px; background: var(--gold-500); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px auto; box-shadow: 0 12px 24px rgba(0,0,0,0.2);">
+      🛡️
+    </div>
+    <h2 style="font-size: 32px; color: #fff; margin-bottom: 16px;">Instant Trust Verification</h2>
+    <p style="font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 40px; line-height: 1.6;">Every certificate on this profile is cryptographically signed and verified by the issuing institution. Scan the QR code or click 'View Credentials' to see the blockchain record.</p>
+    
+    <div style="display: inline-flex; align-items: center; gap: 24px; padding: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;">
+      <div style="background: #fff; padding: 12px; border-radius: 12px;">
+        <div style="width: 80px; height: 80px; background: var(--indigo-900); display: flex; align-items: center; justify-content: center; font-size: 40px;">
+          📱
+        </div>
+      </div>
+      <div style="text-align: left;">
+        <p style="color: var(--gold-500); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px 0;">Profile Authenticity</p>
+        <p style="color: #fff; font-family: monospace; font-size: 15px; margin: 0 0 6px 0;">ASC-{{ user.name[:1]|upper }}{{ user.name.split(' ')[-1]|default('User') }}-9928-X</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0;">Status: <span style="color: #4CAF50; font-weight: 500;">Authenticated</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

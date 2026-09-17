@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Certificates</h2>
+        <a href="{{ url_for('create_certificate') }}" class="btn btn-primary">Create New Certificate</a>
+    </div>
+
+    {% if certificates %}
+        <div class="row g-4">
+            {% for cert in certificates %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm rounded-3" style="border-top: 4px solid #26215c;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #ef9f27; font-family: Georgia, serif;">{{ cert.title }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Created: {{ cert.created_at.strftime('%Y-%m-%d') if cert.created_at else 'Unknown' }}</h6>
+                            <p class="card-text">{{ cert.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You haven't created any certificates yet. Click the button above to get started.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

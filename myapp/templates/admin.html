@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard — Ascend{% endblock %}
+
+{% block content %}
+<div class="navbar">
+  <span class="brand">Ascend</span>
+  <div>
+    <span style="margin-right: 16px;">{{ user.name }} <span class="role-badge">{{ user.role }}</span></span>
+    <a href="{{ url_for('logout') }}">Log out</a>
+  </div>
+</div>
+
+<div class="dashboard-body">
+  <h2>Admin Dashboard</h2>
+  <p style="color: var(--ink-500); margin-top: 8px;">
+    You're logged in as <strong>{{ user.role }}</strong>.
+  </p>
+
+  <div class="card-grid">
+    <div class="action-card"><h3>Manage Users</h3><p>View and manage Admin, Institution, and Member accounts.</p></div>
+    <div class="action-card"><h3>Manage Institutions</h3><p>Approve, suspend, or reinstate institution accounts.</p></div>
+    <div class="action-card"><h3>All Certificates</h3><p>System-wide view of every certificate, filterable by status.</p></div>
+    <div class="action-card"><h3>Reports & Audit Logs</h3><p>Issuance stats, verification stats, and action history.</p></div>
+  </div>
+</div>
+{% endblock %}

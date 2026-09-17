@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Institution Dashboard — Ascend{% endblock %}
+
+{% block content %}
+<div class="navbar">
+  <span class="brand">Ascend</span>
+  <div>
+    <span style="margin-right: 16px;">{{ user.name }} <span class="role-badge">{{ user.role }}</span></span>
+    <a href="{{ url_for('logout') }}">Log out</a>
+  </div>
+</div>
+
+<div class="dashboard-body">
+  <h2>Institution Dashboard</h2>
+  <p style="color: var(--ink-500); margin-top: 8px;">
+    You're logged in as <strong>{{ user.role }}</strong>.
+  </p>
+
+  <div class="card-grid">
+    <div class="action-card"><h3>Issue Certificate</h3><p>Enter a recipient's email or phone to issue a new certificate.</p></div>
+    <div class="action-card"><h3>Issued Certificates</h3><p>View and search everything you've issued so far.</p></div>
+    <div class="action-card"><h3>Pending Requests</h3><p>Approve or reject certificate requests from members.</p></div>
+    <div class="action-card"><h3>Reports</h3><p>Your institution's issuance and verification stats.</p></div>
+  </div>
+</div>
+{% endblock %}
