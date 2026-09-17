@@ -18,10 +18,26 @@
   </p>
 
   <div class="card-grid">
-    <div class="action-card"><h3>Issue Certificate</h3><p>Enter a recipient's email or phone to issue a new certificate.</p></div>
-    <div class="action-card"><h3>Issued Certificates</h3><p>View and search everything you've issued so far.</p></div>
-    <div class="action-card"><h3>Pending Requests</h3><p>Approve or reject certificate requests from members.</p></div>
-    <div class="action-card"><h3>Reports</h3><p>Your institution's issuance and verification stats.</p></div>
+    <a href="{{ url_for('create_certificate') }}" style="text-decoration: none; color: inherit;">
+      <div class="action-card">
+        <h3>Certificate Templates</h3>
+        <p>Create and manage your certificate templates.</p>
+      </div>
+    </a>
+    <a href="{{ url_for('certificates_list') }}" style="text-decoration: none; color: inherit;">
+      <div class="action-card">
+        <h3>Issued Certificates</h3>
+        <p>View and search everything you've issued so far.</p>
+      </div>
+    </a>
+    <div class="action-card">
+      <h3>Pending Requests</h3>
+      <p>Approve or reject certificate requests from members.</p>
+    </div>
+    <div class="action-card">
+      <h3>Reports</h3>
+      <p>Your institution's issuance and verification stats.</p>
+    </div>
   </div>
 </div>
 {% endblock %}
