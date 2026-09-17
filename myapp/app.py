@@ -122,6 +122,40 @@ def certificates_list():
     certificates = Certificate.query.filter_by(institution_id=current_user.id).order_by(Certificate.created_at.desc()).all()
     return render_template('certificates_list.html', certificates=certificates, user=current_user)
 
+@app.route('/certificates/<int:cert_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_certificate(cert_id):
+    if current_user.role != 'institution':
+        return redirect(url_for('dashboard'))
+        
+    cert = Certificate.query.get(cert_id)
+    if not cert or cert.institution_id != current_user.id:
+        return redirect(url_for('certificates_list'))
+        
+    if request.method == 'POST':
+        cert.title = request.form.get('title')
+        cert.description = request.form.get('description')
+        db.session.commit()
+        flash('Certificate updated successfully!')
+        return redirect(url_for('certificates_list'))
+        
+    return render_template('edit_certificate.html', user=current_user, certificate=cert)
+
+@app.route('/certificates/<int:cert_id>/delete', methods=['POST'])
+@login_required
+def delete_certificate(cert_id):
+    if current_user.role != 'institution':
+        return redirect(url_for('dashboard'))
+        
+    cert = Certificate.query.get(cert_id)
+    if not cert or cert.institution_id != current_user.id:
+        return redirect(url_for('certificates_list'))
+        
+    db.session.delete(cert)
+    db.session.commit()
+    flash('Certificate deleted successfully!')
+    return redirect(url_for('certificates_list'))
+
 
 @app.route('/logout')
 @login_required
