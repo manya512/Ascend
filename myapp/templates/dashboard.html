@@ -12,7 +12,7 @@
       <div class="flex flex-col gap-space-xs max-w-3xl">
         <div class="flex items-center gap-space-xs">
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-surface-container text-secondary uppercase font-label-sm">
-            {{ user.role|title }} Portal
+            {{ 'Institution Administrator' if user.role == 'institution' else ('Staff Issuer' if user.role == 'staff' else (user.role|title)) }} Portal
           </span>
           <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
           <span class="font-label-sm text-label-sm text-on-surface-variant">Academic Year 2025–2026</span>
@@ -21,12 +21,12 @@
           Welcome back, {{ user.name }}
         </h1>
         <p class="font-body-md text-body-md text-on-surface-variant">
-          Pacific Institute of Technology · Central platform for academic credentials, degree certifications, and student honors issuance.
+          {{ institution_name }} · Central platform for academic credentials, degree certifications, and student honors issuance.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-space-sm self-start lg:self-center">
-        {% if user.role == 'institution' %}
+        {% if user.role in ['institution', 'staff'] %}
         <a href="{{ url_for('certificates_list') }}" class="group flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition-all shadow-sm text-decoration-none">
           <span class="material-symbols-outlined text-[20px] transition-transform group-hover:rotate-90">add</span>
           <span>Issue certificate</span>
@@ -65,7 +65,7 @@
       </div>
       <div class="mt-4 flex items-baseline justify-between gap-2">
         <span class="font-headline-md text-headline-md text-primary tracking-tight font-semibold">
-          {{ stats.issued_count if user.role == 'institution' else (stats.total_issued if user.role == 'admin' else (claimed|length)) }}
+          {{ stats.issued_count if user.role in ['institution', 'staff'] else (stats.total_issued if user.role == 'admin' else (claimed|length)) }}
         </span>
         <span class="inline-flex items-center gap-0.5 font-label-sm text-label-sm text-secondary font-semibold bg-surface-container px-2 py-0.5 rounded-full">
           <span class="material-symbols-outlined text-[14px]">trending_up</span> +18.4%
@@ -86,7 +86,7 @@
       </div>
       <div class="mt-4 flex items-baseline gap-2">
         <span class="font-headline-md text-headline-md text-primary tracking-tight font-semibold">
-          {{ stats.templates_count if user.role == 'institution' else (stats.total_templates if user.role == 'admin' else 12) }}
+          {{ stats.templates_count if user.role in ['institution', 'staff'] else (stats.total_templates if user.role == 'admin' else 12) }}
         </span>
         <span class="font-body-sm text-body-sm text-on-surface-variant">approved formats</span>
       </div>
@@ -107,7 +107,7 @@
       </div>
       <div class="mt-4 flex items-baseline gap-2">
         <span class="font-headline-md text-headline-md text-primary tracking-tight font-semibold">
-          {{ unclaimed|length if user.role == 'member' else (stats.claimed_count if user.role == 'institution' else 3) }}
+          {{ unclaimed|length if user.role == 'member' else (stats.claimed_count if user.role in ['institution', 'staff'] else 3) }}
         </span>
         <span class="font-body-sm text-body-sm text-on-surface-variant">records</span>
       </div>

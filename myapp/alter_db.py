@@ -10,6 +10,7 @@ def alter_db():
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS alumni VARCHAR(100);",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS portfolio_url VARCHAR(200);",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_profile_setup BOOLEAN DEFAULT FALSE;",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS institution_id INTEGER REFERENCES users(id);",
             "ALTER TABLE issued_certificates ADD COLUMN IF NOT EXISTS verification_code VARCHAR(36);",
             "ALTER TABLE issued_certificates ADD COLUMN IF NOT EXISTS recipient_phone VARCHAR(20);",
             "ALTER TABLE issued_certificates ALTER COLUMN recipient_email DROP NOT NULL;",

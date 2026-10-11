@@ -70,34 +70,84 @@ def login():
         else:
             flash('Invalid email or password.')
 
-    return render_template('login.html')
+    institutions = User.query.filter_by(role='institution').order_by(User.name).all()
+    return render_template('login.html', institutions=institutions)
 
 
 @app.route('/register', methods=['POST'])
 def register():
-    name = request.form.get('name')
-    email = request.form.get('email')
-    password = request.form.get('password')
+    name = request.form.get('name', '').strip()
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '').strip()
+    role = request.form.get('role', 'member').strip().lower()
+    phone = request.form.get('phone', '').strip()
+    institution_id_raw = request.form.get('institution_id')
 
     if not name or not email or not password:
-        flash('Please fill out all fields.')
+        flash('Please fill out all required fields.')
         return redirect(url_for('login'))
 
-    user = User.query.filter_by(email=email).first()
+    if role not in ['institution', 'staff', 'member']:
+        role = 'member'
 
+    user = User.query.filter_by(email=email).first()
     if user:
         flash('Email address already exists.')
         return redirect(url_for('login'))
 
-    new_user = User(name=name, email=email, role='member')
+    assigned_inst_id = None
+    if role == 'staff':
+        if not institution_id_raw:
+            flash('Please select an accredited institution for your staff account.')
+            return redirect(url_for('login'))
+        try:
+            assigned_inst_id = int(institution_id_raw)
+            inst_check = User.query.filter_by(id=assigned_inst_id, role='institution').first()
+            if not inst_check:
+                flash('Selected institution was not found.')
+                return redirect(url_for('login'))
+        except (ValueError, TypeError):
+            flash('Invalid institution selected.')
+            return redirect(url_for('login'))
+
+    new_user = User(
+        name=name,
+        email=email,
+        phone=phone if phone else None,
+        role=role,
+        institution_id=assigned_inst_id
+    )
     new_user.set_password(password)
 
     db.session.add(new_user)
     db.session.commit()
 
-    flash('Registration successful! Please log in.')
+    if role == 'institution':
+        flash('Institution administrator account registered successfully! Please sign in.')
+    elif role == 'staff':
+        flash('Staff issuer account registered successfully! Please sign in.')
+    else:
+        flash('Member account registered successfully! Please sign in.')
     return redirect(url_for('login'))
 
+
+def get_effective_institution_id(user):
+    if user.role == 'staff' and user.institution_id:
+        return user.institution_id
+    return user.id
+
+
+def get_institution_name(user):
+    """Return the display name of the institution this user belongs to."""
+    if user.role == 'institution':
+        return user.name
+    elif user.role == 'staff' and user.institution_id:
+        inst = User.query.get(user.institution_id)
+        return inst.name if inst else 'Your Institution'
+    elif user.role == 'admin':
+        return 'Ascend Platform'
+    else:
+        return 'Ascend Credentials'
 
 @app.route('/dashboard')
 @login_required
@@ -132,16 +182,17 @@ def dashboard():
         recent_issued = db.session.query(IssuedCertificate, Certificate).join(
             Certificate, IssuedCertificate.certificate_id == Certificate.id
         ).order_by(IssuedCertificate.issued_at.desc()).limit(10).all()
-    elif current_user.role == 'institution':
+    elif current_user.role in ['institution', 'staff']:
+        inst_id = get_effective_institution_id(current_user)
         stats = {
-            'templates_count': Certificate.query.filter_by(institution_id=current_user.id).count(),
-            'issued_count': IssuedCertificate.query.filter_by(institution_id=current_user.id).count(),
-            'claimed_count': IssuedCertificate.query.filter_by(institution_id=current_user.id, status='claimed').count()
+            'templates_count': Certificate.query.filter_by(institution_id=inst_id).count(),
+            'issued_count': IssuedCertificate.query.filter_by(institution_id=inst_id).count(),
+            'claimed_count': IssuedCertificate.query.filter_by(institution_id=inst_id, status='claimed').count()
         }
-        templates_list = Certificate.query.filter_by(institution_id=current_user.id).order_by(Certificate.created_at.desc()).all()
+        templates_list = Certificate.query.filter_by(institution_id=inst_id).order_by(Certificate.created_at.desc()).all()
         recent_issued = db.session.query(IssuedCertificate, Certificate).join(
             Certificate, IssuedCertificate.certificate_id == Certificate.id
-        ).filter(IssuedCertificate.institution_id == current_user.id).order_by(IssuedCertificate.issued_at.desc()).limit(10).all()
+        ).filter(IssuedCertificate.institution_id == inst_id).order_by(IssuedCertificate.issued_at.desc()).limit(10).all()
     elif current_user.role == 'member':
         # Unclaimed issued certificates (status != 'claimed')
         unclaimed_raw = db.session.query(IssuedCertificate, Certificate, User).join(
@@ -189,7 +240,8 @@ def dashboard():
         claimed=claimed,
         templates=templates_list,
         recent_issued=recent_issued,
-        unread_notif_count=unread_notif_count
+        unread_notif_count=unread_notif_count,
+        institution_name=get_institution_name(current_user)
     )
 
 
@@ -294,38 +346,41 @@ def public_profile(user_id):
 @app.route('/certificates/create', methods=['GET', 'POST'])
 @login_required
 def create_certificate():
-    if current_user.role != 'institution':
+    if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
     
+    inst_id = get_effective_institution_id(current_user)
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
         
-        new_cert = Certificate(title=title, description=description, institution_id=current_user.id)
+        new_cert = Certificate(title=title, description=description, institution_id=inst_id)
         db.session.add(new_cert)
         db.session.commit()
         flash('Certificate created successfully!')
         return redirect(url_for('certificates_list'))
         
-    return render_template('create_certificate.html', user=current_user)
+    return render_template('create_certificate.html', user=current_user, institution_name=get_institution_name(current_user))
 
 @app.route('/certificates')
 @login_required
 def certificates_list():
-    if current_user.role != 'institution':
+    if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
         
-    certificates = Certificate.query.filter_by(institution_id=current_user.id).order_by(Certificate.created_at.desc()).all()
+    inst_id = get_effective_institution_id(current_user)
+    certificates = Certificate.query.filter_by(institution_id=inst_id).order_by(Certificate.created_at.desc()).all()
     return render_template('certificates_list.html', certificates=certificates, user=current_user)
 
 @app.route('/certificates/<int:cert_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_certificate(cert_id):
-    if current_user.role != 'institution':
+    if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
         
+    inst_id = get_effective_institution_id(current_user)
     cert = Certificate.query.get(cert_id)
-    if not cert or cert.institution_id != current_user.id:
+    if not cert or cert.institution_id != inst_id:
         return redirect(url_for('certificates_list'))
         
     if request.method == 'POST':
@@ -335,16 +390,17 @@ def edit_certificate(cert_id):
         flash('Certificate updated successfully!')
         return redirect(url_for('certificates_list'))
         
-    return render_template('edit_certificate.html', user=current_user, certificate=cert)
+    return render_template('edit_certificate.html', user=current_user, certificate=cert, institution_name=get_institution_name(current_user))
 
 @app.route('/certificates/<int:cert_id>/delete', methods=['POST'])
 @login_required
 def delete_certificate(cert_id):
-    if current_user.role != 'institution':
+    if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
         
+    inst_id = get_effective_institution_id(current_user)
     cert = Certificate.query.get(cert_id)
-    if not cert or cert.institution_id != current_user.id:
+    if not cert or cert.institution_id != inst_id:
         return redirect(url_for('certificates_list'))
         
     db.session.delete(cert)
@@ -355,11 +411,12 @@ def delete_certificate(cert_id):
 @app.route('/certificates/<int:cert_id>/issue', methods=['GET', 'POST'])
 @login_required
 def issue_certificate(cert_id):
-    if current_user.role != 'institution':
+    if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
         
+    inst_id = get_effective_institution_id(current_user)
     cert = Certificate.query.get(cert_id)
-    if not cert or cert.institution_id != current_user.id:
+    if not cert or cert.institution_id != inst_id:
         return redirect(url_for('certificates_list'))
         
     if request.method == 'POST':
@@ -372,7 +429,7 @@ def issue_certificate(cert_id):
         
         issued_cert = IssuedCertificate(
             certificate_id=cert_id,
-            institution_id=current_user.id,
+            institution_id=inst_id,
             recipient_email=recipient_email if recipient_email else None,
             recipient_phone=recipient_phone if recipient_phone else None,
             status='issued'
@@ -387,11 +444,13 @@ def issue_certificate(cert_id):
         if not target_user and recipient_phone:
             target_user = User.query.filter_by(phone=recipient_phone).first()
             
+        inst_user = User.query.get(inst_id)
+        issuer_name = inst_user.name if inst_user else current_user.name
         notif = Notification(
             user_id=target_user.id if target_user else None,
             recipient_email=recipient_email if recipient_email else None,
             recipient_phone=recipient_phone if recipient_phone else None,
-            message=f"You received a new certificate: '{cert.title}' from {current_user.name}.",
+            message=f"You received a new certificate: '{cert.title}' from {issuer_name}.",
             link=f"/verify/{issued_cert.verification_code}"
         )
         db.session.add(notif)
@@ -406,13 +465,14 @@ def issue_certificate(cert_id):
 @app.route('/issued')
 @login_required
 def issued_list():
-    if current_user.role != 'institution':
+    if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
         
+    inst_id = get_effective_institution_id(current_user)
     issued = db.session.query(IssuedCertificate, Certificate).join(
         Certificate, IssuedCertificate.certificate_id == Certificate.id
     ).filter(
-        IssuedCertificate.institution_id == current_user.id
+        IssuedCertificate.institution_id == inst_id
     ).order_by(
         IssuedCertificate.issued_at.desc()
     ).all()
@@ -456,7 +516,7 @@ def verify_certificate(code=None):
 @app.route('/reports')
 @login_required
 def reports():
-    if current_user.role not in ['admin', 'institution']:
+    if current_user.role not in ['admin', 'institution', 'staff']:
         return redirect(url_for('dashboard'))
 
     summary = {}
@@ -482,14 +542,15 @@ def reports():
                 'issued_count': i_count
             })
 
-    elif current_user.role == 'institution':
+    elif current_user.role in ['institution', 'staff']:
+        inst_id = get_effective_institution_id(current_user)
         summary = {
-            'templates_count': Certificate.query.filter_by(institution_id=current_user.id).count(),
-            'issued_count': IssuedCertificate.query.filter_by(institution_id=current_user.id).count(),
-            'claimed_count': IssuedCertificate.query.filter_by(institution_id=current_user.id, status='claimed').count()
+            'templates_count': Certificate.query.filter_by(institution_id=inst_id).count(),
+            'issued_count': IssuedCertificate.query.filter_by(institution_id=inst_id).count(),
+            'claimed_count': IssuedCertificate.query.filter_by(institution_id=inst_id, status='claimed').count()
         }
 
-        templates = Certificate.query.filter_by(institution_id=current_user.id).all()
+        templates = Certificate.query.filter_by(institution_id=inst_id).all()
         for t in templates:
             i_count = IssuedCertificate.query.filter_by(certificate_id=t.id).count()
             c_count = IssuedCertificate.query.filter_by(certificate_id=t.id, status='claimed').count()

@@ -159,7 +159,7 @@
       <div class="bg-surface-container-low px-space-lg md:px-space-xl py-space-sm flex flex-wrap items-center justify-between gap-space-md border-t border-outline-variant/30">
         <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-[12px]">
           <span class="material-symbols-outlined text-[18px] text-emerald-600">security</span>
-          <span>Cryptographically validated by Pacific Institute of Technology Registry Authority</span>
+          <span>Cryptographically validated by {{ result[2].name if result else 'Ascend' }} Registry Authority</span>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="window.print()" type="button" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5">

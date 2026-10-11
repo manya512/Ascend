@@ -8,7 +8,7 @@
   <div class="w-full bg-primary-container text-on-primary py-space-sm px-margin-mobile md:px-margin flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm">
     <div class="flex items-center gap-space-sm font-label-md text-label-md text-on-primary-container">
       <span class="material-symbols-outlined text-[18px] text-secondary-fixed-dim">school</span>
-      <span>Pacific Institute of Technology · Official Academic & Credential Portfolio</span>
+      <span>Ascend · Official Academic & Credential Portfolio</span>
     </div>
     <div class="flex items-center gap-1.5 font-label-sm text-label-sm text-secondary-fixed-dim">
       <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -41,7 +41,7 @@
             </p>
             <p class="font-body-md text-body-md text-on-surface-variant mb-space-md flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[18px] text-secondary">account_balance</span>
-              {{ target_user.alumni or 'Pacific Institute of Technology' }}
+              {{ target_user.alumni or 'Not specified' }}
               {% if target_user.location %} · 📍 {{ target_user.location }}{% endif %}
             </p>
             
@@ -260,7 +260,7 @@
                   PIT
                 </div>
                 <div>
-                  <div class="font-title-md text-body-md text-primary font-medium">Pacific Institute of Technology</div>
+                  <div class="font-title-md text-body-md text-primary font-medium">{{ inst.name }}</div>
                   <div class="font-label-sm text-label-sm text-outline">Primary Authority</div>
                 </div>
               </div>

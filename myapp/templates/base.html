@@ -115,7 +115,7 @@
         <nav class="hidden lg:flex items-center gap-1">
           <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'dashboard' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('dashboard') }}">Dashboard</a>
           
-          {% if current_user.role == 'institution' %}
+          {% if current_user.role in ['institution', 'staff'] %}
           <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint in ['certificates_list', 'create_certificate', 'edit_certificate'] %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('certificates_list') }}">Templates</a>
           <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'issued_list' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('issued_list') }}">Issued Certificates</a>
           {% endif %}
@@ -126,7 +126,7 @@
 
           <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'verify_certificate' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('verify_certificate') }}">Verification</a>
 
-          {% if current_user.role in ['admin', 'institution'] %}
+          {% if current_user.role in ['admin', 'institution', 'staff'] %}
           <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'reports' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('reports') }}">Reports</a>
           {% endif %}
         </nav>

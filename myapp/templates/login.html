@@ -35,7 +35,7 @@
           Sign in to Ascend
         </h1>
         <p id="auth-subheading" class="font-body-md text-body-md text-on-surface-variant max-w-[340px] mx-auto">
-          Pacific Institute of Technology & partner collegiate faculties
+          Institutional Trust & Credential Verification Platform
         </p>
       </div>
 
@@ -114,27 +114,106 @@
 
       <!-- REGISTER FORM -->
       <form id="register-form" method="POST" action="{{ url_for('register') }}" class="space-y-4" style="display: none;">
-        <!-- Full Name -->
+        <input type="hidden" name="role" id="reg-role" value="member"/>
+
+        <!-- Role Selector Option Cards -->
         <div class="flex flex-col gap-1.5">
-          <label class="font-label-md text-label-md text-on-surface" for="reg-name">Full Name</label>
-          <div class="relative">
-            <input class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40" id="reg-name" name="name" placeholder="Eleanor Vance" required type="text"/>
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">person</span>
+          <label class="font-label-md text-label-md text-on-surface font-semibold">Select Account Type</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            
+            <!-- Option 1: Member -->
+            <button type="button" id="role-btn-member" onclick="selectRole('member');" class="p-3 rounded-xl border-2 border-secondary bg-surface-container-low text-left transition-all flex flex-col justify-between gap-1 shadow-sm role-card">
+              <div class="flex items-center justify-between w-full">
+                <span class="material-symbols-outlined text-secondary text-[22px]">school</span>
+                <span id="role-check-member" class="w-4 h-4 rounded-full bg-secondary flex items-center justify-center text-white text-[10px]">✓</span>
+              </div>
+              <div>
+                <div class="font-title-md text-xs font-bold text-primary">Member</div>
+                <div class="text-[11px] text-on-surface-variant leading-tight">Receives & claims certificates</div>
+              </div>
+            </button>
+
+            <!-- Option 2: Institution Admin -->
+            <button type="button" id="role-btn-institution" onclick="selectRole('institution');" class="p-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest hover:bg-surface-container-low text-left transition-all flex flex-col justify-between gap-1 shadow-sm role-card">
+              <div class="flex items-center justify-between w-full">
+                <span class="material-symbols-outlined text-on-surface-variant text-[22px]">account_balance</span>
+                <span id="role-check-institution" class="w-4 h-4 rounded-full border border-outline-variant/60 flex items-center justify-center text-white text-[10px]"></span>
+              </div>
+              <div>
+                <div class="font-title-md text-xs font-bold text-primary">Institution Admin</div>
+                <div class="text-[11px] text-on-surface-variant leading-tight">Oversees all issuances</div>
+              </div>
+            </button>
+
+            <!-- Option 3: Staff Issuer -->
+            <button type="button" id="role-btn-staff" onclick="selectRole('staff');" class="p-3 rounded-xl border border-outline-variant/40 bg-surface-container-lowest hover:bg-surface-container-low text-left transition-all flex flex-col justify-between gap-1 shadow-sm role-card">
+              <div class="flex items-center justify-between w-full">
+                <span class="material-symbols-outlined text-on-surface-variant text-[22px]">history_edu</span>
+                <span id="role-check-staff" class="w-4 h-4 rounded-full border border-outline-variant/60 flex items-center justify-center text-white text-[10px]"></span>
+              </div>
+              <div>
+                <div class="font-title-md text-xs font-bold text-primary">Staff Issuer</div>
+                <div class="text-[11px] text-on-surface-variant leading-tight">Issues for an institution</div>
+              </div>
+            </button>
+
+          </div>
+
+          <!-- Dynamic Role Explainer Notice -->
+          <div id="role-explainer" class="mt-1 p-2.5 rounded-lg bg-surface-container-low border border-outline-variant/30 text-xs text-on-surface-variant leading-relaxed">
+            <span class="font-semibold text-primary">Recipient Member:</span> Receive credentials, claim them to your verified portfolio, and share authenticated credentials publicly.
           </div>
         </div>
 
-        <!-- Email -->
+        <!-- Full Name / Institution Name -->
         <div class="flex flex-col gap-1.5">
-          <label class="font-label-md text-label-md text-on-surface" for="reg-email">Email Address</label>
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-name" id="label-reg-name">Full Name</label>
+          <div class="relative">
+            <input class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40" id="reg-name" name="name" placeholder="Eleanor Vance" required type="text"/>
+            <span id="icon-reg-name" class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">person</span>
+          </div>
+        </div>
+
+        <!-- Staff Institution Selection Dropdown (Only shown for staff) -->
+        <div id="staff-institution-group" class="flex flex-col gap-1.5" style="display: none;">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-institution">Accredited Institution</label>
+          <div class="relative">
+            <select class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40 cursor-pointer" id="reg-institution" name="institution_id">
+              <option value="" disabled selected>Select the institution you represent...</option>
+              {% if institutions %}
+                {% for inst in institutions %}
+                  <option value="{{ inst.id }}">{{ inst.name }} ({{ inst.email }})</option>
+                {% endfor %}
+              {% else %}
+                <option value="" disabled>No institutions registered yet. Register an institution administrator first!</option>
+              {% endif %}
+            </select>
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">account_balance</span>
+          </div>
+          <span class="text-[11px] text-on-surface-variant">Your issuances will be verified and logged under this institution's name.</span>
+        </div>
+
+        <!-- Email Address -->
+        <div class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-email" id="label-reg-email">Email Address</label>
           <div class="relative">
             <input class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40" id="reg-email" name="email" placeholder="member@example.com" required type="email"/>
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">mail</span>
           </div>
         </div>
 
+        <!-- Optional Phone (Only shown for member) -->
+        <div id="member-phone-group" class="flex flex-col gap-1.5">
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-phone">Contact Phone <span class="text-xs text-on-surface-variant font-normal">(Optional, for SMS certificate matching)</span></label>
+          <div class="relative">
+            <input class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40" id="reg-phone" name="phone" placeholder="+1 555-0199" type="tel"/>
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">phone</span>
+          </div>
+        </div>
+
         <!-- Password -->
         <div class="flex flex-col gap-1.5">
-          <label class="font-label-md text-label-md text-on-surface" for="reg-password">Create Password</label>
+          <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-password">Create Password</label>
           <div class="relative">
             <input class="w-full py-3 pl-10 pr-11 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm tracking-wider border border-outline-variant/40" id="reg-password" name="password" placeholder="••••••••••••" required type="password"/>
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">lock</span>
@@ -146,14 +225,14 @@
 
         <!-- Submit Button -->
         <div class="pt-2">
-          <button class="w-full py-3.5 px-6 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md tracking-tight shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2" type="submit">
-            <span>Create Account</span>
+          <button class="w-full py-3.5 px-6 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md tracking-tight shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer" type="submit">
+            <span id="btn-submit-text">Create Member Account</span>
             <span class="material-symbols-outlined text-[18px]">check_circle</span>
           </button>
         </div>
 
         <div class="text-center pt-2">
-          <button type="button" onclick="toggleForms();" class="font-body-sm text-body-sm text-secondary hover:underline">
+          <button type="button" onclick="toggleForms();" class="font-body-sm text-body-sm text-secondary hover:underline cursor-pointer">
             Already have an account? Sign in
           </button>
         </div>
@@ -215,14 +294,83 @@
       if (ssoBlock) ssoBlock.style.display = 'block';
       if (dividerBlock) dividerBlock.style.display = 'flex';
       heading.textContent = 'Sign in to Ascend';
-      subheading.textContent = 'Pacific Institute of Technology & partner collegiate faculties';
+      subheading.textContent = 'Institutional Trust & Credential Verification Platform';
     } else {
       loginForm.style.display = 'none';
       registerForm.style.display = 'block';
       if (ssoBlock) ssoBlock.style.display = 'none';
       if (dividerBlock) dividerBlock.style.display = 'none';
-      heading.textContent = 'Create Member Account';
-      subheading.textContent = 'Join Ascend to collect and showcase certified credentials';
+      heading.textContent = 'Create Ascend Account';
+      subheading.textContent = 'Register as an Institution Administrator, Staff Issuer, or Recipient Member';
+    }
+  }
+
+  function selectRole(role) {
+    document.getElementById('reg-role').value = role;
+
+    const roles = ['member', 'institution', 'staff'];
+    roles.forEach(r => {
+      const btn = document.getElementById('role-btn-' + r);
+      const check = document.getElementById('role-check-' + r);
+      if (r === role) {
+        btn.classList.add('border-2', 'border-secondary', 'bg-surface-container-low');
+        btn.classList.remove('border', 'border-outline-variant/40', 'bg-surface-container-lowest');
+        check.classList.add('bg-secondary');
+        check.classList.remove('border', 'border-outline-variant/60');
+        check.textContent = '✓';
+      } else {
+        btn.classList.remove('border-2', 'border-secondary', 'bg-surface-container-low');
+        btn.classList.add('border', 'border-outline-variant/40', 'bg-surface-container-lowest');
+        check.classList.remove('bg-secondary');
+        check.classList.add('border', 'border-outline-variant/60');
+        check.textContent = '';
+      }
+    });
+
+    const nameLabel = document.getElementById('label-reg-name');
+    const nameInput = document.getElementById('reg-name');
+    const nameIcon = document.getElementById('icon-reg-name');
+    const emailLabel = document.getElementById('label-reg-email');
+    const emailInput = document.getElementById('reg-email');
+    const staffGroup = document.getElementById('staff-institution-group');
+    const staffSelect = document.getElementById('reg-institution');
+    const phoneGroup = document.getElementById('member-phone-group');
+    const submitBtnText = document.getElementById('btn-submit-text');
+    const explainer = document.getElementById('role-explainer');
+
+    if (role === 'institution') {
+      nameLabel.textContent = 'Institution Name (or Registrar Full Name)';
+      nameInput.placeholder = 'e.g. Pacific Institute of Technology';
+      nameIcon.textContent = 'account_balance';
+      emailLabel.textContent = 'Official Institutional Email';
+      emailInput.placeholder = 'registrar@pit.edu';
+      staffGroup.style.display = 'none';
+      staffSelect.removeAttribute('required');
+      phoneGroup.style.display = 'none';
+      submitBtnText.textContent = 'Register Institution';
+      explainer.innerHTML = '<span class="font-semibold text-primary">Institution Administrator:</span> Registers your academic institution. You will be able to design templates, oversee staff issuers, and audit all certificates issued using your institution’s name.';
+    } else if (role === 'staff') {
+      nameLabel.textContent = 'Staff Member Full Name';
+      nameInput.placeholder = 'e.g. Prof. Alice Walker';
+      nameIcon.textContent = 'badge';
+      emailLabel.textContent = 'Staff Email Address';
+      emailInput.placeholder = 'faculty@institution.edu';
+      staffGroup.style.display = 'flex';
+      staffSelect.setAttribute('required', 'required');
+      phoneGroup.style.display = 'none';
+      submitBtnText.textContent = 'Register Staff Account';
+      explainer.innerHTML = '<span class="font-semibold text-primary">Staff / Certificate Issuer:</span> Registers an authorized faculty or department member. You will issue official certificates under your selected institution’s authority.';
+    } else {
+      nameLabel.textContent = 'Full Name';
+      nameInput.placeholder = 'e.g. Eleanor Vance';
+      nameIcon.textContent = 'person';
+      emailLabel.textContent = 'Email Address';
+      emailInput.placeholder = 'member@example.com';
+      staffGroup.style.display = 'none';
+      staffSelect.removeAttribute('required');
+      phoneGroup.style.display = 'flex';
+      submitBtnText.textContent = 'Create Member Account';
+      explainer.innerHTML = '<span class="font-semibold text-primary">Recipient Member:</span> Receive credentials, claim them to your verified portfolio, and share authenticated credentials publicly.';
     }
   }
 </script>

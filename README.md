@@ -160,39 +160,52 @@ Ascend/
 
 ## 👥 User Roles & Permissions
 
-The application implements four distinct user personas governed by route-level checks in `app.py`:
+The application provides native role-based access for four personas governed by route-level checks in `app.py`:
 
 | Role | Access Level & Route Guards | What They Can Do |
 | :--- | :--- | :--- |
-| **Administrator** | `current_user.role == 'admin'` | • Accesses the system-wide overview on `/dashboard`.<br>• Views total counts of users, institutions, members, templates, and issuances.<br>• Accesses `/reports` with the `institution_breakdown` view detailing template counts and total certificates issued per institution.<br>• Inspects system audit logs. |
-| **Institution** | `current_user.role == 'institution'` | • Creates, edits, and deletes certificate templates (`/certificates/create`, `/certificates/<id>/edit`, `/certificates/<id>/delete`).<br>• Issues certificates to recipients by email or phone (`/certificates/<id>/issue`).<br>• Audits all issued credentials in `/issued`.<br>• Accesses `/reports` with the `template_breakdown` view showing claim rates.<br>• Receives notifications when members claim their credentials. |
-| **Member** | `current_user.role == 'member'` | • Self-registers via the public sign-up form on `/login`.<br>• Views unclaimed certificates matching their email or phone in `/dashboard`.<br>• Claims credentials in 1-click via POST `/certificates/<id>/claim`.<br>• Updates profile details (job title, location, alma mater, portfolio link) on `/update-profile`.<br>• Shares a public portfolio of claimed certificates at `/profile/<user_id>`. |
+| **Platform Administrator** | `current_user.role == 'admin'` | • Accesses the system-wide overview on `/dashboard`.<br>• Views total counts of users, institutions, members, templates, and issuances.<br>• Accesses `/reports` with the `institution_breakdown` view detailing template counts and total certificates issued per institution.<br>• Inspects system-wide audit logs. |
+| **Institution Administrator** | `current_user.role == 'institution'` | • Registers their academic institution authority.<br>• Oversees all certificate templates and audits the complete ledger of all certificates issued under the institution's name (by themselves and staff members).<br>• Creates, edits, and deletes templates, and issues credentials.<br>• Accesses `/reports` with claim fulfillment rates.<br>• Receives notifications when members claim certificates. |
+| **Staff Member / Issuer** | `current_user.role == 'staff'` | • Registers under an accredited institution selected from the institutions registry (`institution_id`).<br>• Issues official certifications under their institution's authority (`/certificates/<id>/issue`).<br>• Accesses their institution's templates and ledger (`/certificates`, `/issued`).<br>• All issuances are credited and verified under the institution's name. |
+| **Recipient Member** | `current_user.role == 'member'` | • Self-registers via the sign-up form on `/login`.<br>• Views unclaimed certificates matching their verified email or phone in `/dashboard`.<br>• Claims credentials in 1-click via POST `/certificates/<id>/claim`.<br>• Updates profile details (job title, location, alma mater, portfolio link) on `/update-profile`.<br>• Shares a public portfolio of claimed certificates at `/profile/<user_id>`. |
 | **Verifier** | Public / Unauthenticated | • No login required.<br>• Looks up any credential at `/verify` or directly via `/verify/<code>`.<br>• Views the issuer, recipient, issue date, and in-memory QR verification code.<br>• Verifies authenticity on public member profiles (`/profile/<user_id>`). |
 
-### How to Register as an Institution
-To maintain institutional accreditation and prevent unauthorized issuers, the public self-registration form (`/register`) automatically creates **Member** accounts. To register or create an **Institution** account, you can use any of the following methods:
+### 📝 Direct Registration Options on the Sign-In Page
+On the Ascend sign-in page ([http://127.0.0.1:5000/login](http://127.0.0.1:5000/login)), clicking **"Register"** provides three interactive account type options:
 
-1. **Quick Seeding via CLI (Recommended for Development)**:
-   Run the included seed script to create a pre-configured institution account:
-   ```bash
-   python create_test_users.py
-   ```
-   *Default Credentials:* `institution@ascend.com` / `password123`
+1. **🏛️ Institution Administrator**:
+   - For university registrars, academic deans, and institutional leaders.
+   - Requires: Institution Name (or Registrar Name), Official Institutional Email, Password.
+   - Grants full oversight to see and audit all certificates issued using the name of the institution.
 
-2. **Python Command Line**:
-   Run a one-line command to register any custom institution name and credentials:
-   ```bash
-   python -c "from app import app, db, User; app.app_context().push(); u = User(name='Pacific Institute of Technology', email='registrar@pit.edu', role='institution'); u.set_password('securepassword'); db.session.add(u); db.session.commit(); print('Institution registered successfully!')"
-   ```
+2. **🎓 Staff / Certificate Issuer**:
+   - For authorized faculty members, department chairs, and certificate issuers.
+   - Requires: Staff Full Name, Staff Email, Selected Accredited Institution (from dropdown), Password.
+   - Enables issuance of official certifications logged under the chosen institution.
 
-3. **Institutional SSO Demo Shortcut**:
-   On the login page (`/login`), click **"Institutional SSO"** to immediately sign into the registered institution account.
+3. **👤 Recipient Member**:
+   - For students, alumni, and certified professionals.
+   - Requires: Full Name, Email Address, Optional Phone Number (for SMS claim matching), Password.
+   - Allows claiming and showcasing verified certificates on a public portfolio.
 
-4. **Direct Database Role Promotion**:
-   Register a normal account on `/login`, then in your Supabase SQL Editor run:
-   ```sql
-   UPDATE users SET role = 'institution' WHERE email = 'your_email@university.edu';
-   ```
+### 🛠️ Alternative Setup Methods (CLI / Demo)
+* **Pre-Seeded Accounts via Script**:
+  Run `python create_test_users.py` to generate `institution@ascend.com` / `password123` and `member@ascend.com` / `password123`.
+
+* **Python Command Line**:
+  Run a one-line command to register any custom institution name and credentials:
+  ```bash
+  python -c "from app import app, db, User; app.app_context().push(); u = User(name='Pacific Institute of Technology', email='registrar@pit.edu', role='institution'); u.set_password('securepassword'); db.session.add(u); db.session.commit(); print('Institution registered successfully!')"
+  ```
+
+* **Institutional SSO Demo Shortcut**:
+  On the login page (`/login`), click **"Institutional SSO"** to immediately sign into the registered institution account.
+
+* **Direct Database Role Promotion**:
+  Register on `/login`, then in your Supabase SQL Editor run:
+  ```sql
+  UPDATE users SET role = 'institution' WHERE email = 'your_email@university.edu';
+  ```
 
 ---
 
