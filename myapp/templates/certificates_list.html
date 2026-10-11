@@ -1,40 +1,103 @@
 {% extends "base.html" %}
 
+{% block title %}Certificate Templates — Ascend Academic Catalog{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>My Certificates</h2>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('issued_list') }}" class="btn btn-outline-primary">View Issued Certificates</a>
-            <a href="{{ url_for('create_certificate') }}" class="btn btn-primary">Create New Certificate</a>
-        </div>
+<div class="flex flex-col w-full px-margin-mobile md:px-margin py-space-lg gap-space-xl">
+  <!-- Sub-bar Header -->
+  <div class="w-full bg-surface-container-lowest px-space-lg py-space-md rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-space-md">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+        <a class="hover:text-primary transition-colors text-decoration-none" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <span>/</span>
+        <span class="text-primary font-medium">Templates</span>
+        <span class="ml-space-xs px-2 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-[11px] font-semibold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Institutional Authority
+        </span>
+      </div>
+      <h1 class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold">Certificate Templates Repository</h1>
     </div>
 
-    {% if certificates %}
-        <div class="row g-4">
-            {% for cert in certificates %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm rounded-3" style="border-top: 4px solid #26215c;">
-                        <div class="card-body">
-                            <h5 class="card-title" style="color: #ef9f27; font-family: Georgia, serif;">{{ cert.title }}</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Created: {{ cert.created_at.strftime('%Y-%m-%d') if cert.created_at else 'Unknown' }}</h6>
-                            <p class="card-text">{{ cert.description }}</p>
-                            <div class="mt-3 d-flex gap-2">
-                                <a href="{{ url_for('issue_certificate', cert_id=cert.id) }}" class="btn btn-sm btn-primary">Issue</a>
-                                <a href="{{ url_for('edit_certificate', cert_id=cert.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                <form action="{{ url_for('delete_certificate', cert_id=cert.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this certificate?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+    <div class="flex items-center gap-space-sm">
+      <a href="{{ url_for('issued_list') }}" class="px-space-md py-2 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none">
+        <span class="material-symbols-outlined text-[18px]">list_alt</span>
+        <span>View Issued Ledger</span>
+      </a>
+      <a href="{{ url_for('create_certificate') }}" class="px-space-md py-2 rounded-lg bg-secondary hover:bg-on-secondary-container text-on-secondary transition-all shadow-sm font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        <span>Create New Template</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Templates Grid -->
+  {% if certificates %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-lg">
+    {% for cert in certificates %}
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-outline-variant/30 flex flex-col justify-between overflow-hidden">
+      <!-- Card Head -->
+      <div class="p-space-lg flex flex-col gap-space-sm">
+        <div class="flex items-center justify-between">
+          <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
+            Accredited Program
+          </span>
+          <span class="flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Active
+          </span>
         </div>
-    {% else %}
-        <div class="alert alert-info">
-            You haven't created any certificates yet. Click the button above to get started.
+
+        <h3 class="font-headline-sm text-headline-sm text-primary tracking-tight line-clamp-2 mt-1">
+          {{ cert.title }}
+        </h3>
+        
+        <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-3 leading-relaxed">
+          {{ cert.description or 'Official accredited certificate template designed for collegiate awards and professional completion.' }}
+        </p>
+      </div>
+
+      <!-- Card Foot -->
+      <div class="p-space-lg pt-space-xs border-t border-outline-variant/20 bg-surface-container-low/40 flex flex-col gap-3">
+        <div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+          <span>Created: {{ cert.created_at.strftime('%B %d, %Y') if cert.created_at else 'Active' }}</span>
+          <span class="font-mono text-outline text-[11px]">ID #{{ cert.id }}</span>
         </div>
-    {% endif %}
+
+        <div class="flex items-center justify-between gap-2 pt-1">
+          <a href="{{ url_for('issue_certificate', cert_id=cert.id) }}" class="flex-1 py-2 px-3 rounded-lg bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-body-sm transition-colors flex items-center justify-center gap-1 text-decoration-none shadow-sm">
+            <span class="material-symbols-outlined text-[16px]">send</span>
+            <span>Issue</span>
+          </a>
+
+          <a href="{{ url_for('edit_certificate', cert_id=cert.id) }}" class="py-2 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-body-sm transition-colors flex items-center justify-center gap-1 text-decoration-none" title="Edit Template">
+            <span class="material-symbols-outlined text-[16px]">edit</span>
+            <span>Edit</span>
+          </a>
+
+          <form action="{{ url_for('delete_certificate', cert_id=cert.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this certificate template?');" class="mb-0">
+            <button type="submit" class="py-2 px-3 rounded-lg bg-surface-container-low hover:bg-red-50 text-red-700 font-title-md text-body-sm transition-colors flex items-center justify-center" title="Delete Template">
+              <span class="material-symbols-outlined text-[16px]">delete</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="w-full bg-surface-container-lowest rounded-2xl p-space-xl text-center shadow-sm border border-outline-variant/30">
+    <div class="w-16 h-16 rounded-full bg-surface-container text-secondary flex items-center justify-center mx-auto mb-space-sm">
+      <span class="material-symbols-outlined text-[36px]">design_services</span>
+    </div>
+    <h3 class="font-headline-sm text-headline-sm text-primary mb-1">No Templates Created Yet</h3>
+    <p class="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto mb-space-md">
+      Create your first certificate template with our interactive 2-column studio editor to begin issuing to students and members.
+    </p>
+    <a href="{{ url_for('create_certificate') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition shadow-sm text-decoration-none">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      <span>Create Certificate Template</span>
+    </a>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
