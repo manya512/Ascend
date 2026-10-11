@@ -1,32 +1,99 @@
 {% extends "base.html" %}
 
+{% block title %}Issue Certificate: {{ certificate.title }} — Ascend{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="mb-4">Issue Certificate: {{ certificate.title }}</h2>
-            <div class="card shadow-sm" style="border-top: 4px solid #26215c;">
-                <div class="card-body">
-                    <form action="{{ url_for('issue_certificate', cert_id=certificate.id) }}" method="POST">
-                        <div class="mb-3">
-                            <label for="recipient_email" class="form-label">Recipient Email</label>
-                            <input type="email" class="form-control" id="recipient_email" name="recipient_email" placeholder="member@example.com">
-                            <div class="form-text">Enter recipient's email address</div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="recipient_phone" class="form-label">Recipient Phone Number (Optional / Alternative)</label>
-                            <input type="tel" class="form-control" id="recipient_phone" name="recipient_phone" placeholder="+1234567890">
-                            <div class="form-text">Enter phone number if email is unavailable</div>
-                        </div>
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ url_for('certificates_list') }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Issue Certificate</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="flex flex-col w-full px-margin-mobile md:px-margin py-space-lg gap-space-xl">
+  <!-- Sub-bar Header -->
+  <div class="w-full bg-surface-container-lowest px-space-lg py-space-md rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-space-md">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+        <a class="hover:text-primary transition-colors text-decoration-none" href="{{ url_for('certificates_list') }}">Templates</a>
+        <span>/</span>
+        <span class="text-primary font-medium line-clamp-1 max-w-xs">{{ certificate.title }}</span>
+        <span class="ml-space-xs px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] font-semibold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Direct Issuance
+        </span>
+      </div>
+      <h1 class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold">Issue Academic Credential</h1>
     </div>
+
+    <div class="flex items-center gap-space-sm">
+      <a href="{{ url_for('certificates_list') }}" class="px-space-md py-2 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Cancel</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="w-full max-w-2xl mx-auto flex flex-col gap-space-lg">
+    <!-- Certificate Preview Summary Badge -->
+    <div class="w-full bg-primary-container text-on-primary rounded-2xl p-space-lg shadow-md flex items-center gap-space-md">
+      <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-secondary-fixed-dim">
+        <span class="material-symbols-outlined text-[32px]">school</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-label-sm text-[11px] font-bold tracking-wider uppercase text-secondary-fixed-dim">Target Credential</span>
+        <h2 class="font-headline-sm text-headline-sm text-white tracking-tight leading-tight my-0.5">{{ certificate.title }}</h2>
+        <p class="font-body-sm text-body-sm text-on-primary-container line-clamp-1 mb-0">{{ certificate.description or 'Official accredited certificate template.' }}</p>
+      </div>
+    </div>
+
+    <!-- Main Issuance Form Card -->
+    <div class="w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 p-space-lg md:p-space-xl">
+      <div class="flex items-center gap-space-sm mb-space-md pb-space-sm border-b border-outline-variant/20">
+        <span class="material-symbols-outlined text-[24px] text-secondary">send</span>
+        <div>
+          <h3 class="font-title-lg text-title-lg text-primary font-semibold mb-0">Recipient Contact Details</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Provide the recipient's institutional email or phone number to dispatch the credential</p>
+        </div>
+      </div>
+
+      <form action="{{ url_for('issue_certificate', cert_id=certificate.id) }}" method="POST" class="space-y-5">
+        <!-- Recipient Email -->
+        <div class="flex flex-col gap-1.5">
+          <label for="recipient_email" class="font-label-md text-label-md text-on-surface flex items-center justify-between">
+            <span>Recipient Email Address</span>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Recommended</span>
+          </label>
+          <div class="relative">
+            <input type="email" class="w-full py-3 pl-11 pr-4 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/30" id="recipient_email" name="recipient_email" placeholder="student@alumni.edu">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">mail</span>
+          </div>
+          <span class="font-body-sm text-[12px] text-on-surface-variant">Recipient can claim directly from their Ascend member dashboard.</span>
+        </div>
+
+        <!-- Recipient Phone -->
+        <div class="flex flex-col gap-1.5">
+          <label for="recipient_phone" class="font-label-md text-label-md text-on-surface flex items-center justify-between">
+            <span>Recipient Phone Number</span>
+            <span class="font-body-sm text-body-sm text-outline">Optional / Alternative</span>
+          </label>
+          <div class="relative">
+            <input type="tel" class="w-full py-3 pl-11 pr-4 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/50 focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/30" id="recipient_phone" name="recipient_phone" placeholder="+1 (555) 019-2834">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">call</span>
+          </div>
+          <span class="font-body-sm text-[12px] text-on-surface-variant">Allows phone-based verification matching if email is unavailable.</span>
+        </div>
+
+        <!-- Security & Ledger Notice -->
+        <div class="p-space-md rounded-xl bg-surface-container-low flex items-start gap-3 text-on-surface-variant font-body-sm text-body-sm">
+          <span class="material-symbols-outlined text-[20px] text-secondary shrink-0 mt-0.5">verified_user</span>
+          <span>A cryptographically signed UUID verification code and QR code will be generated upon issuance. The record is permanently logged in the registry.</span>
+        </div>
+
+        <!-- Submit & Actions -->
+        <div class="flex items-center justify-end gap-space-sm pt-2">
+          <a href="{{ url_for('certificates_list') }}" class="px-5 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-body-sm transition-colors text-decoration-none">
+            Cancel
+          </a>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-body-sm shadow-sm transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+            <span>Issue Certificate Now</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %}
-
