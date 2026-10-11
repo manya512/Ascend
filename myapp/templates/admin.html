@@ -1,28 +1,131 @@
 {% extends "base.html" %}
-{% block navbar %}{% endblock %}
 
-{% block title %}Admin Dashboard — Ascend{% endblock %}
+{% block title %}Admin Console — Ascend{% endblock %}
 
 {% block content %}
-<div class="navbar">
-  <span class="brand">Ascend</span>
-  <div>
-    <span style="margin-right: 16px;">{{ user.name }} <span class="role-badge">{{ user.role }}</span></span>
-    <a href="{{ url_for('logout') }}">Log out</a>
-  </div>
-</div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
 
-<div class="dashboard-body">
-  <h2>Admin Dashboard</h2>
-  <p style="color: var(--ink-500); margin-top: 8px;">
-    You're logged in as <strong>{{ user.role }}</strong>.
-  </p>
-
-  <div class="card-grid">
-    <div class="action-card"><h3>Manage Users</h3><p>View and manage Admin, Institution, and Member accounts.</p></div>
-    <div class="action-card"><h3>Manage Institutions</h3><p>Approve, suspend, or reinstate institution accounts.</p></div>
-    <div class="action-card"><h3>All Certificates</h3><p>System-wide view of every certificate, filterable by status.</p></div>
-    <div class="action-card"><h3>Reports & Audit Logs</h3><p>Issuance stats, verification stats, and action history.</p></div>
+  <!-- Admin Hero Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-outline-variant/30">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+        <a href="{{ url_for('dashboard') }}" class="hover:text-primary transition-colors text-decoration-none">Dashboard</a>
+        <span>/</span>
+        <span class="text-primary font-medium">Administration</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">
+          Platform Governance Console
+        </h1>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-xs font-semibold">
+          <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span> System Administrator
+        </span>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-0 max-w-2xl">
+        Oversee system-wide accreditation, monitor cryptographic issuances, and audit registry health.
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('reports') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+        <span>Institutional Audit Reports</span>
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">dashboard</span>
+        <span>Main Dashboard</span>
+      </a>
+    </div>
   </div>
+
+  <!-- Admin Hub Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <!-- Card 1: Manage Institutions -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">account_balance</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
+            Issuing Institutions
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Verify accreditation credentials and monitor authorized academic institutions.
+          </p>
+        </div>
+      </div>
+      <a href="{{ url_for('reports') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
+        <span>View breakdown</span>
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
+    </div>
+
+    <!-- Card 2: All Certificates -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">workspace_premium</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
+            Global Credentials
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Monitor all published degree templates and verify tamper-proof verification integrity.
+          </p>
+        </div>
+      </div>
+      <a href="{{ url_for('dashboard') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
+        <span>View templates ledger</span>
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
+    </div>
+
+    <!-- Card 3: Audit & Analytics -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">analytics</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
+            System Audit Logs
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Complete telemetry on account registrations, certificate issuances, and claim fulfillments.
+          </p>
+        </div>
+      </div>
+      <a href="{{ url_for('reports') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
+        <span>Generate reports</span>
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
+    </div>
+
+    <!-- Card 4: Public Verification Gateway -->
+    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">verified</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
+            Public Gateway
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Test the live cryptographic SHA-256 certificate lookup and verification engine.
+          </p>
+        </div>
+      </div>
+      <a href="{{ url_for('verify_certificate') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
+        <span>Test verifier</span>
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
+    </div>
+
+  </div>
+
 </div>
 {% endblock %}
