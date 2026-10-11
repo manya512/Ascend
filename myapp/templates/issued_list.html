@@ -1,59 +1,186 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Issued Certificates</h2>
-        <a href="{{ url_for('certificates_list') }}" class="btn btn-outline-primary">Back to Templates</a>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-outline-variant/30">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+        <a href="{{ url_for('dashboard') }}" class="hover:text-primary transition-colors text-decoration-none">Dashboard</a>
+        <span>/</span>
+        <span class="text-primary font-medium">Registrar Ledger</span>
+      </div>
+      <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">
+        Issued Credentials Ledger
+      </h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-0 max-w-2xl">
+        Complete institutional audit record of digital diplomas, certificates, and credentials registered to recipients.
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('certificates_list') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">folder</span>
+        <span>Certificate Templates</span>
+      </a>
+      <a href="{{ url_for('certificates_list') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+        <span>Issue Credential</span>
+      </a>
+    </div>
+  </div>
+
+  {% if issued %}
+  <!-- Ledger Overview Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+        <span class="material-symbols-outlined text-[24px]">history_edu</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-label-sm text-on-surface-variant uppercase tracking-wider">Total Records</span>
+        <span class="font-headline-md text-headline-md text-primary font-bold">{{ issued|length }}</span>
+      </div>
     </div>
 
-    {% if issued %}
-        <div class="card shadow-sm" style="border-top: 4px solid #26215c;">
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Certificate Title</th>
-                            <th>Recipient</th>
-                            <th>Status</th>
-                            <th>Verification Code</th>
-                            <th>Issued Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for issued_cert, cert in issued %}
-                            <tr>
-                                <td style="color: #ef9f27; font-family: Georgia, serif; font-weight: 500;">{{ cert.title }}</td>
-                                <td>
-                                    {% if issued_cert.recipient_email %}
-                                        <div>📧 {{ issued_cert.recipient_email }}</div>
-                                    {% endif %}
-                                    {% if issued_cert.recipient_phone %}
-                                        <div>📱 {{ issued_cert.recipient_phone }}</div>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge {% if issued_cert.status == 'claimed' %}bg-success{% else %}bg-secondary{% endif %}">
-                                        {{ issued_cert.status|title if issued_cert.status else 'Issued' }}
-                                    </span>
-                                </td>
-                                <td><code style="background-color: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: var(--indigo-900);">{{ issued_cert.verification_code or 'N/A' }}</code></td>
-                                <td>{{ issued_cert.issued_at.strftime('%Y-%m-%d %H:%M') if issued_cert.issued_at else 'Unknown' }}</td>
-                                <td>
-                                    <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="btn btn-sm btn-outline-primary" style="border-color: #26215c; color: #26215c;">View / Verify</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    {% else %}
-        <div class="alert alert-info">
-            You haven't issued any certificates yet.
-        </div>
-    {% endif %}
+    <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+        <span class="material-symbols-outlined text-[24px]">verified</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-label-sm text-on-surface-variant uppercase tracking-wider">Verification Gateway</span>
+        <span class="font-headline-md text-headline-md text-emerald-800 font-bold">100% Active</span>
+      </div>
+    </div>
+
+    <div class="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+        <span class="material-symbols-outlined text-[24px]">shield</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="font-label-sm text-on-surface-variant uppercase tracking-wider">Audit Security</span>
+        <span class="font-headline-md text-headline-md text-primary font-bold">Tamper-Proof</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm">
+    <div class="relative w-full sm:w-80">
+      <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[20px]">search</span>
+      <input type="text" id="ledgerSearch" placeholder="Search by recipient, title, code..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-container-low border border-transparent focus:border-primary focus:bg-white text-body-sm text-primary transition-all outline-none" />
+    </div>
+    <div class="text-body-sm text-on-surface-variant">
+      Showing <span id="recordCount" class="font-bold text-primary">{{ issued|length }}</span> records
+    </div>
+  </div>
+
+  <!-- Registry Table -->
+  <div class="rounded-xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse" id="ledgerTable">
+        <thead>
+          <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md border-b border-outline-variant/20">
+            <th class="py-3.5 px-4 font-semibold">Certificate Title</th>
+            <th class="py-3.5 px-4 font-semibold">Recipient Contact</th>
+            <th class="py-3.5 px-4 font-semibold">Status</th>
+            <th class="py-3.5 px-4 font-semibold">Verification Code</th>
+            <th class="py-3.5 px-4 font-semibold">Issued Date</th>
+            <th class="py-3.5 px-4 text-right font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/10 text-body-sm">
+          {% for issued_cert, cert in issued %}
+          <tr class="hover:bg-surface-container-low/60 transition-colors ledger-row">
+            <td class="py-4 px-4 font-title-md text-primary font-serif">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary text-[20px]">workspace_premium</span>
+                <span class="cert-title font-medium text-base">{{ cert.title }}</span>
+              </div>
+            </td>
+            <td class="py-4 px-4 text-on-surface">
+              {% if issued_cert.recipient_email %}
+                <div class="flex items-center gap-1.5 text-primary">
+                  <span class="material-symbols-outlined text-[16px] text-on-surface-variant">mail</span>
+                  <span class="recipient-val font-medium">{{ issued_cert.recipient_email }}</span>
+                </div>
+              {% endif %}
+              {% if issued_cert.recipient_phone %}
+                <div class="flex items-center gap-1.5 text-on-surface-variant text-xs mt-0.5">
+                  <span class="material-symbols-outlined text-[14px]">call</span>
+                  <span>{{ issued_cert.recipient_phone }}</span>
+                </div>
+              {% endif %}
+            </td>
+            <td class="py-4 px-4">
+              {% if issued_cert.status == 'claimed' %}
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-xs font-semibold border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Claimed
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 font-label-sm text-xs font-semibold border border-amber-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Issued
+                </span>
+              {% endif %}
+            </td>
+            <td class="py-4 px-4">
+              <code class="px-2.5 py-1 rounded-md bg-surface-container text-primary font-mono text-xs font-semibold tracking-wider border border-outline-variant/30 cert-code">
+                {{ issued_cert.verification_code or 'N/A' }}
+              </code>
+            </td>
+            <td class="py-4 px-4 text-on-surface-variant font-label-sm">
+              {{ issued_cert.issued_at.strftime('%b %d, %Y %H:%M') if issued_cert.issued_at else 'Unknown' }}
+            </td>
+            <td class="py-4 px-4 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-xs transition-colors text-decoration-none shadow-sm">
+                  <span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+                  <span>View / Verify</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('ledgerSearch')?.addEventListener('input', function(e) {
+      const q = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.ledger-row');
+      let visible = 0;
+      rows.forEach(r => {
+        const text = r.textContent.toLowerCase();
+        if (text.includes(q)) {
+          r.style.display = '';
+          visible++;
+        } else {
+          r.style.display = 'none';
+        }
+      });
+      const countEl = document.getElementById('recordCount');
+      if (countEl) countEl.textContent = visible;
+    });
+  </script>
+
+  {% else %}
+  <!-- Empty State -->
+  <div class="flex flex-col items-center justify-center p-12 text-center rounded-2xl bg-surface-container-lowest border border-outline-variant/30 shadow-sm max-w-2xl mx-auto my-8">
+    <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary mb-4">
+      <span class="material-symbols-outlined text-[36px] text-secondary">history_edu</span>
+    </div>
+    <h3 class="font-headline-md text-headline-md text-primary font-serif mb-2">No Issued Credentials Yet</h3>
+    <p class="font-body-md text-body-md text-on-surface-variant max-w-md mb-6">
+      When your institution issues credentials, diplomas, or certificates to recipients, their tamper-proof records will appear in this registry.
+    </p>
+    <a href="{{ url_for('certificates_list') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+      <span class="material-symbols-outlined text-[20px]">add_circle</span>
+      <span>Browse Templates to Issue</span>
+    </a>
+  </div>
+  {% endif %}
+
 </div>
 {% endblock %}
-
