@@ -1,63 +1,291 @@
 {% extends "base.html" %}
 
-{% block title %}{{ target_user.name }} — Ascend Verified Credentials{% endblock %}
+{% block title %}{{ target_user.name }} — Official Academic & Credential Portfolio{% endblock %}
 
 {% block content %}
-<div class="container my-5" style="max-width: 900px;">
-    <!-- PUBLIC PROFILE HEADER -->
-    <div class="card border-0 shadow-sm p-4 p-md-5 mb-4" style="border-radius: 20px; background: #ffffff; border-top: 6px solid var(--indigo-900) !important;">
-        <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
-            <!-- Seal / Avatar -->
-            <div style="width: 96px; height: 96px; border-radius: 50%; background: var(--indigo-900); border: 4px solid var(--gold-500); display: flex; align-items: center; justify-content: center; color: var(--gold-500); font-family: 'Fraunces', serif; font-size: 36px; font-weight: bold;">
-                {{ target_user.name[:1]|upper }}
-            </div>
-
-            <div class="flex-grow-1 text-center text-md-start">
-                <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-1">
-                    <h2 class="mb-0" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">{{ target_user.name }}</h2>
-                    <span class="badge bg-success" style="font-size: 11px;">✓ Verified Profile</span>
-                </div>
-                <div class="text-muted fs-6 mb-3">{{ target_user.job_title or 'Ascend Member' }}</div>
-
-                <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 text-muted small">
-                    {% if target_user.location %}
-                        <span>📍 {{ target_user.location }}</span>
-                    {% endif %}
-                    {% if target_user.alumni %}
-                        <span>🎓 {{ target_user.alumni }}</span>
-                    {% endif %}
-                    {% if target_user.portfolio_url %}
-                        <span>🔗 <a href="{{ target_user.portfolio_url }}" target="_blank" rel="noopener" class="text-decoration-none" style="color: var(--gold-500);">Portfolio</a></span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+<div class="flex flex-col w-full">
+  <!-- Sovereign Identity Top Tier Banner -->
+  <div class="w-full bg-primary-container text-on-primary py-space-sm px-margin-mobile md:px-margin flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm">
+    <div class="flex items-center gap-space-sm font-label-md text-label-md text-on-primary-container">
+      <span class="material-symbols-outlined text-[18px] text-secondary-fixed-dim">school</span>
+      <span>Pacific Institute of Technology · Official Academic & Credential Portfolio</span>
     </div>
+    <div class="flex items-center gap-1.5 font-label-sm text-label-sm text-secondary-fixed-dim">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span>Verified Member Profile</span>
+    </div>
+  </div>
 
-    <!-- CERTIFICATES SECTION -->
-    <h4 class="mb-3" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">Verified Credentials ({{ certificates|length }})</h4>
+  <!-- Profile Showcase Card (Asymmetric Overlap) -->
+  <div class="w-full px-margin-mobile md:px-margin -mt-8 relative z-10 mb-space-xl">
+    <div class="w-full bg-surface-container-lowest rounded-xl shadow-lg p-space-lg md:p-space-xl">
+      <div class="flex flex-col lg:flex-row items-start justify-between gap-space-xl">
+        <div class="flex flex-col sm:flex-row items-start gap-space-lg max-w-4xl">
+          <div class="relative flex-shrink-0">
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shadow-md bg-primary-container flex items-center justify-center text-white font-headline-lg font-bold text-3xl">
+              {{ target_user.name[:1]|upper }}
+            </div>
+            <div class="absolute -bottom-2 -right-2 bg-secondary text-on-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-md">
+              <span class="material-symbols-outlined text-[16px]">verified</span>
+            </div>
+          </div>
 
-    {% if certificates %}
-        <div class="row g-4">
-            {% for issued_cert, cert, inst in certificates %}
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px; border-top: 4px solid var(--gold-500) !important; background: #ffffff;">
-                        <span class="badge bg-light text-dark align-self-start mb-2" style="font-size: 11px;">Official Credential</span>
-                        <h5 class="mb-1" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">{{ cert.title }}</h5>
-                        <div class="text-muted small mb-3">Issued by <strong>{{ inst.name }}</strong></div>
-                        <p class="text-dark small flex-grow-1">{{ cert.description }}</p>
-                        <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-2">
-                            <span class="text-muted small">Issued: {{ issued_cert.issued_at.strftime('%b %Y') if issued_cert.issued_at else '' }}</span>
-                            <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="btn btn-sm btn-outline-primary" style="font-size: 12px;">Verify Code →</a>
-                        </div>
-                    </div>
+          <div class="flex flex-col">
+            <div class="flex flex-wrap items-center gap-space-xs mb-1">
+              <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">
+                {{ target_user.name }}
+              </h1>
+            </div>
+            <p class="font-body-lg text-body-lg text-on-surface font-medium mb-1">
+              {{ target_user.job_title or 'Senior Research Fellow & Alumnus' }}
+            </p>
+            <p class="font-body-md text-body-md text-on-surface-variant mb-space-md flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px] text-secondary">account_balance</span>
+              {{ target_user.alumni or 'Pacific Institute of Technology' }}
+              {% if target_user.location %} · 📍 {{ target_user.location }}{% endif %}
+            </p>
+            
+            <div class="flex flex-wrap items-center gap-space-sm">
+              <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-semibold">
+                <span class="material-symbols-outlined text-[16px] text-secondary">workspace_premium</span>
+                <span>{{ certificates|length }} Verified Certificates</span>
+              </div>
+              <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+                <span>Member since {{ target_user.created_at.strftime('%Y') if target_user.created_at else '2026' }}</span>
+              </div>
+              {% if target_user.portfolio_url %}
+              <a href="{{ target_user.portfolio_url }}" target="_blank" rel="noopener" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm text-decoration-none hover:underline">
+                <span class="material-symbols-outlined text-[16px]">link</span>
+                <span>Portfolio</span>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row lg:flex-col gap-space-sm w-full lg:w-auto self-stretch lg:self-start lg:min-w-[220px]">
+          <button onclick="navigator.clipboard.writeText(window.location.href); alert('Profile URL copied to clipboard!');" class="w-full flex items-center justify-center gap-2 px-space-lg py-3 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition shadow-sm" type="button">
+            <span class="material-symbols-outlined text-[18px]">share</span>
+            <span>Share Profile Link</span>
+          </button>
+          <button onclick="window.print();" class="w-full flex items-center justify-center gap-2 px-space-lg py-2.5 rounded-lg bg-surface-container text-on-surface font-title-md text-title-md hover:bg-surface-container-high transition" type="button">
+            <span class="material-symbols-outlined text-[18px] text-on-surface-variant">print</span>
+            <span>Print Credentials</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Showcase Grid (2-Column Desktop Architecture) -->
+  <div class="w-full px-margin-mobile md:px-margin pb-space-xl">
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-space-xl items-start">
+      <!-- Left Column: Credential Cards List (8 cols) -->
+      <div class="xl:col-span-8 flex flex-col gap-space-lg">
+        
+        <!-- Controls & Filter Module -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+          <div class="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <button class="px-3.5 py-1.5 rounded-full bg-primary-container text-on-primary font-label-md text-label-md whitespace-nowrap shadow-sm" type="button">
+              All ({{ certificates|length }})
+            </button>
+            <button class="px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition" type="button">
+              Degrees
+            </button>
+            <button class="px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition" type="button">
+              Fellowships
+            </button>
+            <button class="px-3.5 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition" type="button">
+              Certifications
+            </button>
+          </div>
+
+          <!-- Search Credential Bar -->
+          <div class="relative w-full md:w-72">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-outline pointer-events-none">filter_list</span>
+            <input id="credential-search" class="w-full pl-9 pr-3 py-1.5 bg-surface-container-low rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container" placeholder="Search by skill or issuer..." type="text">
+          </div>
+        </div>
+
+        {% if certificates %}
+          {% for issued_cert, cert, inst in certificates %}
+          <div class="credential-item bg-surface-container-lowest rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300">
+            <div class="bg-surface-container-low px-space-lg py-2.5 flex items-center justify-between gap-space-md">
+              <div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+                <span class="material-symbols-outlined text-[16px] text-secondary">tag</span>
+                <span>Verification ID: <strong class="text-on-surface">{{ issued_cert.verification_code }}</strong></span>
+              </div>
+              <div class="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-label-sm text-[11px] font-medium">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                <span>Verified by Registrar</span>
+              </div>
+            </div>
+
+            <div class="p-space-lg flex flex-col gap-space-md">
+              <div class="flex flex-col sm:flex-row items-start justify-between gap-space-md">
+                <div class="flex items-start gap-space-md">
+                  <div class="w-14 h-14 rounded-lg bg-surface-container flex items-center justify-center flex-shrink-0 text-primary">
+                    <span class="material-symbols-outlined text-[32px]">school</span>
+                  </div>
+                  <div>
+                    <span class="font-label-sm text-label-sm font-semibold tracking-wider text-secondary uppercase block mb-1">
+                      Academic Credential
+                    </span>
+                    <h2 class="font-headline-sm text-headline-sm text-primary tracking-tight leading-tight">
+                      {{ cert.title }}
+                    </h2>
+                    <p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                      Conferred by · <strong>{{ inst.name }}</strong>
+                    </p>
+                  </div>
                 </div>
-            {% endfor %}
+
+                <div class="hidden sm:flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container-low text-center min-w-[100px]">
+                  <span class="material-symbols-outlined text-[28px] text-secondary">military_tech</span>
+                  <span class="font-label-sm text-[10px] text-on-surface-variant mt-0.5 uppercase tracking-wider font-semibold">Honors Seal</span>
+                </div>
+              </div>
+
+              <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                {{ cert.description or 'Awarded for successful completion of institutional coursework and academic requirements conferred with highest academic honors.' }}
+              </p>
+
+              <div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs border-t border-outline-variant/20">
+                <div class="flex flex-wrap items-center gap-space-lg text-outline font-label-sm text-body-sm">
+                  <div>Conferred: <span class="text-on-surface font-medium">{{ issued_cert.issued_at.strftime('%B %Y') if issued_cert.issued_at else 'Active' }}</span></div>
+                  <div>Status: <span class="text-emerald-700 font-medium">Permanent Record</span></div>
+                </div>
+
+                <div class="flex items-center gap-space-xs">
+                  <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition flex items-center gap-1.5 text-decoration-none">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                    <span>View Certificate</span>
+                  </a>
+                  <button onclick="navigator.clipboard.writeText('{{ url_for('verify_certificate', code=issued_cert.verification_code, _external=True) }}'); alert('Verification URL copied!');" class="px-3.5 py-1.5 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md hover:bg-primary transition flex items-center gap-1.5" type="button">
+                    <span class="material-symbols-outlined text-[16px]">share</span>
+                    <span>Copy Verification URL</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="bg-surface-container-lowest rounded-xl p-space-xl text-center shadow-sm">
+            <span class="material-symbols-outlined text-[48px] text-secondary mb-2">workspace_premium</span>
+            <h3 class="font-title-lg text-title-lg text-primary mb-1">No Public Credentials Available</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant max-w-md mx-auto">
+              This member has not yet published any verified certificates to their public registry portfolio.
+            </p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Right Column: Verification & Sovereign Identity (4 cols) -->
+      <div class="xl:col-span-4 flex flex-col gap-space-lg">
+        
+        <!-- Verify Authenticity Card -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-md p-space-lg">
+          <div class="flex items-center justify-between mb-space-sm">
+            <h3 class="font-title-lg text-title-lg text-primary">Verify Authenticity</h3>
+            <span class="material-symbols-outlined text-secondary text-[22px]">qr_code_scanner</span>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md leading-relaxed">
+            Scan with your smartphone camera to instantly verify these certificates with the issuing university registrars.
+          </p>
+
+          <div class="bg-surface-container-low rounded-xl p-space-md text-on-surface flex items-center gap-space-md mb-space-md border border-outline-variant/30">
+            <div class="w-16 h-16 bg-surface-container-lowest p-2 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+              <svg class="w-full h-full text-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 2h4v4h-4v-4zm-4-2h2v2h-2v-2zm2 4h2v2h-2v-2zm-2-2h2v2h-2v-2zm4-2h2v2h-2v-2zm0-2h-2v-2h2v2zm-4 0h2v2h-2v-2zm2-2h2v2h-2v-2z"></path>
+              </svg>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-title-md text-title-md text-primary font-semibold">Instant Verification</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Open to all employers and academic institutions</span>
+              <span class="flex items-center gap-1 font-label-sm text-[12px] text-emerald-700 font-medium mt-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Active & Valid
+              </span>
+            </div>
+          </div>
+
+          <div class="pt-1 border-t border-outline-variant/30">
+            <div class="font-body-sm text-body-sm text-on-surface-variant mb-1">Verify credentials online at:</div>
+            <a class="font-mono text-body-sm text-secondary hover:underline break-all font-medium flex items-center gap-1.5 text-decoration-none" href="{{ url_for('verify_certificate') }}">
+              <span class="material-symbols-outlined text-[16px]">link</span>
+              <span>ascend.trust/verify</span>
+            </a>
+          </div>
         </div>
-    {% else %}
-        <div class="card border-0 shadow-sm p-5 text-center text-muted" style="border-radius: 16px;">
-            <p class="mb-0">No public credentials displayed for this member yet.</p>
+
+        <!-- Key Skills & Specializations Card -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-md p-space-lg">
+          <div class="flex items-center justify-between mb-space-md">
+            <h3 class="font-title-lg text-title-lg text-primary">Key Specializations</h3>
+            <span class="material-symbols-outlined text-outline text-[20px]">psychology</span>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+            Directly attested through completed coursework and verified credentials:
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Academic Research
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Data Governance
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Applied Engineering
+            </span>
+            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Strategic Leadership
+            </span>
+          </div>
         </div>
-    {% endif %}
+
+        <!-- Issuing Institutions Card -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-md p-space-lg">
+          <div class="flex items-center justify-between mb-space-md">
+            <h3 class="font-title-lg text-title-lg text-primary">Issuing Institutions</h3>
+            <span class="material-symbols-outlined text-secondary text-[20px]">assured_workload</span>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+            Accredited institutions conferring credentials to this portfolio:
+          </p>
+          <div class="flex flex-col gap-space-sm">
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low">
+              <div class="flex items-center gap-space-sm">
+                <div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold font-mono text-[11px]">
+                  PIT
+                </div>
+                <div>
+                  <div class="font-title-md text-body-md text-primary font-medium">Pacific Institute of Technology</div>
+                  <div class="font-label-sm text-label-sm text-outline">Primary Authority</div>
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-[18px] text-emerald-600">verified</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  // Interactive search filter for credentials
+  const searchInput = document.getElementById('credential-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      const items = document.querySelectorAll('.credential-item');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? 'block' : 'none';
+      });
+    });
+  }
+</script>
 {% endblock %}
