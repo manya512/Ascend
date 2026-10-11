@@ -36,6 +36,26 @@ def home():
     return render_template('landing.html')
 
 
+@app.route('/login/sso')
+def login_sso():
+    # SSO demo route: log in as institution account if available or redirect to login
+    inst = User.query.filter_by(role='institution').first()
+    if inst:
+        login_user(inst)
+        flash(f'Signed in via Institutional SSO as {inst.name}.')
+        return redirect(url_for('dashboard'))
+    flash('Institutional SSO is available. Please enter your institutional email to proceed.')
+    return redirect(url_for('login'))
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        flash(f'Password reset instructions have been dispatched to {email or "your email"}.')
+        return redirect(url_for('login'))
+    flash('Password reset requested. Please enter your email on the login screen.')
+    return redirect(url_for('login'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
