@@ -1,8 +1,21 @@
+import qrcode
+import io
+import base64
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from config import Config
 from models import db, User, Certificate, IssuedCertificate, Notification
+
+def generate_qr_base64(url):
+    qr = qrcode.QRCode(version=1, box_size=6, border=2)
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="#26215c", back_color="#ffffff")
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return base64.b64encode(buf.getvalue()).decode('ascii')
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -230,20 +243,38 @@ def issued_list():
     
     return render_template('issued_list.html', issued=issued, user=current_user)
 
+@app.route('/verify', methods=['GET', 'POST'])
 @app.route('/verify/<code>', methods=['GET'])
-def verify_certificate(code):
-    issued = db.session.query(IssuedCertificate, Certificate, User).join(
-        Certificate, IssuedCertificate.certificate_id == Certificate.id
-    ).join(
-        User, Certificate.institution_id == User.id
-    ).filter(
-        IssuedCertificate.verification_code == code
-    ).first()
+def verify_certificate(code=None):
+    if request.method == 'POST':
+        search_code = request.form.get('code', '').strip()
+        if search_code:
+            return redirect(url_for('verify_certificate', code=search_code))
+            
+    if not code:
+        code = request.args.get('code', '').strip()
+        
+    issued = None
+    qr_b64 = None
+    share_url = None
     
-    if issued:
-        return render_template('verify.html', result=issued)
-    else:
-        return render_template('verify.html', result=None), 404
+    if code:
+        issued = db.session.query(IssuedCertificate, Certificate, User).join(
+            Certificate, IssuedCertificate.certificate_id == Certificate.id
+        ).join(
+            User, Certificate.institution_id == User.id
+        ).filter(
+            IssuedCertificate.verification_code == code
+        ).first()
+        
+        if issued:
+            share_url = url_for('verify_certificate', code=code, _external=True)
+            try:
+                qr_b64 = generate_qr_base64(share_url)
+            except Exception as e:
+                qr_b64 = None
+
+    return render_template('verify.html', result=issued, code=code, qr_b64=qr_b64, share_url=share_url)
 
 
 @app.route('/logout')
