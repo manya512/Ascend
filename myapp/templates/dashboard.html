@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Ascend{% endblock %}
+
+{% block content %}
+<div class="container my-4" style="max-width: 1050px;">
+  <!-- Welcome Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+    <div>
+      <h2 class="mb-1" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">
+        Welcome, {{ user.name }}
+      </h2>
+      <span class="role-badge">{{ user.role|title }} Dashboard</span>
+    </div>
+    <div class="d-flex gap-2">
+      {% if user.role == 'member' %}
+        <a href="{{ url_for('public_profile', user_id=user.id) }}" class="btn btn-outline-primary btn-sm">👤 View Public Profile</a>
+      {% endif %}
+      <a href="{{ url_for('notifications_list') }}" class="btn btn-outline-secondary btn-sm position-relative">
+        🔔 Notifications
+        {% if unread_notif_count > 0 %}
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ unread_notif_count }}
+          </span>
+        {% endif %}
+      </a>
+    </div>
+  </div>
+
+  <!-- ROLE: ADMIN DASHBOARD -->
+  {% if user.role == 'admin' %}
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--indigo-900) !important;">
+        <div class="text-muted small text-uppercase fw-bold">Total Users</div>
+        <div class="fs-2 fw-bold text-dark">{{ stats.total_users }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--gold-500) !important;">
+        <div class="text-muted small text-uppercase fw-bold">Institutions</div>
+        <div class="fs-2 fw-bold text-dark">{{ stats.total_institutions }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid #10b981 !important;">
+        <div class="text-muted small text-uppercase fw-bold">Cert Templates</div>
+        <div class="fs-2 fw-bold text-dark">{{ stats.total_templates }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid #6366f1 !important;">
+        <div class="text-muted small text-uppercase fw-bold">Total Issued</div>
+        <div class="fs-2 fw-bold text-dark">{{ stats.total_issued }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm p-4 h-100">
+        <h5 style="font-family: 'Fraunces', serif;">System Overview</h5>
+        <p class="text-muted small">Manage all actors, certificate templates, and audit logs.</p>
+        <div class="d-flex flex-column gap-2 mt-3">
+          <a href="{{ url_for('reports') }}" class="btn btn-outline-primary text-start">📊 View System Reports & Audit Logs</a>
+          <a href="{{ url_for('verify_certificate') }}" class="btn btn-outline-secondary text-start">🔍 Public Verification Tool</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm p-4 h-100">
+        <h5 style="font-family: 'Fraunces', serif;">Recent Platform Activity</h5>
+        <ul class="list-group list-group-flush mt-2 small">
+          <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+            <span>Registered Members</span>
+            <span class="badge bg-light text-dark fw-normal">{{ stats.total_members }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+            <span>Verified Issuances</span>
+            <span class="badge bg-light text-dark fw-normal">{{ stats.total_issued }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLE: INSTITUTION DASHBOARD -->
+  {% elif user.role == 'institution' %}
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--indigo-900) !important;">
+        <div class="text-muted small text-uppercase fw-bold">Certificate Templates</div>
+        <div class="fs-2 fw-bold text-dark">{{ stats.templates_count }}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--gold-500) !important;">
+        <div class="text-muted small text-uppercase fw-bold">Issued Certificates</div>
+        <div class="fs-2 fw-bold text-dark">{{ stats.issued_count }}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid #10b981 !important;">
+        <div class="text-muted small text-uppercase fw-bold">Claimed Certificates</div>
+        <div class="fs-2 fw-bold text-dark">{{ stats.claimed_count }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid mb-4">
+    <a href="{{ url_for('create_certificate') }}" class="text-decoration-none color-inherit">
+      <div class="action-card h-100">
+        <h3>➕ New Certificate Template</h3>
+        <p>Design a new certificate template for issuing.</p>
+      </div>
+    </a>
+    <a href="{{ url_for('certificates_list') }}" class="text-decoration-none color-inherit">
+      <div class="action-card h-100">
+        <h3>📜 Certificate Templates</h3>
+        <p>Manage existing templates and issue to members.</p>
+      </div>
+    </a>
+    <a href="{{ url_for('issued_list') }}" class="text-decoration-none color-inherit">
+      <div class="action-card h-100">
+        <h3>📋 Issued History</h3>
+        <p>View all certificates issued by your institution.</p>
+      </div>
+    </a>
+    <a href="{{ url_for('reports') }}" class="text-decoration-none color-inherit">
+      <div class="action-card h-100">
+        <h3>📊 Analytics & Reports</h3>
+        <p>View stats on certificate claims and verification.</p>
+      </div>
+    </a>
+  </div>
+
+  <!-- ROLE: MEMBER DASHBOARD -->
+  {% elif user.role == 'member' %}
+    {% if not user.is_profile_setup %}
+    <div class="card border-0 shadow-sm p-4 mb-4" style="background: #fffbeb; border-left: 4px solid var(--gold-500) !important;">
+      <h4 style="font-family: 'Fraunces', serif;">Complete Your Profile</h4>
+      <p class="text-muted small mb-3">Add your details to enable public verification and alumni networking.</p>
+      <form action="{{ url_for('update_profile') }}" method="POST" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Job Title</label>
+          <input type="text" name="job_title" class="form-control" placeholder="e.g. Software Engineer" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Location</label>
+          <input type="text" name="location" class="form-control" placeholder="e.g. San Francisco, CA" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Phone Number (For verification matching)</label>
+          <input type="tel" name="phone" value="{{ user.phone or '' }}" class="form-control" placeholder="+1234567890">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold">Alumni Institution</label>
+          <input type="text" name="alumni" class="form-control" placeholder="e.g. Stanford University" required>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label small fw-bold">Portfolio / LinkedIn URL</label>
+          <input type="url" name="portfolio_url" class="form-control" placeholder="https://linkedin.com/in/username">
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary" style="background-color: var(--indigo-900); border: none;">Save Profile</button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- UNCLAIMED CERTIFICATES NOTIFICATION BANNER -->
+    {% if unclaimed %}
+    <div class="card border-0 shadow-sm p-4 mb-4" style="background: #f0fdf4; border-left: 4px solid #166534 !important;">
+      <h4 class="text-success mb-2" style="font-family: 'Fraunces', serif;">🎉 Pending Certificates Ready to Claim!</h4>
+      <p class="text-muted small mb-3">Institutions have issued the following certificates to your email or phone number:</p>
+
+      <div class="d-flex flex-column gap-3">
+        {% for item in unclaimed %}
+        <div class="bg-white p-3 rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div>
+            <h6 class="mb-1 fw-bold text-dark" style="font-family: 'Fraunces', serif;">{{ item.cert_title }}</h6>
+            <div class="text-muted small">Issued by <strong>{{ item.institution_name }}</strong> on {{ item.issued_at.strftime('%Y-%m-%d') }}</div>
+          </div>
+          <form action="{{ url_for('claim_certificate', issued_id=item.issued_id) }}" method="POST" class="mb-0">
+            <button type="submit" class="btn btn-success btn-sm px-3 fw-bold">✨ Claim Certificate</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- MY CLAIMED / VERIFIED CERTIFICATES -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="mb-0" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">My Credentials & Certificates</h4>
+      <a href="{{ url_for('public_profile', user_id=user.id) }}" class="text-decoration-none small fw-bold" style="color: var(--gold-500);">Share Public Profile →</a>
+    </div>
+
+    {% if claimed %}
+    <div class="row g-4">
+      {% for issued_cert, cert, inst in claimed %}
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-top: 4px solid var(--gold-500) !important; border-radius: 12px;">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="mb-0" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">{{ cert.title }}</h5>
+            <span class="badge bg-success text-white">Verified</span>
+          </div>
+          <div class="text-muted small mb-3">Issued by <strong>{{ inst.name }}</strong></div>
+          <p class="text-dark small flex-grow-1">{{ cert.description }}</p>
+          <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-2">
+            <code style="font-size: 11px;">{{ issued_cert.verification_code }}</code>
+            <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="btn btn-outline-primary btn-sm">Inspect Credential</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm p-5 text-center text-muted">
+      <p class="mb-0">No claimed certificates yet. When an institution issues a certificate to your email or phone, it will appear here for you to claim!</p>
+    </div>
+    {% endif %}
+
+  {% endif %}
+</div>
+{% endblock %}

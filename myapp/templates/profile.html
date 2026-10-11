@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ target_user.name }} — Ascend Verified Credentials{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 900px;">
+    <!-- PUBLIC PROFILE HEADER -->
+    <div class="card border-0 shadow-sm p-4 p-md-5 mb-4" style="border-radius: 20px; background: #ffffff; border-top: 6px solid var(--indigo-900) !important;">
+        <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
+            <!-- Seal / Avatar -->
+            <div style="width: 96px; height: 96px; border-radius: 50%; background: var(--indigo-900); border: 4px solid var(--gold-500); display: flex; align-items: center; justify-content: center; color: var(--gold-500); font-family: 'Fraunces', serif; font-size: 36px; font-weight: bold;">
+                {{ target_user.name[:1]|upper }}
+            </div>
+
+            <div class="flex-grow-1 text-center text-md-start">
+                <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-1">
+                    <h2 class="mb-0" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">{{ target_user.name }}</h2>
+                    <span class="badge bg-success" style="font-size: 11px;">✓ Verified Profile</span>
+                </div>
+                <div class="text-muted fs-6 mb-3">{{ target_user.job_title or 'Ascend Member' }}</div>
+
+                <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 text-muted small">
+                    {% if target_user.location %}
+                        <span>📍 {{ target_user.location }}</span>
+                    {% endif %}
+                    {% if target_user.alumni %}
+                        <span>🎓 {{ target_user.alumni }}</span>
+                    {% endif %}
+                    {% if target_user.portfolio_url %}
+                        <span>🔗 <a href="{{ target_user.portfolio_url }}" target="_blank" rel="noopener" class="text-decoration-none" style="color: var(--gold-500);">Portfolio</a></span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CERTIFICATES SECTION -->
+    <h4 class="mb-3" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">Verified Credentials ({{ certificates|length }})</h4>
+
+    {% if certificates %}
+        <div class="row g-4">
+            {% for issued_cert, cert, inst in certificates %}
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 16px; border-top: 4px solid var(--gold-500) !important; background: #ffffff;">
+                        <span class="badge bg-light text-dark align-self-start mb-2" style="font-size: 11px;">Official Credential</span>
+                        <h5 class="mb-1" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">{{ cert.title }}</h5>
+                        <div class="text-muted small mb-3">Issued by <strong>{{ inst.name }}</strong></div>
+                        <p class="text-dark small flex-grow-1">{{ cert.description }}</p>
+                        <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-2">
+                            <span class="text-muted small">Issued: {{ issued_cert.issued_at.strftime('%b %Y') if issued_cert.issued_at else '' }}</span>
+                            <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="btn btn-sm btn-outline-primary" style="font-size: 12px;">Verify Code →</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm p-5 text-center text-muted" style="border-radius: 16px;">
+            <p class="mb-0">No public credentials displayed for this member yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

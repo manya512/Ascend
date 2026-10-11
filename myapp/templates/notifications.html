@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications — Ascend{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 750px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">🔔 In-App Notifications</h3>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+    </div>
+
+    {% if notifications %}
+        <div class="list-group shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+            {% for notif in notifications %}
+                <div class="list-group-item list-group-item-action p-4 border-bottom {% if not notif.is_read %}bg-light{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                {% if not notif.is_read %}
+                                    <span class="badge bg-primary" style="font-size: 10px;">NEW</span>
+                                {% endif %}
+                                <span class="text-muted small">{{ notif.created_at.strftime('%b %d, %Y %H:%M') if notif.created_at else '' }}</span>
+                            </div>
+                            <p class="mb-2 text-dark fs-6">{{ notif.message }}</p>
+                            {% if notif.link %}
+                                <a href="{{ notif.link }}" class="btn btn-sm btn-outline-primary" style="font-size: 12px;">View Details</a>
+                            {% endif %}
+                        </div>
+
+                        {% if not notif.is_read %}
+                            <form action="{{ url_for('mark_notification_read', notif_id=notif.id) }}" method="POST" class="mb-0">
+                                <button type="submit" class="btn btn-sm btn-link text-muted p-0" title="Mark as read" style="font-size: 12px; text-decoration: none;">✓ Mark read</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm p-5 text-center text-muted" style="border-radius: 12px;">
+            <div style="font-size: 36px;" class="mb-2">🔕</div>
+            <h5>No notifications yet</h5>
+            <p class="small mb-0">When certificates are issued or claimed, notifications will show up here.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

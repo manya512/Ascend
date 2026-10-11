@@ -82,20 +82,82 @@ def register():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    if current_user.role == 'member':
-        issued = db.session.query(IssuedCertificate, Certificate).join(
-            Certificate, IssuedCertificate.certificate_id == Certificate.id
-        ).filter(
-            IssuedCertificate.recipient_email == current_user.email
-        ).order_by(
-            IssuedCertificate.issued_at.desc()
-        ).all()
-        return render_template('member.html', user=current_user, issued=issued)
+    # Helper query for unread notifications count
+    notif_query = Notification.query.filter(
+        db.or_(
+            Notification.user_id == current_user.id,
+            Notification.recipient_email == current_user.email,
+            (Notification.recipient_phone == current_user.phone if current_user.phone else False)
+        ),
+        Notification.is_read == False
+    )
+    unread_notif_count = notif_query.count()
+
+    stats = {}
+    unclaimed = []
+    claimed = []
+
+    if current_user.role == 'admin':
+        stats = {
+            'total_users': User.query.count(),
+            'total_institutions': User.query.filter_by(role='institution').count(),
+            'total_members': User.query.filter_by(role='member').count(),
+            'total_templates': Certificate.query.count(),
+            'total_issued': IssuedCertificate.query.count()
+        }
     elif current_user.role == 'institution':
-        return render_template('institution.html', user=current_user)
-    elif current_user.role == 'admin':
-        return render_template('admin.html', user=current_user)
-    return redirect(url_for('login'))
+        stats = {
+            'templates_count': Certificate.query.filter_by(institution_id=current_user.id).count(),
+            'issued_count': IssuedCertificate.query.filter_by(institution_id=current_user.id).count(),
+            'claimed_count': IssuedCertificate.query.filter_by(institution_id=current_user.id, status='claimed').count()
+        }
+    elif current_user.role == 'member':
+        # Unclaimed issued certificates (status != 'claimed')
+        unclaimed_raw = db.session.query(IssuedCertificate, Certificate, User).join(
+            Certificate, IssuedCertificate.certificate_id == Certificate.id
+        ).join(
+            User, Certificate.institution_id == User.id
+        ).filter(
+            IssuedCertificate.status != 'claimed',
+            db.or_(
+                IssuedCertificate.recipient_email == current_user.email,
+                (IssuedCertificate.recipient_phone == current_user.phone if current_user.phone else False)
+            )
+        ).all()
+
+        unclaimed = [
+            {
+                'issued_id': ic.id,
+                'cert_title': c.title,
+                'institution_name': inst.name,
+                'issued_at': ic.issued_at
+            }
+            for ic, c, inst in unclaimed_raw
+        ]
+
+        # Claimed certificates for member
+        claimed = db.session.query(IssuedCertificate, Certificate, User).join(
+            Certificate, IssuedCertificate.certificate_id == Certificate.id
+        ).join(
+            User, Certificate.institution_id == User.id
+        ).filter(
+            db.or_(
+                IssuedCertificate.claimed_by_id == current_user.id,
+                db.and_(
+                    IssuedCertificate.status == 'claimed',
+                    IssuedCertificate.recipient_email == current_user.email
+                )
+            )
+        ).order_by(IssuedCertificate.issued_at.desc()).all()
+
+    return render_template(
+        'dashboard.html',
+        user=current_user,
+        stats=stats,
+        unclaimed=unclaimed,
+        claimed=claimed,
+        unread_notif_count=unread_notif_count
+    )
 
 
 @app.route('/update-profile', methods=['POST'])
@@ -106,6 +168,7 @@ def update_profile():
     
     current_user.job_title = request.form.get('job_title')
     current_user.location = request.form.get('location')
+    current_user.phone = request.form.get('phone')
     current_user.alumni = request.form.get('alumni')
     current_user.portfolio_url = request.form.get('portfolio_url')
     current_user.is_profile_setup = True
@@ -113,6 +176,86 @@ def update_profile():
     db.session.commit()
     flash('Profile updated successfully!')
     return redirect(url_for('dashboard'))
+
+
+@app.route('/certificates/<int:issued_id>/claim', methods=['POST'])
+@login_required
+def claim_certificate(issued_id):
+    if current_user.role != 'member':
+        return redirect(url_for('dashboard'))
+        
+    issued_cert = IssuedCertificate.query.get(issued_id)
+    if not issued_cert:
+        flash('Certificate not found.')
+        return redirect(url_for('dashboard'))
+
+    is_recipient = (
+        issued_cert.recipient_email == current_user.email or
+        (current_user.phone and issued_cert.recipient_phone == current_user.phone)
+    )
+    if not is_recipient:
+        flash('You are not authorized to claim this certificate.')
+        return redirect(url_for('dashboard'))
+
+    from datetime import datetime
+    issued_cert.status = 'claimed'
+    issued_cert.claimed_at = datetime.utcnow()
+    issued_cert.claimed_by_id = current_user.id
+
+    cert = Certificate.query.get(issued_cert.certificate_id)
+    if cert:
+        notif = Notification(
+            user_id=cert.institution_id,
+            message=f"Member {current_user.name} has claimed the certificate '{cert.title}'.",
+            link=f"/verify/{issued_cert.verification_code}"
+        )
+        db.session.add(notif)
+
+    db.session.commit()
+    flash(f"Successfully claimed certificate '{cert.title if cert else ''}'!")
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/notifications')
+@login_required
+def notifications_list():
+    notifications = Notification.query.filter(
+        db.or_(
+            Notification.user_id == current_user.id,
+            Notification.recipient_email == current_user.email,
+            (Notification.recipient_phone == current_user.phone if current_user.phone else False)
+        )
+    ).order_by(Notification.created_at.desc()).all()
+
+    return render_template('notifications.html', user=current_user, notifications=notifications)
+
+
+@app.route('/notifications/<int:notif_id>/read', methods=['POST'])
+@login_required
+def mark_notification_read(notif_id):
+    notif = Notification.query.get(notif_id)
+    if notif:
+        notif.is_read = True
+        db.session.commit()
+    return redirect(url_for('notifications_list'))
+
+
+@app.route('/profile/<int:user_id>')
+def public_profile(user_id):
+    target_user = User.query.get_or_404(user_id)
+    
+    certificates = db.session.query(IssuedCertificate, Certificate, User).join(
+        Certificate, IssuedCertificate.certificate_id == Certificate.id
+    ).join(
+        User, Certificate.institution_id == User.id
+    ).filter(
+        db.or_(
+            IssuedCertificate.claimed_by_id == target_user.id,
+            IssuedCertificate.recipient_email == target_user.email
+        )
+    ).order_by(IssuedCertificate.issued_at.desc()).all()
+
+    return render_template('profile.html', target_user=target_user, certificates=certificates)
 
 
 @app.route('/certificates/create', methods=['GET', 'POST'])
