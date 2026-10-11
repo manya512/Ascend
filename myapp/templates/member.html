@@ -1,131 +1,244 @@
 {% extends "base.html" %}
-{% block navbar %}{% endblock %}
+
 {% block title %}{{ user.name }} Profile — Ascend{% endblock %}
 
 {% block content %}
-<div class="navbar">
-  <span class="brand">Ascend</span>
-  <div style="display: flex; gap: 24px; align-items: center;">
-    <a href="{{ url_for('verify_certificate') }}" style="font-size: 14px;">Verify a Certificate</a>
-    <a href="{{ url_for('logout') }}" style="background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 8px;">Log out</a>
-  </div>
-</div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
 
-<div class="dashboard-body" style="max-width: 1000px; padding-top: 60px;">
-  
   {% if not user.is_profile_setup %}
-  <div class="card" style="margin: 0 auto; max-width: 600px; padding: 40px; background: #fff; border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 8px 24px rgba(38, 33, 92, 0.08);">
-    <h2 style="font-size: 24px; margin-bottom: 8px;">Complete Your Profile</h2>
-    <p style="color: var(--ink-500); font-size: 14px; margin-bottom: 24px;">Please provide your details to finish setting up your account.</p>
-    
-    <form action="{{ url_for('update_profile') }}" method="POST">
-      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Job Title</label>
-      <input type="text" name="job_title" placeholder="e.g. Software Engineer" required style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-family: 'Inter', sans-serif;">
-      
-      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Location</label>
-      <input type="text" name="location" placeholder="e.g. Palo Alto, CA" required style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-family: 'Inter', sans-serif;">
-      
-      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Alumni (University/Institution)</label>
-      <input type="text" name="alumni" placeholder="e.g. Stanford University" required style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; font-family: 'Inter', sans-serif;">
-      
-      <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px;">Portfolio URL</label>
-      <input type="url" name="portfolio_url" placeholder="e.g. https://portfolio.me/name" style="width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 24px; font-family: 'Inter', sans-serif;">
-      
-      <button type="submit" style="width: 100%; padding: 12px; background: var(--indigo-900); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Profile</button>
-    </form>
-  </div>
-  {% else %}
-  
-  <!-- PROFILE HERO SECTION -->
-  <div style="display: flex; gap: 40px; align-items: flex-end; margin-bottom: 60px; flex-wrap: wrap;">
-    <!-- Avatar -->
-    <div style="position: relative;">
-      <div style="width: 160px; height: 160px; border-radius: 24px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 12px 24px rgba(38, 33, 92, 0.12);">
-        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+  <!-- PROFILE SETUP CARD -->
+  <div class="max-w-xl mx-auto w-full p-8 rounded-2xl bg-surface-container-lowest border border-outline-variant/30 shadow-md">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+        <span class="material-symbols-outlined text-[26px]">badge</span>
       </div>
-      <!-- Verified Badge -->
-      <div style="position: absolute; bottom: -10px; right: -10px; width: 48px; height: 48px; background: var(--gold-500); border-radius: 50%; border: 4px solid #fff; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 12px rgba(239, 159, 39, 0.3);">
-        ✓
+      <div>
+        <h2 class="font-headline-sm text-headline-sm text-primary font-serif mb-0">Complete Your Academic Profile</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Please provide your details to finish setting up your member account.</p>
       </div>
     </div>
 
-    <!-- Info -->
-    <div style="flex: 1;">
-      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
-        <h1 style="font-size: 42px; margin: 0; color: var(--indigo-900);">{{ user.name }}</h1>
-        <span style="background: #E0F2E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">Verified Member</span>
+    <form action="{{ url_for('update_profile') }}" method="POST" class="flex flex-col gap-4 mt-6">
+      <div>
+        <label class="block font-label-md text-label-md text-primary font-semibold mb-1">Professional / Academic Title</label>
+        <input type="text" name="job_title" placeholder="e.g. Research Fellow, Software Engineer" required class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-white text-body-md text-primary transition-all outline-none" />
       </div>
-      <p style="font-size: 18px; color: var(--ink-500); margin: 0 0 16px 0; font-weight: 500;">{{ user.job_title }}</p>
-      
-      <div style="display: flex; gap: 24px; color: var(--ink-500); font-size: 14px;">
-        <span>📍 {{ user.location }}</span>
-        <span>💼 {{ user.alumni }}</span>
-        {% if user.portfolio_url %}
-        <span>🔗 <a href="{{ user.portfolio_url }}" style="color: var(--gold-500); text-decoration: underline; text-decoration-color: var(--border);">{{ user.portfolio_url.split('://')[-1] }}</a></span>
-        {% endif %}
+
+      <div>
+        <label class="block font-label-md text-label-md text-primary font-semibold mb-1">Location</label>
+        <input type="text" name="location" placeholder="e.g. Cambridge, MA" required class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-white text-body-md text-primary transition-all outline-none" />
+      </div>
+
+      <div>
+        <label class="block font-label-md text-label-md text-primary font-semibold mb-1">Alma Mater / Institution</label>
+        <input type="text" name="alumni" placeholder="e.g. Stanford University" required class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-white text-body-md text-primary transition-all outline-none" />
+      </div>
+
+      <div>
+        <label class="block font-label-md text-label-md text-primary font-semibold mb-1">Contact Phone (for Claim Matching)</label>
+        <input type="tel" name="phone" value="{{ user.phone or '' }}" placeholder="e.g. +1 555-0199" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-white text-body-md text-primary transition-all outline-none" />
+      </div>
+
+      <div>
+        <label class="block font-label-md text-label-md text-primary font-semibold mb-1">Portfolio or Public Registry URL</label>
+        <input type="url" name="portfolio_url" placeholder="https://portfolio.me/username" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-transparent focus:border-primary focus:bg-white text-body-md text-primary transition-all outline-none" />
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" class="w-full py-3 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md font-semibold transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+          <span class="material-symbols-outlined text-[20px]">check_circle</span>
+          <span>Save Profile & Continue</span>
+        </button>
+      </div>
+    </form>
+  </div>
+  {% else %}
+
+  <!-- PROFILE HERO SECTION -->
+  <div class="p-8 rounded-3xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+      <!-- Avatar with seal -->
+      <div class="relative shrink-0">
+        <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-4 border-surface shadow-md bg-surface-container flex items-center justify-center text-primary font-serif font-bold text-4xl">
+          {{ user.name[:2]|upper }}
+        </div>
+        <div class="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-md border-2 border-surface" title="Cryptographically Verified Member">
+          <span class="material-symbols-outlined text-[18px]">verified</span>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 class="font-headline-lg text-headline-lg text-primary font-serif mb-0 tracking-tight">
+            {{ user.name }}
+          </h1>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-xs font-semibold border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Verified Member
+          </span>
+        </div>
+
+        <p class="font-title-md text-title-md text-on-surface-variant font-medium mb-0">
+          {{ user.job_title or 'Credential Holder' }}
+        </p>
+
+        <div class="flex flex-wrap items-center gap-y-2 gap-x-4 text-body-sm text-on-surface-variant pt-1">
+          {% if user.location %}
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-secondary">location_on</span>
+              <span>{{ user.location }}</span>
+            </span>
+          {% endif %}
+          {% if user.alumni %}
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-secondary">school</span>
+              <span>{{ user.alumni }}</span>
+            </span>
+          {% endif %}
+          {% if user.portfolio_url %}
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-secondary">link</span>
+              <a href="{{ user.portfolio_url }}" target="_blank" class="text-secondary hover:underline font-medium text-decoration-none">
+                {{ user.portfolio_url.split('://')[-1] }}
+              </a>
+            </span>
+          {% endif %}
+        </div>
       </div>
     </div>
 
     <!-- Actions -->
-    <div style="display: flex; gap: 12px;">
-      <button style="background: #fff; color: var(--ink-900); border: 1px solid var(--border); width: auto; padding: 12px 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        Share
+    <div class="flex items-center gap-3 shrink-0">
+      <button onclick="navigator.clipboard.writeText(window.location.href); alert('Member portfolio URL copied!');" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors shadow-sm cursor-pointer" type="button">
+        <span class="material-symbols-outlined text-[18px]">share</span>
+        <span>Share Profile</span>
       </button>
-      <button style="background: #fff; color: var(--ink-900); border: 1px solid var(--border); width: auto; padding: 12px 24px; border-radius: 12px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        Export CV
-      </button>
+      <a href="{{ url_for('verify_certificate') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">verified</span>
+        <span>Verify Record</span>
+      </a>
     </div>
   </div>
 
   <!-- CERTIFICATES GRID -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-    <h2 style="font-size: 28px;">Verified Certificates</h2>
-    <div style="background: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--ink-500);">
-      ↓ Latest First
-    </div>
-  </div>
-
-  {% if issued %}
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
-    {% for issued_cert, cert in issued %}
-    <div class="action-card" style="padding: 24px; overflow: hidden; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px rgba(38,33,92,0.05);">
-      <h3 style="margin-top: 0; margin-bottom: 8px; color: var(--gold-500); font-family: 'Fraunces', serif; font-size: 22px;">{{ cert.title }}</h3>
-      <p style="color: var(--ink-500); margin: 0 0 16px 0; flex-grow: 1;">{{ cert.description }}</p>
-      <div style="font-size: 14px; font-weight: 600; color: var(--indigo-900); padding-top: 16px; border-top: 1px solid var(--border);">
-        Issued on {{ issued_cert.issued_at.strftime('%Y-%m-%d') if issued_cert.issued_at else 'Unknown' }}
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+      <div>
+        <h2 class="font-headline-md text-headline-md text-primary font-serif mb-1">
+          Verified Credentials & Diplomas
+        </h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">
+          Official academic records conferred by accredited issuing institutions.
+        </p>
       </div>
+      <span class="px-3 py-1 rounded-full bg-surface-container text-primary font-label-sm font-semibold">
+        {{ issued|length if issued else 0 }} Credentials
+      </span>
     </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div style="padding: 40px; text-align: center; color: var(--ink-500); background-color: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 6px rgba(38,33,92,0.05);">
-    <p style="margin: 0; font-size: 16px;">No certificates yet.</p>
-  </div>
-  {% endif %}
-</div>
 
-<!-- VERIFICATION FOOTER -->
-<div style="background: var(--indigo-900); padding: 80px 24px; margin-top: 80px; text-align: center; color: #fff;">
-  <div style="max-width: 800px; margin: 0 auto;">
-    <div style="width: 64px; height: 64px; background: var(--gold-500); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 24px auto; box-shadow: 0 12px 24px rgba(0,0,0,0.2);">
-      🛡️
-    </div>
-    <h2 style="font-size: 32px; color: #fff; margin-bottom: 16px;">Instant Trust Verification</h2>
-    <p style="font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 40px; line-height: 1.6;">Every certificate on this profile is cryptographically signed and verified by the issuing institution. Scan the QR code or click 'View Credentials' to see the blockchain record.</p>
-    
-    <div style="display: inline-flex; align-items: center; gap: 24px; padding: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;">
-      <div style="background: #fff; padding: 12px; border-radius: 12px;">
-        <div style="width: 80px; height: 80px; background: var(--indigo-900); display: flex; align-items: center; justify-content: center; font-size: 40px;">
-          📱
+    {% if issued %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for issued_cert, cert in issued %}
+      <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between gap-4 group">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="material-symbols-outlined text-secondary text-[28px]">workspace_premium</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-xs font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Verified
+            </span>
+          </div>
+          <h3 class="font-title-lg text-title-lg text-primary font-serif mb-2 group-hover:text-secondary transition-colors">
+            {{ cert.title }}
+          </h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-3 leading-relaxed mb-0">
+            {{ cert.description or 'Conferred for demonstrated academic excellence and completion of accredited curriculum.' }}
+          </p>
+        </div>
+
+        <div class="pt-4 border-t border-outline-variant/15 flex items-center justify-between text-body-sm">
+          <span class="text-on-surface-variant text-xs">
+            Issued: {{ issued_cert.issued_at.strftime('%b %d, %Y') if issued_cert.issued_at else 'Unknown' }}
+          </span>
+          <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="text-secondary hover:underline font-title-md text-xs font-semibold text-decoration-none flex items-center gap-1">
+            <span>View Proof</span>
+            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </a>
         </div>
       </div>
-      <div style="text-align: left;">
-        <p style="color: var(--gold-500); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px 0;">Profile Authenticity</p>
-        <p style="color: #fff; font-family: monospace; font-size: 15px; margin: 0 0 6px 0;">ASC-{{ user.name[:1]|upper }}{{ user.name.split(' ')[-1]|default('User') }}-9928-X</p>
-        <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0;">Status: <span style="color: #4CAF50; font-weight: 500;">Authenticated</span></p>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-12 text-center rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm">
+      <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary mx-auto mb-4">
+        <span class="material-symbols-outlined text-[32px] text-secondary">school</span>
+      </div>
+      <h3 class="font-title-lg text-title-lg text-primary font-serif mb-2">No Verified Credentials Yet</h3>
+      <p class="font-body-sm text-body-sm text-on-surface-variant max-w-md mx-auto mb-4">
+        Once an institution issues credentials to your email, they will appear here once claimed.
+      </p>
+      <a href="{{ url_for('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-sm transition-colors text-decoration-none">
+        <span>Go to Dashboard</span>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- UPGRADED VERIFICATION SECTION -->
+  <div class="rounded-3xl bg-primary text-on-primary p-8 sm:p-12 shadow-xl relative overflow-hidden">
+    <!-- Subtle Background watermark -->
+    <div class="absolute -right-12 -bottom-12 opacity-5 pointer-events-none select-none">
+      <span class="material-symbols-outlined text-[340px]">verified</span>
+    </div>
+
+    <div class="max-w-3xl relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+      <div class="flex flex-col gap-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-secondary-fixed border border-white/10 font-label-sm text-xs font-semibold w-fit">
+          <span class="material-symbols-outlined text-[16px] text-secondary-fixed">shield</span>
+          <span>Sovereign Credential Standard</span>
+        </div>
+        
+        <h2 class="font-headline-lg text-headline-lg font-serif text-white mb-0 tracking-tight">
+          Instant Cryptographic Verification
+        </h2>
+        
+        <p class="font-body-md text-body-md text-white/80 max-w-xl mb-0 leading-relaxed">
+          Every academic credential attached to this profile is permanently registered in the Ascend registry with cryptographic SHA-256 validation. Any institution, employer, or verifier can authenticate validity in real time.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4 pt-2">
+          <div class="flex items-center gap-2 text-white/90 font-label-md text-sm">
+            <span class="material-symbols-outlined text-emerald-400 text-[20px]">check_circle</span>
+            <span>Tamper-Resistant</span>
+          </div>
+          <div class="flex items-center gap-2 text-white/90 font-label-md text-sm">
+            <span class="material-symbols-outlined text-emerald-400 text-[20px]">check_circle</span>
+            <span>Publicly Resolvable</span>
+          </div>
+          <div class="flex items-center gap-2 text-white/90 font-label-md text-sm">
+            <span class="material-symbols-outlined text-emerald-400 text-[20px]">check_circle</span>
+            <span>Institutional Authority Seal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Card -->
+      <div class="p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex flex-col items-center text-center gap-4 shrink-0 sm:min-w-[260px]">
+        <div class="w-16 h-16 rounded-2xl bg-surface-container-lowest p-2 shadow-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary text-[36px]">qr_code_scanner</span>
+        </div>
+        <div>
+          <div class="font-title-md text-white font-serif font-bold text-lg">Online Verification</div>
+          <div class="font-mono text-xs text-white/70 mt-1">ascend.trust/verify</div>
+        </div>
+        <a href="{{ url_for('verify_certificate') }}" class="w-full py-2.5 px-4 rounded-xl bg-white text-primary hover:bg-surface-container font-title-md text-sm font-semibold transition-colors text-decoration-none shadow-md flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">verified</span>
+          <span>Verify Credential</span>
+        </a>
       </div>
     </div>
   </div>
+
+  {% endif %}
+
 </div>
-{% endif %}
 {% endblock %}
