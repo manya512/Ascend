@@ -1,140 +1,200 @@
 {% extends "base.html" %}
 
-{% block title %}Certificate Verification — Ascend{% endblock %}
+{% block title %}Certificate Verification — Ascend Cryptographic Registry{% endblock %}
 
 {% block content %}
-<div class="container my-5" style="max-width: 850px;">
-    <!-- Search Bar Section -->
-    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px; background: #ffffff;">
-        <h4 class="mb-3" style="font-family: 'Fraunces', serif; color: var(--indigo-900); font-weight: 600;">
-            🔍 Verify a Credential
-        </h4>
-        <form action="{{ url_for('verify_certificate') }}" method="POST" class="d-flex gap-2">
-            <input type="text" name="code" value="{{ code or '' }}" class="form-control form-control-lg mb-0" placeholder="Enter verification code (e.g. 8f9a2b...)" required style="border-radius: 10px; font-size: 15px;">
-            <button type="submit" class="btn btn-primary btn-lg px-4" style="border-radius: 10px; background-color: var(--indigo-900); border: none; font-size: 15px; font-weight: 600;">Verify</button>
-        </form>
+<div class="flex flex-col w-full px-margin-mobile md:px-margin py-space-lg gap-space-xl">
+  <!-- Sub-bar Header -->
+  <div class="w-full bg-surface-container-lowest px-space-lg py-space-md rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-space-md">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+        <a class="hover:text-primary transition-colors text-decoration-none" href="{{ url_for('home') }}">Registry</a>
+        <span>/</span>
+        <span class="text-primary font-medium">Public Verification</span>
+        <span class="ml-space-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>SHA-256 Ledger
+        </span>
+      </div>
+      <h1 class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold">Credential Verification Gateway</h1>
+    </div>
+
+    <div class="flex items-center gap-space-sm">
+      <a href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" class="px-space-md py-2 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none">
+        <span class="material-symbols-outlined text-[18px]">account_circle</span>
+        <span>{% if current_user.is_authenticated %}Dashboard{% else %}Sign In{% endif %}</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="w-full max-w-4xl mx-auto flex flex-col gap-space-lg">
+    <!-- Search Bar Card -->
+    <div class="w-full bg-surface-container-lowest rounded-2xl p-space-lg md:p-space-xl shadow-sm border border-outline-variant/30">
+      <div class="flex items-center gap-space-sm mb-space-sm">
+        <div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-secondary">
+          <span class="material-symbols-outlined text-[22px]">qr_code_scanner</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-semibold mb-0">Inspect Credential Authenticity</h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Enter a unique verification UUID code printed on an official certificate</p>
+        </div>
+      </div>
+
+      <form action="{{ url_for('verify_certificate') }}" method="POST" class="flex flex-col sm:flex-row gap-space-sm mt-space-md">
+        <div class="relative flex-grow">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-outline pointer-events-none">fingerprint</span>
+          <input type="text" name="code" value="{{ code or '' }}" class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-mono text-body-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30 shadow-inner" placeholder="e.g. 2718d20a-aeeb-4bc7-b03c-3a42634d44f2" required>
+        </div>
+        <button type="submit" class="px-6 py-3 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-all flex items-center justify-center gap-2 shrink-0">
+          <span class="material-symbols-outlined text-[18px]">verified</span>
+          <span>Verify Credential</span>
+        </button>
+      </form>
     </div>
 
     {% if result %}
-    <!-- VERIFIED CERTIFICATE CARD -->
-    <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px; background: #ffffff;">
-        <!-- Header Banner -->
-        <div style="background: linear-gradient(135deg, #26215c 0%, #3c3489 100%); padding: 36px 40px; color: #ffffff;">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div>
-                    <span class="badge mb-2 px-3 py-2" style="background: var(--gold-500); color: var(--indigo-900); font-weight: 700; font-size: 12px; letter-spacing: 0.5px; border-radius: 20px;">
-                        ✓ VERIFIED AUTHENTIC
-                    </span>
-                    <h2 class="mb-1" style="font-family: 'Fraunces', serif; font-size: 32px; color: #ffffff;">
-                        {{ result[1].title }}
-                    </h2>
-                    <p class="mb-0 text-white-50" style="font-size: 15px;">
-                        Issued by <strong>{{ result[2].name }}</strong>
-                    </p>
-                </div>
-                <div class="text-end">
-                    <div style="font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500;">VERIFICATION ID</div>
-                    <code style="background: rgba(255,255,255,0.15); color: var(--gold-500); padding: 4px 12px; border-radius: 6px; font-size: 13px;">{{ result[0].verification_code }}</code>
-                </div>
+    <!-- VERIFIED CERTIFICATE SPECIMEN -->
+    <div class="w-full bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden border border-outline-variant/40">
+      <!-- Top Authentic Status Strip -->
+      <div class="bg-gradient-to-r from-primary-container via-[#3C3489] to-primary-container text-white px-space-lg md:px-space-xl py-space-md flex flex-wrap items-center justify-between gap-space-md">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-300">
+            <span class="material-symbols-outlined text-[24px]">verified</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-label-sm text-[11px] font-bold tracking-wider uppercase text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-full">
+                Cryptographically Verified
+              </span>
+              <span class="font-label-sm text-[11px] text-white/70">Registry Status: Valid</span>
             </div>
+            <h3 class="font-headline-sm text-headline-sm text-white tracking-tight mt-0.5 mb-0">
+              {{ result[1].title }}
+            </h3>
+          </div>
         </div>
 
-        <div class="card-body p-4 p-md-5">
-            <div class="row g-4 align-items-center">
-                <!-- Certificate Details -->
-                <div class="col-md-7">
-                    <div class="mb-4">
-                        <label class="text-uppercase text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.8px;">Certificate Description</label>
-                        <p class="fs-6 text-dark mt-1 mb-0">{{ result[1].description or 'Official certificate issued by institution.' }}</p>
-                    </div>
+        <div class="flex flex-col text-right">
+          <span class="font-label-sm text-[10px] tracking-wider uppercase text-white/70">VERIFICATION ID</span>
+          <code class="font-mono text-[12px] text-secondary-fixed-dim bg-white/10 px-2.5 py-1 rounded-md">{{ result[0].verification_code }}</code>
+        </div>
+      </div>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <label class="text-uppercase text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.8px;">Recipient</label>
-                            <div class="fw-semibold text-dark mt-1">
-                                {% if result[0].recipient_email %}
-                                    📧 {{ result[0].recipient_email }}
-                                {% endif %}
-                                {% if result[0].recipient_phone %}
-                                    <div>📱 {{ result[0].recipient_phone }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <label class="text-uppercase text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.8px;">Issue Date</label>
-                            <div class="fw-semibold text-dark mt-1">
-                                🗓️ {{ result[0].issued_at.strftime('%B %d, %Y') if result[0].issued_at else 'N/A' }}
-                            </div>
-                        </div>
-                    </div>
+      <!-- Main Specimen Details -->
+      <div class="p-space-lg md:p-space-xl grid grid-cols-1 md:grid-cols-12 gap-space-xl items-center">
+        <!-- Left: Attestation Metadata (7 cols) -->
+        <div class="md:col-span-7 flex flex-col gap-space-md">
+          <div>
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">
+              Credential Description
+            </span>
+            <p class="font-body-md text-body-md text-on-surface leading-relaxed mb-0">
+              {{ result[1].description or 'Official accredited certificate conferred by authorized academic Senate and Faculty Board.' }}
+            </p>
+          </div>
 
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="text-uppercase text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.8px;">Issuing Institution</label>
-                            <div class="fw-semibold text-dark mt-1">🏛️ {{ result[2].name }}</div>
-                        </div>
-                        <div class="col-6">
-                            <label class="text-uppercase text-muted fw-bold" style="font-size: 11px; letter-spacing: 0.8px;">Claim Status</label>
-                            <div class="mt-1">
-                                <span class="badge {% if result[0].status == 'claimed' %}bg-success{% else %}bg-secondary{% endif %} px-2 py-1">
-                                    {{ result[0].status|title if result[0].status else 'Issued' }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- QR Code & Share Section -->
-                <div class="col-md-5 text-center border-start-md ps-md-4">
-                    <div class="p-3 rounded-4" style="background: #f8fafc; border: 1px dashed var(--border);">
-                        {% if qr_b64 %}
-                            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Verification QR Code" class="img-fluid rounded-3 mb-2" style="max-width: 170px; height: auto;">
-                            <div class="text-muted" style="font-size: 11px;">Scan to verify on mobile</div>
-                        {% endif %}
-                    </div>
-
-                    {% if share_url %}
-                    <div class="mt-3">
-                        <label class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 11px; letter-spacing: 0.8px;">Share Verification Link</label>
-                        <div class="input-group input-group-sm mb-2">
-                            <input type="text" id="shareUrlInput" class="form-control text-center text-muted" value="{{ share_url }}" readonly style="font-size: 11px;">
-                            <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ share_url }}'); alert('Link copied to clipboard!');">Copy</button>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-2 border-t border-outline-variant/20">
+            <div>
+              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Recipient Identity</span>
+              <div class="font-body-md text-body-md text-primary font-medium">
+                {% if result[0].recipient_email %}
+                  <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-secondary">mail</span> {{ result[0].recipient_email }}</div>
+                {% endif %}
+                {% if result[0].recipient_phone %}
+                  <div class="flex items-center gap-1.5 mt-0.5"><span class="material-symbols-outlined text-[16px] text-secondary">call</span> {{ result[0].recipient_phone }}</div>
+                {% endif %}
+              </div>
             </div>
+
+            <div>
+              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Issuing Authority</span>
+              <div class="font-body-md text-body-md text-primary font-medium flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-secondary">account_balance</span>
+                <span>{{ result[2].name }}</span>
+              </div>
+            </div>
+
+            <div>
+              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Conferred Date</span>
+              <div class="font-body-md text-body-md text-on-surface">
+                🗓️ {{ result[0].issued_at.strftime('%B %d, %Y') if result[0].issued_at else 'Permanent Record' }}
+              </div>
+            </div>
+
+            <div>
+              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Claim Status</span>
+              <div>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full {% if result[0].status == 'claimed' %}bg-emerald-50 text-emerald-800{% else %}bg-surface-container text-secondary{% endif %} font-label-sm text-[12px] font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full {% if result[0].status == 'claimed' %}bg-emerald-600{% else %}bg-secondary{% endif %}"></span>
+                  {{ result[0].status|title if result[0].status else 'Issued' }}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Footer Seal -->
-        <div class="card-footer bg-light px-4 py-3 d-flex justify-content-between align-items-center" style="border-top: 1px solid var(--border);">
-            <div class="d-flex align-items-center gap-2">
-                <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--indigo-900); color: var(--gold-500); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">✓</div>
-                <span class="text-muted" style="font-size: 12px;">Cryptographically Verified by Ascend Trust Network</span>
+        <!-- Right: In-Memory QR Code Specimen (5 cols) -->
+        <div class="md:col-span-5 flex flex-col items-center text-center p-space-md rounded-2xl bg-surface-container-low border border-outline-variant/30">
+          {% if qr_b64 %}
+          <div class="p-3 bg-white rounded-xl shadow-md mb-space-xs">
+            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Cryptographic Verification QR Code" class="w-40 h-40 object-contain rounded-lg">
+          </div>
+          <span class="font-label-sm text-[11px] text-on-surface-variant font-medium">Scan to verify credential on mobile</span>
+          {% endif %}
+
+          {% if share_url %}
+          <div class="w-full mt-space-sm pt-space-xs border-t border-outline-variant/30 flex flex-col gap-1.5">
+            <span class="font-label-sm text-[10px] uppercase tracking-wider text-outline">Direct Verification Link</span>
+            <div class="flex items-center gap-1">
+              <input type="text" readonly value="{{ share_url }}" class="w-full px-2.5 py-1.5 rounded-lg bg-surface-container-lowest text-[11px] font-mono text-on-surface border border-outline-variant/30 text-center" id="share-link-input">
+              <button onclick="navigator.clipboard.writeText('{{ share_url }}'); alert('Verification URL copied to clipboard!');" type="button" class="px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-[11px] font-semibold shrink-0">
+                Copy
+              </button>
             </div>
-            <button class="btn btn-sm btn-outline-dark" onclick="window.print();">🖨️ Print Certificate</button>
+          </div>
+          {% endif %}
         </div>
+      </div>
+
+      <!-- Footer Action Strip -->
+      <div class="bg-surface-container-low px-space-lg md:px-space-xl py-space-sm flex flex-wrap items-center justify-between gap-space-md border-t border-outline-variant/30">
+        <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-[12px]">
+          <span class="material-symbols-outlined text-[18px] text-emerald-600">security</span>
+          <span>Cryptographically validated by Pacific Institute of Technology Registry Authority</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" type="button" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">print</span>
+            <span>Print Certificate Record</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     {% elif code %}
-    <!-- INVALID CODE ALERT -->
-    <div class="card border-0 shadow-sm p-4 text-center" style="border-radius: 16px; background: #fff5f5; border: 1px solid #fecaca;">
-        <div class="text-danger mb-2" style="font-size: 40px;">⚠️</div>
-        <h4 class="text-danger fw-bold mb-2" style="font-family: 'Fraunces', serif;">Certificate Not Found</h4>
-        <p class="text-muted mb-0" style="font-size: 14px;">
-            No certificate was found for verification code <code>{{ code }}</code>.<br>Please double-check the code or contact the issuing institution.
-        </p>
+    <!-- INVALID CODE NOTICE -->
+    <div class="w-full bg-red-50 border border-red-200 rounded-2xl p-space-xl text-center shadow-sm">
+      <div class="w-14 h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center mx-auto mb-space-sm">
+        <span class="material-symbols-outlined text-[32px]">warning</span>
+      </div>
+      <h3 class="font-headline-sm text-headline-sm text-red-900 mb-1">Certificate Not Found</h3>
+      <p class="font-body-md text-body-md text-red-700 max-w-md mx-auto mb-space-sm">
+        No registered certificate matched verification code <code class="font-mono bg-red-100 px-2 py-0.5 rounded text-red-900 font-semibold">{{ code }}</code>.
+      </p>
+      <span class="font-body-sm text-body-sm text-red-600">Please double-check the code or verify with the issuing academic authority.</span>
     </div>
+
     {% else %}
-    <!-- INITIAL PROMPT -->
-    <div class="card border-0 shadow-sm p-5 text-center" style="border-radius: 16px; background: #ffffff;">
-        <div style="font-size: 48px; color: var(--gold-500);" class="mb-3">🛡️</div>
-        <h3 style="font-family: 'Fraunces', serif; color: var(--indigo-900);" class="mb-2">Official Credential Verification</h3>
-        <p class="text-muted mx-auto" style="max-width: 500px; font-size: 14px;">
-            Ascend provides instant cryptographic verification for academic and professional certificates. Enter a unique verification code above to inspect credential authenticity.
-        </p>
+    <!-- DEFAULT PROMPT -->
+    <div class="w-full bg-surface-container-lowest rounded-2xl p-space-xl text-center shadow-sm border border-outline-variant/30">
+      <div class="w-16 h-16 rounded-full bg-surface-container text-secondary flex items-center justify-center mx-auto mb-space-sm">
+        <span class="material-symbols-outlined text-[36px]">shield</span>
+      </div>
+      <h3 class="font-headline-sm text-headline-sm text-primary mb-1">Official Registry Search</h3>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto">
+        Ascend provides instant cryptographic lookup for academic awards, professional certifications, and institutional honors. Enter a verification code above to inspect official credentials.
+      </p>
     </div>
     {% endif %}
+  </div>
 </div>
 {% endblock %}
-
