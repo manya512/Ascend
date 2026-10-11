@@ -222,26 +222,26 @@
         <!-- Key Skills & Specializations Card -->
         <div class="bg-surface-container-lowest rounded-xl shadow-md p-space-lg">
           <div class="flex items-center justify-between mb-space-md">
-            <h3 class="font-title-lg text-title-lg text-primary">Key Specializations</h3>
+            <h3 class="font-title-lg text-title-lg text-primary">Credentials Summary</h3>
             <span class="material-symbols-outlined text-outline text-[20px]">psychology</span>
           </div>
+          {% if certificates %}
           <p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
-            Directly attested through completed coursework and verified credentials:
+            Certificates held in this verified portfolio:
           </p>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Academic Research
-            </span>
-            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Data Governance
-            </span>
-            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Applied Engineering
-            </span>
-            <span class="px-3 py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Strategic Leadership
-            </span>
+          <div class="flex flex-col gap-2">
+            {% for ic, cert, inst in certificates %}
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low">
+              <span class="material-symbols-outlined text-[16px] text-secondary flex-shrink-0">workspace_premium</span>
+              <span class="font-label-md text-label-md text-on-surface line-clamp-1">{{ cert.title }}</span>
+            </div>
+            {% endfor %}
           </div>
+          {% else %}
+          <p class="font-body-sm text-body-sm text-on-surface-variant">
+            No certificates claimed yet. Certificates issued to your email will appear here after you claim them.
+          </p>
+          {% endif %}
         </div>
 
         <!-- Issuing Institutions Card -->
@@ -254,18 +254,30 @@
             Accredited institutions conferring credentials to this portfolio:
           </p>
           <div class="flex flex-col gap-space-sm">
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low">
-              <div class="flex items-center gap-space-sm">
-                <div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold font-mono text-[11px]">
-                  PIT
-                </div>
-                <div>
-                  <div class="font-title-md text-body-md text-primary font-medium">{{ inst.name }}</div>
-                  <div class="font-label-sm text-label-sm text-outline">Primary Authority</div>
-                </div>
+            {% if certificates %}
+              {% set seen = [] %}
+              {% for ic, cert, inst in certificates %}
+                {% if inst.id not in seen %}
+                  {% if seen.append(inst.id) %}{% endif %}
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low">
+                    <div class="flex items-center gap-space-sm">
+                      <div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold font-mono text-[11px]">
+                        {{ inst.name[:3]|upper }}
+                      </div>
+                      <div>
+                        <div class="font-title-md text-body-md text-primary font-medium">{{ inst.name }}</div>
+                        <div class="font-label-sm text-label-sm text-outline">Accredited Issuer</div>
+                      </div>
+                    </div>
+                    <span class="material-symbols-outlined text-[18px] text-emerald-600">verified</span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              <div class="text-center py-4 text-on-surface-variant font-body-sm text-body-sm">
+                No institutions yet.
               </div>
-              <span class="material-symbols-outlined text-[18px] text-emerald-600">verified</span>
-            </div>
+            {% endif %}
           </div>
         </div>
 
