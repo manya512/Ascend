@@ -8,9 +8,15 @@
             <div class="card shadow-sm" style="border-top: 4px solid #26215c;">
                 <div class="card-body">
                     <form action="{{ url_for('issue_certificate', cert_id=certificate.id) }}" method="POST">
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label for="recipient_email" class="form-label">Recipient Email</label>
-                            <input type="email" class="form-control" id="recipient_email" name="recipient_email" required placeholder="member@example.com">
+                            <input type="email" class="form-control" id="recipient_email" name="recipient_email" placeholder="member@example.com">
+                            <div class="form-text">Enter recipient's email address</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="recipient_phone" class="form-label">Recipient Phone Number (Optional / Alternative)</label>
+                            <input type="tel" class="form-control" id="recipient_phone" name="recipient_phone" placeholder="+1234567890">
+                            <div class="form-text">Enter phone number if email is unavailable</div>
                         </div>
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{{ url_for('certificates_list') }}" class="btn btn-secondary">Cancel</a>
@@ -23,3 +29,4 @@
     </div>
 </div>
 {% endblock %}
+

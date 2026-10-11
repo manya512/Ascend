@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
 from config import Config
-from models import db, User, Certificate, IssuedCertificate
+from models import db, User, Certificate, IssuedCertificate, Notification
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -20,7 +20,7 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    return redirect(url_for('login'))
+    return render_template('landing.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -174,18 +174,43 @@ def issue_certificate(cert_id):
         return redirect(url_for('certificates_list'))
         
     if request.method == 'POST':
-        recipient_email = request.form.get('recipient_email')
+        recipient_email = request.form.get('recipient_email', '').strip()
+        recipient_phone = request.form.get('recipient_phone', '').strip()
+        
+        if not recipient_email and not recipient_phone:
+            flash('Please enter at least an email or a phone number for the recipient.')
+            return redirect(url_for('issue_certificate', cert_id=cert_id))
         
         issued_cert = IssuedCertificate(
             certificate_id=cert_id,
             institution_id=current_user.id,
-            recipient_email=recipient_email
+            recipient_email=recipient_email if recipient_email else None,
+            recipient_phone=recipient_phone if recipient_phone else None,
+            status='issued'
         )
         db.session.add(issued_cert)
         db.session.commit()
         
-        flash(f'Certificate issued to {recipient_email}!')
-        return redirect(url_for('certificates_list'))
+        # Find matching member user to associate notification directly if exists
+        target_user = None
+        if recipient_email:
+            target_user = User.query.filter_by(email=recipient_email).first()
+        if not target_user and recipient_phone:
+            target_user = User.query.filter_by(phone=recipient_phone).first()
+            
+        notif = Notification(
+            user_id=target_user.id if target_user else None,
+            recipient_email=recipient_email if recipient_email else None,
+            recipient_phone=recipient_phone if recipient_phone else None,
+            message=f"You received a new certificate: '{cert.title}' from {current_user.name}.",
+            link=f"/verify/{issued_cert.verification_code}"
+        )
+        db.session.add(notif)
+        db.session.commit()
+        
+        recipient_display = recipient_email or recipient_phone
+        flash(f'Certificate successfully issued to {recipient_display}!')
+        return redirect(url_for('issued_list'))
         
     return render_template('issue_certificate.html', user=current_user, certificate=cert)
 
@@ -204,6 +229,21 @@ def issued_list():
     ).all()
     
     return render_template('issued_list.html', issued=issued, user=current_user)
+
+@app.route('/verify/<code>', methods=['GET'])
+def verify_certificate(code):
+    issued = db.session.query(IssuedCertificate, Certificate, User).join(
+        Certificate, IssuedCertificate.certificate_id == Certificate.id
+    ).join(
+        User, Certificate.institution_id == User.id
+    ).filter(
+        IssuedCertificate.verification_code == code
+    ).first()
+    
+    if issued:
+        return render_template('verify.html', result=issued)
+    else:
+        return render_template('verify.html', result=None), 404
 
 
 @app.route('/logout')

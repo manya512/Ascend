@@ -14,16 +14,35 @@
                     <thead class="table-light">
                         <tr>
                             <th>Certificate Title</th>
-                            <th>Recipient Email</th>
+                            <th>Recipient</th>
+                            <th>Status</th>
+                            <th>Verification Code</th>
                             <th>Issued Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for issued_cert, cert in issued %}
                             <tr>
                                 <td style="color: #ef9f27; font-family: Georgia, serif; font-weight: 500;">{{ cert.title }}</td>
-                                <td>{{ issued_cert.recipient_email }}</td>
+                                <td>
+                                    {% if issued_cert.recipient_email %}
+                                        <div>📧 {{ issued_cert.recipient_email }}</div>
+                                    {% endif %}
+                                    {% if issued_cert.recipient_phone %}
+                                        <div>📱 {{ issued_cert.recipient_phone }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if issued_cert.status == 'claimed' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ issued_cert.status|title if issued_cert.status else 'Issued' }}
+                                    </span>
+                                </td>
+                                <td><code style="background-color: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: var(--indigo-900);">{{ issued_cert.verification_code or 'N/A' }}</code></td>
                                 <td>{{ issued_cert.issued_at.strftime('%Y-%m-%d %H:%M') if issued_cert.issued_at else 'Unknown' }}</td>
+                                <td>
+                                    <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="btn btn-sm btn-outline-primary" style="border-color: #26215c; color: #26215c;">View / Verify</a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -37,3 +56,4 @@
     {% endif %}
 </div>
 {% endblock %}
+
