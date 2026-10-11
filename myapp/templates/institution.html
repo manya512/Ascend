@@ -1,44 +1,148 @@
 {% extends "base.html" %}
-{% block navbar %}{% endblock %}
 
-{% block title %}Institution Dashboard — Ascend{% endblock %}
+{% block title %}Institution Portal — Ascend{% endblock %}
 
 {% block content %}
-<div class="navbar">
-  <span class="brand">Ascend</span>
-  <div>
-    <span style="margin-right: 16px;">{{ user.name }} <span class="role-badge">{{ user.role }}</span></span>
-    <a href="{{ url_for('logout') }}">Log out</a>
-  </div>
-</div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
 
-<div class="dashboard-body">
-  <h2>Institution Dashboard</h2>
-  <p style="color: var(--ink-500); margin-top: 8px;">
-    You're logged in as <strong>{{ user.role }}</strong>.
-  </p>
-
-  <div class="card-grid">
-    <a href="{{ url_for('create_certificate') }}" style="text-decoration: none; color: inherit;">
-      <div class="action-card">
-        <h3>Certificate Templates</h3>
-        <p>Create and manage your certificate templates.</p>
+  <!-- Institutional Hero Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-outline-variant/30">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+        <a href="{{ url_for('dashboard') }}" class="hover:text-primary transition-colors text-decoration-none">Dashboard</a>
+        <span>/</span>
+        <span class="text-primary font-medium">Institution Workspace</span>
       </div>
-    </a>
-    <a href="{{ url_for('certificates_list') }}" style="text-decoration: none; color: inherit;">
-      <div class="action-card">
-        <h3>Issued Certificates</h3>
-        <p>View and search everything you've issued so far.</p>
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">
+          {{ user.name }}
+        </h1>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-xs font-semibold">
+          <span class="material-symbols-outlined text-[14px]">account_balance</span> Accredited Issuer
+        </span>
       </div>
-    </a>
-    <div class="action-card">
-      <h3>Pending Requests</h3>
-      <p>Approve or reject certificate requests from members.</p>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-0 max-w-2xl">
+        Manage graduation credentials, publish tamper-proof certificates, and audit student claim compliance.
+      </p>
     </div>
-    <div class="action-card">
-      <h3>Reports</h3>
-      <p>Your institution's issuance and verification stats.</p>
+    
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('create_certificate') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+        <span>New Certificate</span>
+      </a>
+      <a href="{{ url_for('reports') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+        <span>View Analytics</span>
+      </a>
     </div>
   </div>
+
+  <!-- Action Hub Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <!-- Card 1: Create Template -->
+    <a href="{{ url_for('create_certificate') }}" class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm hover:shadow-md hover:border-secondary/40 transition-all flex flex-col justify-between gap-4 group text-decoration-none">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container group-hover:bg-primary group-hover:text-on-primary transition-colors flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">design_services</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1 group-hover:text-secondary transition-colors">
+            Template Studio
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Design certificates with dual signatures, typography, and lithographic parchment borders.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15">
+        <span>Launch Studio</span>
+        <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </div>
+    </a>
+
+    <!-- Card 2: Templates Catalog -->
+    <a href="{{ url_for('certificates_list') }}" class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm hover:shadow-md hover:border-secondary/40 transition-all flex flex-col justify-between gap-4 group text-decoration-none">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container group-hover:bg-primary group-hover:text-on-primary transition-colors flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">folder_special</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1 group-hover:text-secondary transition-colors">
+            Templates Catalog
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Browse all institutional templates, update graduation requirements, or issue in batches.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15">
+        <span>Manage Catalog</span>
+        <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </div>
+    </a>
+
+    <!-- Card 3: Issued Certificates Ledger -->
+    <a href="{{ url_for('issued_list') }}" class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm hover:shadow-md hover:border-secondary/40 transition-all flex flex-col justify-between gap-4 group text-decoration-none">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container group-hover:bg-primary group-hover:text-on-primary transition-colors flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">history_edu</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1 group-hover:text-secondary transition-colors">
+            Registry Ledger
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Audit cryptographic credentials issued to students, verification hashes, and claim status.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15">
+        <span>Open Ledger</span>
+        <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </div>
+    </a>
+
+    <!-- Card 4: Analytics & Audit -->
+    <a href="{{ url_for('reports') }}" class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm hover:shadow-md hover:border-secondary/40 transition-all flex flex-col justify-between gap-4 group text-decoration-none">
+      <div class="flex flex-col gap-3">
+        <div class="w-12 h-12 rounded-xl bg-surface-container group-hover:bg-primary group-hover:text-on-primary transition-colors flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">analytics</span>
+        </div>
+        <div>
+          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1 group-hover:text-secondary transition-colors">
+            Audit Reports
+          </h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Track student fulfillment, claim completion rates, and institutional verification queries.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15">
+        <span>View Analytics</span>
+        <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Registrar Authority Compliance Notice -->
+  <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[24px]">verified_user</span>
+      </div>
+      <div>
+        <h2 class="font-title-md text-title-md text-primary font-serif mb-0.5">Accredited Registrar Authority Active</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">All credentials signed by {{ user.name }} conform to the Ascend Sovereign Identity & Verification standard.</p>
+      </div>
+    </div>
+    <a href="{{ url_for('verify_certificate') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-xs transition-colors text-decoration-none shrink-0">
+      <span class="material-symbols-outlined text-[16px] text-secondary">open_in_new</span>
+      <span>Public Verifier</span>
+    </a>
+  </div>
+
 </div>
 {% endblock %}
