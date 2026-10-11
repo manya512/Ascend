@@ -420,6 +420,61 @@ def verify_certificate(code=None):
     return render_template('verify.html', result=issued, code=code, qr_b64=qr_b64, share_url=share_url)
 
 
+@app.route('/reports')
+@login_required
+def reports():
+    if current_user.role not in ['admin', 'institution']:
+        return redirect(url_for('dashboard'))
+
+    summary = {}
+    institution_breakdown = []
+    template_breakdown = []
+
+    if current_user.role == 'admin':
+        summary = {
+            'total_users': User.query.count(),
+            'total_institutions': User.query.filter_by(role='institution').count(),
+            'total_members': User.query.filter_by(role='member').count(),
+            'total_issued': IssuedCertificate.query.count()
+        }
+
+        institutions = User.query.filter_by(role='institution').all()
+        for inst in institutions:
+            t_count = Certificate.query.filter_by(institution_id=inst.id).count()
+            i_count = IssuedCertificate.query.filter_by(institution_id=inst.id).count()
+            institution_breakdown.append({
+                'name': inst.name,
+                'email': inst.email,
+                'template_count': t_count,
+                'issued_count': i_count
+            })
+
+    elif current_user.role == 'institution':
+        summary = {
+            'templates_count': Certificate.query.filter_by(institution_id=current_user.id).count(),
+            'issued_count': IssuedCertificate.query.filter_by(institution_id=current_user.id).count(),
+            'claimed_count': IssuedCertificate.query.filter_by(institution_id=current_user.id, status='claimed').count()
+        }
+
+        templates = Certificate.query.filter_by(institution_id=current_user.id).all()
+        for t in templates:
+            i_count = IssuedCertificate.query.filter_by(certificate_id=t.id).count()
+            c_count = IssuedCertificate.query.filter_by(certificate_id=t.id, status='claimed').count()
+            template_breakdown.append({
+                'title': t.title,
+                'issued_count': i_count,
+                'claimed_count': c_count
+            })
+
+    return render_template(
+        'reports.html',
+        user=current_user,
+        summary=summary,
+        institution_breakdown=institution_breakdown,
+        template_breakdown=template_breakdown
+    )
+
+
 @app.route('/logout')
 @login_required
 def logout():
