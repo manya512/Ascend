@@ -1,39 +1,49 @@
 # Ascend — Digital Certificate Verification System
 
-Ascend is a Flask-based digital credential issuance and verification platform (similar to Credly) built for academic institutions, organizations, and verified members.
+Ascend is a Flask-based digital credential issuance and verification platform (similar to Credly) built for collegiate faculties, academic institutions, and verified members.
 
 ---
 
-## Key Features
+## 🏛️ Key Features & Modules
 
-- **Multi-Actor Access Control**: Supports Administrators, Institutions, and Members under a unified dashboard structure.
-- **Certificate Template Management**: Institutions can design, edit, and manage certificate templates.
-- **Dual Issuance Mechanism**: Issue certificates to recipients using either Email or Phone Number.
-- **Instant Cryptographic Verification**: In-memory QR code generation and public verification pages accessible via shareable URLs with no login required.
-- **Member Claim & Profile Flow**: Members can claim certificates issued to their email or phone number and showcase them on public profiles.
-- **In-App Notifications**: Real-time notifications for certificate issuance and claims.
-- **Reports & Analytics**: System-wide activity stats for Admins and issuance summaries for Institutions.
-- **Serverless Ready**: In-memory QR rendering (`io.BytesIO`) without reliance on persistent local disk storage.
-
----
-
-## Tech Stack
-
-- **Backend**: Python 3, Flask, Flask-SQLAlchemy, Flask-Login, Werkzeug
-- **Database**: PostgreSQL (Supabase / Session Pooler connection)
-- **Frontend**: HTML5, Vanilla CSS / Bootstrap 5, Jinja2 Templates
-- **Utilities**: `qrcode`, `pillow`, `python-dotenv`
+- **Unified Multi-Role Dashboard**: Single adaptive `dashboard.html` tailored for Administrators, Institutions, and Members.
+- **Interactive Certificate Template Studio**: 2-column editor featuring real-time 2-way sync between form controls and an authentic parchment specimen canvas with official university seals and guilloche vector borders.
+- **Dual Issuance Mechanism**: Issue credentials to recipients by either **Email Address** or **Phone Number** with automated recipient notifications.
+- **Member Claim & Portfolio Flow**: Members can claim credentials issued to their contact details in a single click and showcase verified certificates on public portfolio profiles.
+- **Instant Cryptographic Verification**: In-memory QR code generation (`qrcode` + `io.BytesIO`) and public verification screen accessible via shareable URLs with no login required.
+- **Institutional Gateway Auth & SSO**: Clean institutional sign-in with email, member registration, password visibility toggles, and SSO integration.
+- **In-App Notifications**: Real-time notifications for certificate issuance and member claims with unread count badges.
+- **System Reports & Audit Analytics**: High-level platform statistics for Administrators and template issuance/claim rate breakdowns for Institutions.
+- **Serverless Ready**: In-memory QR rendering and stateless architecture compatible with Vercel, Render, and other cloud providers without persistent filesystem dependencies.
 
 ---
 
-## Setup & Local Run Instructions
+## 🛠️ Tech Stack
+
+- **Backend**: Python 3.10+, Flask, Flask-SQLAlchemy, Flask-Login, Werkzeug
+- **Database**: PostgreSQL (hosted on Supabase via Session Pooler)
+- **Frontend**: Tailwind CSS (custom collegiate theme), Jinja2, Material Symbols Outlined, Google Fonts (Newsreader & Inter)
+- **Utilities**: `qrcode`, `pillow`, `python-dotenv`, `psycopg2-binary`
+
+---
+
+## 🗄️ Database Architecture
+
+- **`users`**: `id`, `name`, `email`, `phone`, `password_hash`, `role` (`admin` / `institution` / `member`), `job_title`, `location`, `alumni`, `portfolio_url`, `is_profile_setup`, `created_at`
+- **`certificates`**: `id`, `title`, `description`, `institution_id`, `created_at`
+- **`issued_certificates`**: `id`, `certificate_id`, `institution_id`, `recipient_email`, `recipient_phone`, `verification_code`, `status` (`issued` / `claimed`), `claimed_at`, `claimed_by_id`, `issued_at`
+- **`notifications`**: `id`, `user_id`, `recipient_email`, `recipient_phone`, `message`, `link`, `is_read`, `created_at`
+
+---
+
+## 🚀 Setup & Local Run Instructions
 
 ### 1. Prerequisites
 - Python 3.10+
-- PostgreSQL database instance (or Supabase URL)
+- PostgreSQL database instance or Supabase project URL
 
 ### 2. Environment Setup
-Clone the repository and navigate into the app directory:
+Clone the repository and enter the application directory:
 ```bash
 cd myapp
 ```
@@ -45,12 +55,12 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-Install dependencies:
+Install all required dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Environment Variables
+### 3. Environment Configuration
 Create a `.env` file in `myapp/` (do not commit this file):
 ```env
 SECRET_KEY=your_secret_key_here
@@ -58,23 +68,26 @@ DATABASE_URL=postgresql://user:password@host:port/dbname
 ```
 
 ### 4. Database Schema Migration
-Run the database alter script to initialize tables and columns:
+Run the non-destructive database schema migration script:
 ```bash
 python alter_db.py
 ```
 
 ### 5. Run the Application
-Start the Flask development server:
+Launch the Flask development server:
 ```bash
 python app.py
 ```
 
-Access the application in your browser at `http://127.0.0.1:5000`.
+The application will be live at:
+- **Local URL**: `http://127.0.0.1:5000`
+- **Sign In**: `http://127.0.0.1:5000/login`
+- **Verification Portal**: `http://127.0.0.1:5000/verify`
 
 ---
 
-## Git & Deployment Rules
+## 🔒 Security & Deployment Rules
 
-- `.env` and `venv/` are excluded via `.gitignore`.
-- Database credentials and secrets are supplied strictly via environment variables.
-- Serverless-compatible: no local filesystem dependencies for asset/QR generation.
+- Sensitive credentials (`.env`, database URLs, secret keys) and virtual environment folders (`venv/`) are excluded via `.gitignore`.
+- All credentials and configuration values are loaded securely from environment variables.
+- Pure in-memory generation for dynamic assets (such as QR codes) guarantees seamless serverless hosting.
