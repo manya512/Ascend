@@ -143,26 +143,36 @@
         <div>
           <div class="flex items-center justify-between mb-3">
             <span class="material-symbols-outlined text-secondary text-[28px]">workspace_premium</span>
+            {% if issued_cert.status == 'claimed' %}
             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-xs font-semibold">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Verified
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Claimed & Verified
             </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-xs font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Issued
+            </span>
+            {% endif %}
           </div>
           <h3 class="font-title-lg text-title-lg text-primary font-serif mb-2 group-hover:text-secondary transition-colors">
             {{ cert.title }}
           </h3>
+          {% if cert.description %}
           <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-3 leading-relaxed mb-0">
-            {{ cert.description or 'Conferred for demonstrated academic excellence and completion of accredited curriculum.' }}
+            {{ cert.description }}
           </p>
+          {% endif %}
         </div>
 
         <div class="pt-4 border-t border-outline-variant/15 flex items-center justify-between text-body-sm">
           <span class="text-on-surface-variant text-xs">
             Issued: {{ issued_cert.issued_at.strftime('%b %d, %Y') if issued_cert.issued_at else 'Unknown' }}
           </span>
-          <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="text-secondary hover:underline font-title-md text-xs font-semibold text-decoration-none flex items-center gap-1">
-            <span>View Proof</span>
-            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
-          </a>
+          <div class="flex items-center gap-2">
+            <a href="{{ url_for('view_certificate', code=issued_cert.verification_code) }}" class="text-secondary hover:underline font-title-md text-xs font-semibold text-decoration-none flex items-center gap-1">
+              <span>View Certificate</span>
+              <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </a>
+          </div>
         </div>
       </div>
       {% endfor %}
@@ -228,7 +238,7 @@
         </div>
         <div>
           <div class="font-title-md text-white font-serif font-bold text-lg">Online Verification</div>
-          <div class="font-mono text-xs text-white/70 mt-1">ascend.trust/verify</div>
+          <div class="font-mono text-xs text-white/70 mt-1">{{ request.host }}/verify</div>
         </div>
         <a href="{{ url_for('verify_certificate') }}" class="w-full py-2.5 px-4 rounded-xl bg-white text-primary hover:bg-surface-container font-title-md text-sm font-semibold transition-colors text-decoration-none shadow-md flex items-center justify-center gap-2">
           <span class="material-symbols-outlined text-[18px]">verified</span>

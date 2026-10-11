@@ -83,24 +83,29 @@
       <div class="p-space-lg md:p-space-xl grid grid-cols-1 md:grid-cols-12 gap-space-xl items-center">
         <!-- Left: Attestation Metadata (7 cols) -->
         <div class="md:col-span-7 flex flex-col gap-space-md">
+          {% if result[1].description %}
           <div>
             <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">
               Credential Description
             </span>
             <p class="font-body-md text-body-md text-on-surface leading-relaxed mb-0">
-              {{ result[1].description or 'Official accredited certificate conferred by authorized academic Senate and Faculty Board.' }}
+              {{ result[1].description }}
             </p>
           </div>
+          {% endif %}
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-2 border-t border-outline-variant/20">
             <div>
               <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Recipient Identity</span>
               <div class="font-body-md text-body-md text-primary font-medium">
+                {% if claimed_user %}
+                  <div class="font-semibold text-primary text-base">{{ claimed_user.name }}</div>
+                {% endif %}
                 {% if result[0].recipient_email %}
-                  <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[16px] text-secondary">mail</span> {{ result[0].recipient_email }}</div>
+                  <div class="flex items-center gap-1.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-secondary">mail</span> {{ result[0].recipient_email }}</div>
                 {% endif %}
                 {% if result[0].recipient_phone %}
-                  <div class="flex items-center gap-1.5 mt-0.5"><span class="material-symbols-outlined text-[16px] text-secondary">call</span> {{ result[0].recipient_phone }}</div>
+                  <div class="flex items-center gap-1.5 mt-0.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-secondary">call</span> {{ result[0].recipient_phone }}</div>
                 {% endif %}
               </div>
             </div>
@@ -118,6 +123,11 @@
               <div class="font-body-md text-body-md text-on-surface">
                 🗓️ {{ result[0].issued_at.strftime('%B %d, %Y') if result[0].issued_at else 'Permanent Record' }}
               </div>
+              {% if result[0].claimed_at %}
+              <div class="text-xs text-on-surface-variant mt-0.5">
+                Claimed: {{ result[0].claimed_at.strftime('%B %d, %Y') }}
+              </div>
+              {% endif %}
             </div>
 
             <div>
@@ -162,9 +172,15 @@
           <span>Cryptographically validated by {{ result[2].name if result else 'Ascend' }} Registry Authority</span>
         </div>
         <div class="flex items-center gap-2">
+          {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == result[2].id or current_user.institution_id == result[2].id or current_user.id == result[0].claimed_by_id or current_user.email == result[0].recipient_email) %}
+          <a href="{{ url_for('view_certificate', code=result[0].verification_code) }}" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5 text-decoration-none">
+            <span class="material-symbols-outlined text-[16px]">workspace_premium</span>
+            <span>View Rendered Certificate</span>
+          </a>
+          {% endif %}
           <button onclick="window.print()" type="button" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[16px]">print</span>
-            <span>Print Certificate Record</span>
+            <span>Print Record</span>
           </button>
         </div>
       </div>

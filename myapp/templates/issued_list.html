@@ -133,9 +133,13 @@
             </td>
             <td class="py-4 px-4 text-right">
               <div class="flex items-center justify-end gap-2">
-                <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-xs transition-colors text-decoration-none shadow-sm">
-                  <span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
-                  <span>View / Verify</span>
+                <a href="{{ url_for('view_certificate', code=issued_cert.verification_code) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-xs transition-colors text-decoration-none shadow-sm" title="View Full Rendered Certificate">
+                  <span class="material-symbols-outlined text-[16px] text-secondary">workspace_premium</span>
+                  <span>Certificate</span>
+                </a>
+                <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant/40 hover:bg-surface-container-high text-on-surface-variant font-title-md text-xs transition-colors text-decoration-none shadow-sm" title="Public Verification Page">
+                  <span class="material-symbols-outlined text-[16px]">verified</span>
+                  <span>Verify</span>
                 </a>
               </div>
             </td>

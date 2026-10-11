@@ -602,9 +602,13 @@ def verify_certificate(code=None):
             return redirect(url_for('verify_certificate', code=search_code))
             
     if not code:
-        code = request.args.get('code', '').strip()
+        query_code = request.args.get('code', '').strip()
+        if query_code:
+            return redirect(url_for('verify_certificate', code=query_code))
+        code = ''
         
     issued = None
+    claimed_user = None
     qr_b64 = None
     share_url = None
     
@@ -618,13 +622,84 @@ def verify_certificate(code=None):
         ).first()
         
         if issued:
+            if issued[0].claimed_by_id:
+                claimed_user = User.query.get(issued[0].claimed_by_id)
             share_url = url_for('verify_certificate', code=code, _external=True)
             try:
                 qr_b64 = generate_qr_base64(share_url)
             except Exception as e:
                 qr_b64 = None
 
-    return render_template('verify.html', result=issued, code=code, qr_b64=qr_b64, share_url=share_url)
+    return render_template('verify.html', result=issued, claimed_user=claimed_user, code=code, qr_b64=qr_b64, share_url=share_url)
+
+
+@app.route('/certificate/<code>')
+def view_certificate(code):
+    issued = db.session.query(IssuedCertificate, Certificate, User).join(
+        Certificate, IssuedCertificate.certificate_id == Certificate.id
+    ).join(
+        User, Certificate.institution_id == User.id
+    ).filter(
+        IssuedCertificate.verification_code == code
+    ).first()
+
+    if not issued:
+        flash('Certificate not found.')
+        return redirect(url_for('verify_certificate', code=code))
+
+    issued_cert, cert, institution = issued
+
+    # Access rules: the member who claimed it and the issuing institution can view the full certificate page
+    if not current_user.is_authenticated:
+        flash('Please sign in to view the official certificate document. You may also view the public verification record below.')
+        return redirect(url_for('login', next=request.url))
+
+    is_admin = (current_user.role == 'admin')
+    is_issuer = False
+    if current_user.role in ['institution', 'staff']:
+        inst_id = get_effective_institution_id(current_user)
+        is_issuer = (inst_id == issued_cert.institution_id)
+
+    is_recipient = False
+    if issued_cert.claimed_by_id and current_user.id == issued_cert.claimed_by_id:
+        is_recipient = True
+    elif not issued_cert.claimed_by_id:
+        if current_user.email == issued_cert.recipient_email:
+            is_recipient = True
+        elif current_user.phone and issued_cert.recipient_phone == current_user.phone:
+            is_recipient = True
+
+    if not (is_admin or is_issuer or is_recipient):
+        flash('The rendered certificate document is restricted to the recipient member and the issuing institution. Viewing the public verification record instead.')
+        return redirect(url_for('verify_certificate', code=code))
+
+    claimed_user = None
+    if issued_cert.claimed_by_id:
+        claimed_user = User.query.get(issued_cert.claimed_by_id)
+
+    recipient_name = (
+        claimed_user.name if claimed_user
+        else (issued_cert.recipient_email or issued_cert.recipient_phone or 'Designated Recipient')
+    )
+
+    verify_url = url_for('verify_certificate', code=code, _external=True)
+    qr_b64 = None
+    try:
+        qr_b64 = generate_qr_base64(verify_url)
+    except Exception:
+        qr_b64 = None
+
+    return render_template(
+        'certificate.html',
+        issued_cert=issued_cert,
+        cert=cert,
+        institution=institution,
+        claimed_user=claimed_user,
+        recipient_name=recipient_name,
+        verify_url=verify_url,
+        qr_b64=qr_b64,
+        user=current_user
+    )
 
 
 @app.route('/reports')
