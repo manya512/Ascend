@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ascend | Issue certificates people can trust</title>
+<meta name="description" content="Ascend helps institutions design certificate templates, issue them to recipients, and keep every record in one place.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --mauve: #C585C0;
+    --orchid: #6E1647;
+    --indigo: #2B2642;
+    --mist: #F7F1F7;
+    --line: #E6DAE6;
+    --muted: #5E5877;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+  body { margin: 0; font-family: var(--sans); color: var(--indigo); background: var(--white); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  img, svg { max-width: 100%; }
+  a { color: inherit; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.12; margin: 0; letter-spacing: -0.01em; }
+  p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--mauve); outline-offset: 3px; border-radius: 6px; }
+  .wrap { width: min(1160px, 100% - 48px); margin-inline: auto; }
+  .skip { position: absolute; left: -999px; top: 8px; background: var(--white); color: var(--indigo); padding: 10px 14px; border-radius: 8px; z-index: 100; }
+  .skip:focus { left: 8px; }
+  /* Buttons: primary is filled, secondary is outlined, tertiary is plain text */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 0.95rem/1 var(--sans); padding: 14px 22px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; text-decoration: none; transition: background-color .15s, color .15s, border-color .15s; }
+  .btn-primary { background: var(--orchid); color: var(--white); }
+  .btn-primary:hover { background: #56123a; }
+  .btn-secondary { background: transparent; color: var(--indigo); border-color: var(--indigo); }
+  .btn-secondary:hover { background: var(--indigo); color: var(--white); }
+  .btn-text { padding: 12px 14px; color: var(--indigo); font-weight: 500; }
+  .btn-text:hover { color: var(--orchid); }
+  .btn:disabled { opacity: .65; cursor: progress; }
+  .on-dark .btn-primary { background: var(--mauve); color: var(--indigo); }
+  .on-dark .btn-primary:hover { background: #d9a2d5; }
+  .on-dark .btn-secondary { color: var(--white); border-color: rgba(255,255,255,.55); }
+  .on-dark .btn-secondary:hover { background: var(--white); color: var(--indigo); border-color: var(--white); }
+  /* Navbar */
+  .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.94); backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+  .nav.scrolled { border-color: var(--line); }
+  .nav-inner { display: flex; align-items: center; gap: 28px; height: 72px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--serif); font-weight: 700; font-size: 1.45rem; letter-spacing: 0.01em; }
+  .brand svg { width: 34px; height: 34px; }
+  .nav-links { display: flex; gap: 6px; margin-left: 12px; list-style: none; padding: 0; }
+  .nav-links a { display: block; padding: 10px 14px; text-decoration: none; font-weight: 500; font-size: .95rem; color: var(--muted); border-radius: 8px; }
+  .nav-links a:hover { color: var(--indigo); background: var(--mist); }
+  .nav-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .menu-btn { display: none; margin-left: auto; background: none; border: 0; padding: 10px; cursor: pointer; color: var(--indigo); border-radius: 8px; }
+  /* Hero */
+  .hero { background: var(--indigo); color: var(--white); overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 88px 0 96px; }
+  .hero h1 { font-size: clamp(2.4rem, 5vw, 3.9rem); }
+  .hero .lede { margin-top: 22px; font-size: 1.15rem; color: rgba(255,255,255,.8); max-width: 34rem; }
+  .hero-cta { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 14px; }
+  .hero-note { margin-top: 22px; font-size: .9rem; color: rgba(255,255,255,.62); }
+  .stage { position: relative; padding: 28px 24px 34px; }
+  .stage::before { content: ""; position: absolute; inset: 0 8px 0 24px; background: var(--orchid); border-radius: 28px; transform: rotate(-3deg); }
+  .cert { position: relative; background: var(--white); color: var(--indigo); border-radius: 18px; padding: 30px 30px 26px; transform: rotate(1.5deg); box-shadow: 0 24px 50px -20px rgba(0,0,0,.55); }
+  .cert-tag { position: absolute; top: -12px; right: 22px; background: var(--mauve); color: var(--indigo); font-size: .78rem; font-weight: 600; padding: 4px 12px; border-radius: 999px; }
+  .cert-head { display: flex; align-items: center; gap: 10px; color: var(--orchid); font-family: var(--serif); font-weight: 700; }
+  .cert-head svg { width: 26px; height: 26px; }
+  .cert h3 { font-size: 1.7rem; margin-top: 22px; }
+  .cert .awarded { margin-top: 18px; font-size: .85rem; color: var(--muted); }
+  .cert .name { font-family: var(--serif); font-size: 1.55rem; font-weight: 600; color: var(--orchid); border-bottom: 2px solid var(--mauve); display: inline-block; padding-bottom: 4px; margin-top: 4px; }
+  .cert .for { margin-top: 14px; font-size: .92rem; color: var(--muted); max-width: 22rem; }
+  .cert-foot { margin-top: 26px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .cert-foot small { display: block; color: var(--muted); font-size: .78rem; }
+  .cert-foot strong { font-size: .92rem; }
+  .seal { width: 64px; height: 64px; border-radius: 50%; background: var(--orchid); color: var(--white); display: grid; place-items: center; border: 4px solid var(--mauve); flex: none; }
+  .seal svg { width: 32px; height: 32px; }
+  /* Sections */
+  section { padding: 96px 0; }
+  .section-head { max-width: 40rem; }
+  .section-head h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); }
+  .section-head p { margin-top: 14px; color: var(--muted); font-size: 1.05rem; }
+  /* Feature cards: one wide card leads, the rest follow */
+  .features { background: var(--white); }
+  .grid { margin-top: 48px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card { border: 1px solid var(--line); border-radius: 20px; padding: 28px; background: var(--white); display: flex; flex-direction: column; gap: 12px; }
+  .card h3 { font-size: 1.3rem; }
+  .card p { color: var(--muted); }
+  .card .ico { width: 44px; height: 44px; border-radius: 12px; background: var(--mist); color: var(--orchid); display: grid; place-items: center; }
+  .card .ico svg { width: 24px; height: 24px; }
+  .card.wide { grid-column: span 2; background: var(--mist); border-color: transparent; flex-direction: row; gap: 32px; align-items: center; }
+  .card.wide > div:first-child { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .card.soon { border-style: dashed; background: transparent; }
+  .chip { align-self: flex-start; font-size: .78rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--mauve); color: var(--orchid); }
+  .mini { flex: 0 0 210px; background: var(--white); border-radius: 14px; padding: 16px; border: 1px solid var(--line); }
+  .mini .field { height: 10px; border-radius: 4px; background: var(--line); margin-bottom: 10px; }
+  .mini .field.short { width: 55%; }
+  .mini .thumb { margin-top: 14px; border-radius: 8px; background: var(--indigo); height: 84px; display: grid; place-items: center; color: var(--mauve); }
+  .mini .thumb svg { width: 34px; height: 34px; }
+  /* How it works: a real sequence, so the numbers stay */
+  .how { background: var(--mist); }
+  .steps { margin-top: 52px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; list-style: none; padding: 0; counter-reset: s; }
+  .steps li { position: relative; padding-top: 68px; }
+  .steps li::before { counter-increment: s; content: counter(s); position: absolute; top: 0; left: 0; width: 48px; height: 48px; border-radius: 50%; background: var(--indigo); color: var(--white); font-family: var(--serif); font-weight: 600; font-size: 1.2rem; display: grid; place-items: center; }
+  .steps li::after { content: ""; position: absolute; top: 23px; left: 60px; right: -20px; height: 2px; background: repeating-linear-gradient(90deg, var(--mauve) 0 10px, transparent 10px 18px); }
+  .steps li:last-child::after { display: none; }
+  .steps h3 { font-size: 1.3rem; }
+  .steps p { margin-top: 8px; color: var(--muted); }
+  /* CTA band */
+  .band { background: var(--orchid); color: var(--white); padding: 84px 0; }
+  .band-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .band h2 { font-size: clamp(1.8rem, 3.4vw, 2.5rem); max-width: 30rem; }
+  .band .actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .band .btn-primary { background: var(--white); color: var(--orchid); }
+  .band .btn-primary:hover { background: var(--mist); }
+  .band .btn-secondary { color: var(--white); border-color: rgba(255,255,255,.6); }
+  .band .btn-secondary:hover { background: var(--white); color: var(--orchid); border-color: var(--white); }
+  /* Footer */
+  footer { background: var(--indigo); color: rgba(255,255,255,.75); padding: 72px 0 32px; }
+  .foot-grid { display: grid; grid-template-columns: 1.4fr repeat(2, .8fr) 1.4fr; gap: 40px; }
+  footer .brand { color: var(--white); }
+  footer h4 { margin: 0 0 14px; font: 600 .95rem var(--sans); color: var(--white); }
+  footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--mauve); text-decoration: underline; }
+  .foot-about { margin-top: 14px; max-width: 20rem; font-size: .95rem; }
+  .news label { display: block; font-weight: 600; color: var(--white); font-size: .95rem; margin-bottom: 8px; }
+  .news .row { display: flex; gap: 8px; }
+  .news input { flex: 1; min-width: 0; padding: 13px 14px; border-radius: 10px; border: 2px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: var(--white); font: inherit; }
+  .news input::placeholder { color: rgba(255,255,255,.5); }
+  .news input[aria-invalid="true"] { border-color: #f4a0a0; }
+  .news .err { min-height: 1.4em; margin-top: 8px; font-size: .88rem; color: #ffc4c4; }
+  .news .btn { padding: 13px 18px; background: var(--mauve); color: var(--indigo); }
+  .news .btn:hover { background: #d9a2d5; }
+  .legal { margin-top: 56px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.15); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: .88rem; }
+  .legal .links { display: flex; gap: 20px; }
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 24px); background: var(--white); color: var(--indigo); border-left: 6px solid var(--mauve); padding: 14px 20px; border-radius: 10px; font-weight: 500; box-shadow: 0 14px 34px -10px rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 200; max-width: calc(100% - 32px); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; padding: 56px 0 72px; gap: 40px; }
+    .grid { grid-template-columns: 1fr 1fr; }
+    .card.wide { grid-column: span 2; }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 780px) {
+    .menu-btn { display: block; }
+    .nav-links, .nav-actions { display: none; }
+    .nav.open .nav-inner { flex-wrap: wrap; height: auto; padding: 14px 0 20px; }
+    .nav.open .nav-links, .nav.open .nav-actions { display: flex; flex-direction: column; width: 100%; margin: 0; align-items: stretch; }
+    .nav.open .nav-actions { gap: 10px; margin-top: 10px; }
+    .nav.open .nav-actions .btn { width: 100%; }
+    section { padding: 68px 0; }
+    .steps { grid-template-columns: 1fr; gap: 36px; }
+    .steps li::after { display: none; }
+  }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+    .card.wide { grid-column: auto; flex-direction: column; align-items: stretch; }
+    .mini { flex-basis: auto; }
+    .foot-grid { grid-template-columns: 1fr; }
+    .news .row { flex-direction: column; }
+    .cert { padding: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<!-- Ladder-A mark, reused across the page. Swap for your exported logo image when you have one. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="mark" viewBox="0 0 64 64">
+    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 58 L26 8 H38 L46 58" stroke-width="7"/>
+      <path d="M23.8 22 H40.2 M21.8 34 H42.2 M19.9 46 H44.1" stroke-width="4.5"/>
+    </g>
+  </symbol>
+</svg>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/" aria-label="Ascend home">
+      <svg aria-hidden="true"><use href="#mark"/></svg>
+      Ascend
+    </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a class="btn btn-text" href="{{ url_for('login') }}">Log in</a>
+      <a class="btn btn-primary" href="{{ url_for('login') }}">Get started</a>
+    </div>
+    <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+<main id="main">
+  <section class="hero on-dark" style="padding:0">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>Certificates that carry weight, issued in minutes</h1>
+        <p class="lede">Ascend lets institutions design certificate templates, issue them to recipients, and keep every record in one place, so achievements are easy to share and easy to trust.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="{{ url_for('login') }}">Create an account</a>
+          <a class="btn btn-secondary" href="#how">See how it works</a>
+        </div>
+        <p class="hero-note">Already have an account? <a href="{{ url_for('login') }}" style="text-decoration:underline">Log in</a></p>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <div class="cert">
+          <span class="cert-tag">Sample</span>
+          <div class="cert-head"><svg><use href="#mark"/></svg> Ascend</div>
+          <h3>Certificate of Completion</h3>
+          <p class="awarded">Awarded to</p>
+          <p class="name">Recipient Name</p>
+          <p class="for">For successfully completing the course, with distinction.</p>
+          <div class="cert-foot">
+            <div><small>Issued by</small><strong>Your Institution</strong></div>
+            <div class="seal"><svg><use href="#mark"/></svg></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="features" id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>From a blank template to a certificate in someone's hands</h2>
+        <p>Everything an institution needs to create, issue, and keep track of certificates.</p>
+      </div>
+      <div class="grid">
+        <article class="card wide">
+          <div>
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg></div>
+            <h3>Design a template once</h3>
+            <p>Set the title and description, watch the certificate update as you type, and reuse the template for every cohort. Edit or remove it any time.</p>
+          </div>
+          <div class="mini" aria-hidden="true">
+            <div class="field"></div>
+            <div class="field short"></div>
+            <div class="thumb"><svg><use href="#mark"/></svg></div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></svg></div>
+          <h3>Issue to recipients</h3>
+          <p>Send a certificate to a recipient by email, then see everything you've issued in one list.</p>
+        </article>
+        <article class="card">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
+          <h3>Profiles for members</h3>
+          <p>Members get a profile page to show off the certificates they've earned.</p>
+        </article>
+        <article class="card soon">
+          <span class="chip">Coming soon</span>
+          <h3>Verification</h3>
+          <p>Let employers and schools confirm a certificate is genuine in a few seconds.</p>
+        </article>
+        <article class="card soon">
+          <span class="chip">Coming soon</span>
+          <h3>Reports</h3>
+          <p>See what has been issued, to whom, and when, without digging through records.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="how" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>How it works</h2>
+        <p>Three steps from setup to a certificate people can share.</p>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Create a template</h3>
+          <p>Give the certificate a title and description, and preview it before you save.</p>
+        </li>
+        <li>
+          <h3>Issue it</h3>
+          <p>Pick a template, enter the recipient's email, and issue the certificate.</p>
+        </li>
+        <li>
+          <h3>Recipients share it</h3>
+          <p>Members collect their certificates on a profile page they can point others to.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+  <section class="band" style="padding:84px 0">
+    <div class="wrap band-inner">
+      <h2>Ready to issue your first certificate?</h2>
+      <div class="actions">
+        <a class="btn btn-primary" href="{{ url_for('login') }}">Create an account</a>
+        <a class="btn btn-secondary" href="{{ url_for('login') }}">Log in</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="/"><svg aria-hidden="true"><use href="#mark"/></svg> Ascend</a>
+        <p class="foot-about">Issue, track, and share certificates in one place. Since 2026.</p>
+      </div>
+      <nav aria-label="Product">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="{{ url_for('login') }}">Log in</a></li>
+          <li><a href="{{ url_for('login') }}">Create an account</a></li>
+        </ul>
+      </nav>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:hello@ascend.example">hello@ascend.example</a></li>
+          <li><a href="#" aria-label="Ascend on GitHub">GitHub</a></li>
+          <li><a href="#" aria-label="Ascend on LinkedIn">LinkedIn</a></li>
+          <li><a href="#" aria-label="Ascend on Instagram">Instagram</a></li>
+        </ul>
+      </div>
+      <form class="news" id="news" novalidate>
+        <label for="email">Get product updates</label>
+        <div class="row">
+          <input id="email" name="email" type="email" placeholder="you@school.edu" autocomplete="email" aria-describedby="email-err">
+          <button class="btn" type="submit">Subscribe</button>
+        </div>
+        <p class="err" id="email-err" role="alert"></p>
+      </form>
+    </div>
+    <div class="legal">
+      <p>&copy; 2026 Ascend. All rights reserved.</p>
+      <div class="links"><a href="#">Privacy</a><a href="#">Terms</a></div>
+    </div>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+  // Sticky navbar: add a border once the page scrolls
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  // Mobile menu
+  const menuBtn = document.getElementById('menu-btn');
+  menuBtn.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  });
+  document.querySelectorAll('#nav-links a').forEach(a => a.addEventListener('click', () => {
+    nav.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }));
+  // Toast
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+  // Newsletter form: inline validation, loading state, success toast.
+  const form = document.getElementById('news');
+  const email = document.getElementById('email');
+  const err = document.getElementById('email-err');
+  const submitBtn = form.querySelector('button');
+  function setError(msg) {
+    err.textContent = msg;
+    email.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  }
+  email.addEventListener('input', () => setError(''));
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const value = email.value.trim();
+    if (!value) { setError('Enter your email address.'); email.focus(); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { setError('That email looks incomplete. Check it and try again.'); email.focus(); return; }
+    setError('');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Subscribing...';
+    setTimeout(() => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Subscribe';
+      form.reset();
+      showToast('Thanks for subscribing.');
+    }, 900);
+  });
+</script>
+</body>
+</html>
