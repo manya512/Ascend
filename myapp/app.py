@@ -1,8 +1,9 @@
 import qrcode
 import io
 import base64
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, Response, make_response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from PIL import Image
 
 from config import Config
 from models import db, User, Certificate, IssuedCertificate, Notification
@@ -261,6 +262,119 @@ def update_profile():
     db.session.commit()
     flash('Profile updated successfully!')
     return redirect(url_for('dashboard'))
+
+
+# ── Settings (all roles) ────────────────────────────────────────────────────
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        # Profile fields
+        name = request.form.get('name', '').strip()
+        if name:
+            current_user.name = name
+        current_user.phone = request.form.get('phone', '').strip() or None
+        current_user.job_title = request.form.get('job_title', '').strip() or None
+        current_user.location = request.form.get('location', '').strip() or None
+        current_user.alumni = request.form.get('alumni', '').strip() or None
+        current_user.portfolio_url = request.form.get('portfolio_url', '').strip() or None
+        current_user.is_profile_setup = True
+        db.session.commit()
+        flash('Profile updated successfully!')
+        return redirect(url_for('settings'))
+    return render_template('settings.html', user=current_user)
+
+
+@app.route('/settings/change-password', methods=['POST'])
+@login_required
+def change_password():
+    current_pw = request.form.get('current_password', '')
+    new_pw = request.form.get('new_password', '')
+    confirm_pw = request.form.get('confirm_password', '')
+
+    if not current_user.check_password(current_pw):
+        flash('Current password is incorrect.')
+        return redirect(url_for('settings'))
+    if len(new_pw) < 8:
+        flash('New password must be at least 8 characters.')
+        return redirect(url_for('settings'))
+    if new_pw != confirm_pw:
+        flash('New passwords do not match.')
+        return redirect(url_for('settings'))
+
+    current_user.set_password(new_pw)
+    db.session.commit()
+    flash('Password changed successfully!')
+    return redirect(url_for('settings'))
+
+
+@app.route('/settings/photo', methods=['POST'])
+@login_required
+def upload_photo():
+    file = request.files.get('photo')
+    if not file or file.filename == '':
+        flash('No file selected.')
+        return redirect(url_for('settings'))
+
+    ALLOWED_MIMETYPES = {'image/jpeg', 'image/png', 'image/webp'}
+    # Read into memory first to check size
+    data = file.read()
+    if len(data) > 2 * 1024 * 1024:
+        flash('File is too large. Maximum size is 2 MB.')
+        return redirect(url_for('settings'))
+
+    # Detect mimetype via Pillow
+    try:
+        img = Image.open(io.BytesIO(data))
+        fmt = img.format  # 'JPEG', 'PNG', 'WEBP'
+        mime_map = {'JPEG': 'image/jpeg', 'PNG': 'image/png', 'WEBP': 'image/webp'}
+        mimetype = mime_map.get(fmt)
+        if not mimetype:
+            flash('Only JPG, PNG, and WEBP images are accepted.')
+            return redirect(url_for('settings'))
+
+        # Crop to square then resize to 256x256
+        w, h = img.size
+        min_dim = min(w, h)
+        left = (w - min_dim) // 2
+        top = (h - min_dim) // 2
+        img = img.crop((left, top, left + min_dim, top + min_dim))
+        img = img.resize((256, 256), Image.LANCZOS)
+        img = img.convert('RGB')  # normalise WEBP/PNG with alpha
+        mimetype = 'image/jpeg'   # always save as JPEG to save space
+
+        buf = io.BytesIO()
+        img.save(buf, format='JPEG', quality=88)
+        current_user.profile_photo = buf.getvalue()
+        current_user.profile_photo_mimetype = 'image/jpeg'
+        db.session.commit()
+        flash('Profile photo updated!')
+    except Exception as e:
+        flash(f'Could not process image: {e}')
+
+    return redirect(url_for('settings'))
+
+
+@app.route('/settings/photo/remove', methods=['POST'])
+@login_required
+def remove_photo():
+    current_user.profile_photo = None
+    current_user.profile_photo_mimetype = None
+    db.session.commit()
+    flash('Profile photo removed.')
+    return redirect(url_for('settings'))
+
+
+@app.route('/profile-photo/<int:user_id>')
+def serve_profile_photo(user_id):
+    user = User.query.get_or_404(user_id)
+    if not user.profile_photo:
+        return redirect(url_for('static', filename='default_avatar.png'))
+    resp = make_response(user.profile_photo)
+    resp.headers['Content-Type'] = user.profile_photo_mimetype or 'image/jpeg'
+    resp.headers['Cache-Control'] = 'public, max-age=300'
+    return resp
 
 
 @app.route('/certificates/<int:issued_id>/claim', methods=['POST'])

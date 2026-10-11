@@ -22,8 +22,16 @@
       <div class="flex flex-col lg:flex-row items-start justify-between gap-space-xl">
         <div class="flex flex-col sm:flex-row items-start gap-space-lg max-w-4xl">
           <div class="relative flex-shrink-0">
-            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shadow-md bg-primary-container flex items-center justify-center text-white font-headline-lg font-bold text-3xl">
-              {{ target_user.name[:1]|upper }}
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shadow-md">
+              {% if target_user.profile_photo %}
+                <img src="{{ url_for('serve_profile_photo', user_id=target_user.id) }}"
+                     alt="{{ target_user.name }}"
+                     class="w-full h-full object-cover">
+              {% else %}
+                <div class="w-full h-full bg-primary-container flex items-center justify-center text-white font-headline-lg font-bold text-3xl">
+                  {{ target_user.name[:1]|upper }}
+                </div>
+              {% endif %}
             </div>
             <div class="absolute -bottom-2 -right-2 bg-secondary text-on-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-md">
               <span class="material-symbols-outlined text-[16px]">verified</span>
@@ -36,14 +44,18 @@
                 {{ target_user.name }}
               </h1>
             </div>
+            {% if target_user.job_title %}
             <p class="font-body-lg text-body-lg text-on-surface font-medium mb-1">
-              {{ target_user.job_title or 'Senior Research Fellow & Alumnus' }}
+              {{ target_user.job_title }}
             </p>
+            {% endif %}
+            {% if target_user.alumni or target_user.location %}
             <p class="font-body-md text-body-md text-on-surface-variant mb-space-md flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[18px] text-secondary">account_balance</span>
-              {{ target_user.alumni or 'Not specified' }}
+              {% if target_user.alumni %}{{ target_user.alumni }}{% endif %}
               {% if target_user.location %} · 📍 {{ target_user.location }}{% endif %}
             </p>
+            {% endif %}
             
             <div class="flex flex-wrap items-center gap-space-sm">
               <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-semibold">
@@ -73,6 +85,12 @@
             <span class="material-symbols-outlined text-[18px] text-on-surface-variant">print</span>
             <span>Print Credentials</span>
           </button>
+          {% if current_user.is_authenticated and current_user.id == target_user.id %}
+          <a href="{{ url_for('settings') }}" class="w-full flex items-center justify-center gap-2 px-space-lg py-2.5 rounded-lg bg-surface-container-low text-primary font-title-md text-title-md hover:bg-surface-container transition text-decoration-none">
+            <span class="material-symbols-outlined text-[18px] text-secondary">edit</span>
+            <span>Edit Profile</span>
+          </a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -214,7 +232,7 @@
             <div class="font-body-sm text-body-sm text-on-surface-variant mb-1">Verify credentials online at:</div>
             <a class="font-mono text-body-sm text-secondary hover:underline break-all font-medium flex items-center gap-1.5 text-decoration-none" href="{{ url_for('verify_certificate') }}">
               <span class="material-symbols-outlined text-[16px]">link</span>
-              <span>ascend.trust/verify</span>
+              <span>{{ request.host }}/verify</span>
             </a>
           </div>
         </div>

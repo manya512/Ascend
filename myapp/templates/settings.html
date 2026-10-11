@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — Ascend{% endblock %}
+
+{% block content %}
+<div class="flex flex-col w-full px-margin-mobile md:px-margin py-space-lg gap-space-xl pb-space-xl">
+
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+    <div>
+      <h1 class="font-headline-md text-headline-md text-primary tracking-tight">Account Settings</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage your profile, photo and password.</p>
+    </div>
+    <a href="{{ url_for('public_profile', user_id=user.id) if user.role == 'member' else url_for('dashboard') }}"
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high transition-colors text-decoration-none">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      <span>Back</span>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-space-xl items-start">
+
+    <!-- LEFT: Photo + Identity -->
+    <div class="flex flex-col gap-space-lg">
+
+      <!-- Profile Photo Card -->
+      <section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg flex flex-col gap-space-md">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="material-symbols-outlined text-secondary text-[20px]">account_circle</span>
+          <h2 class="font-title-lg text-title-lg text-primary">Profile Photo</h2>
+        </div>
+
+        <!-- Current avatar -->
+        <div class="flex flex-col items-center gap-space-md">
+          <div class="relative">
+            {% if user.profile_photo %}
+              <img src="{{ url_for('serve_profile_photo', user_id=user.id) }}"
+                   alt="Profile photo"
+                   class="w-28 h-28 rounded-2xl object-cover shadow-md border-2 border-outline-variant/30"
+                   id="photo-preview">
+            {% else %}
+              <div class="w-28 h-28 rounded-2xl bg-primary-container flex items-center justify-center text-white font-headline-lg font-bold text-3xl shadow-md" id="avatar-initial">
+                {{ user.name[:1]|upper }}
+              </div>
+              <img src="" alt="" class="w-28 h-28 rounded-2xl object-cover shadow-md border-2 border-outline-variant/30 hidden" id="photo-preview">
+            {% endif %}
+            <div class="absolute -bottom-2 -right-2 bg-secondary text-on-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-md">
+              <span class="material-symbols-outlined text-[16px]">verified</span>
+            </div>
+          </div>
+
+          <!-- Upload form -->
+          <form action="{{ url_for('upload_photo') }}" method="POST" enctype="multipart/form-data" class="w-full flex flex-col gap-space-sm">
+            <label class="font-label-sm text-label-sm text-on-surface-variant text-center">JPG, PNG or WEBP · max 2 MB</label>
+            <label for="photo-input" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md cursor-pointer transition-colors border border-outline-variant/30">
+              <span class="material-symbols-outlined text-[18px] text-secondary">upload</span>
+              <span>Choose photo</span>
+            </label>
+            <input type="file" id="photo-input" name="photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="sr-only" onchange="previewPhoto(this)">
+            <button type="submit" id="upload-btn" class="hidden w-full py-2.5 px-4 rounded-xl bg-secondary text-on-secondary font-title-md text-title-md hover:bg-on-secondary-container transition-colors flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">cloud_upload</span>
+              <span>Upload photo</span>
+            </button>
+          </form>
+
+          {% if user.profile_photo %}
+          <form action="{{ url_for('remove_photo') }}" method="POST" class="w-full">
+            <button type="submit" class="w-full py-2 px-4 rounded-xl border border-error/40 text-error font-label-md text-label-md hover:bg-error-container transition-colors flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">delete</span>
+              <span>Remove photo</span>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Account Info (read-only) -->
+      <section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg flex flex-col gap-space-sm">
+        <h2 class="font-title-lg text-title-lg text-primary mb-1">Account Info</h2>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-2 p-3 rounded-xl bg-surface-container-low">
+            <span class="material-symbols-outlined text-[18px] text-outline">mail</span>
+            <div class="flex flex-col">
+              <span class="font-label-sm text-label-sm text-outline">Email (cannot be changed)</span>
+              <span class="font-body-md text-body-md text-on-surface font-medium">{{ user.email }}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 p-3 rounded-xl bg-surface-container-low">
+            <span class="material-symbols-outlined text-[18px] text-outline">badge</span>
+            <div class="flex flex-col">
+              <span class="font-label-sm text-label-sm text-outline">Role</span>
+              <span class="font-body-md text-body-md text-on-surface font-medium capitalize">{{ user.role }}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 p-3 rounded-xl bg-surface-container-low">
+            <span class="material-symbols-outlined text-[18px] text-outline">calendar_month</span>
+            <div class="flex flex-col">
+              <span class="font-label-sm text-label-sm text-outline">Member since</span>
+              <span class="font-body-md text-body-md text-on-surface font-medium">{{ user.created_at.strftime('%B %Y') if user.created_at else '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT: Edit Profile + Password -->
+    <div class="xl:col-span-2 flex flex-col gap-space-lg">
+
+      <!-- Edit Profile Form -->
+      <section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg md:p-space-xl">
+        <div class="flex items-center gap-2 mb-space-lg">
+          <span class="material-symbols-outlined text-secondary text-[20px]">edit</span>
+          <h2 class="font-title-lg text-title-lg text-primary">Edit Profile</h2>
+        </div>
+
+        <form action="{{ url_for('settings') }}" method="POST" class="flex flex-col gap-space-md">
+          <!-- Name -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="s-name">
+              {% if user.role == 'institution' %}Institution Name{% else %}Full Name{% endif %}
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">{% if user.role == 'institution' %}account_balance{% else %}person{% endif %}</span>
+              <input type="text" id="s-name" name="name" value="{{ user.name }}" required
+                     class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30">
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="s-phone">Phone <span class="text-outline font-normal">(optional)</span></label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">phone</span>
+              <input type="tel" id="s-phone" name="phone" value="{{ user.phone or '' }}"
+                     class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="+1 555-0199">
+            </div>
+          </div>
+
+          <!-- Job Title -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="s-job">Title / Position <span class="text-outline font-normal">(optional)</span></label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">work</span>
+              <input type="text" id="s-job" name="job_title" value="{{ user.job_title or '' }}"
+                     class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="e.g. Software Engineer">
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="s-loc">Location <span class="text-outline font-normal">(optional)</span></label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">location_on</span>
+              <input type="text" id="s-loc" name="location" value="{{ user.location or '' }}"
+                     class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="e.g. Chennai, India">
+            </div>
+          </div>
+
+          <!-- Alumni / Affiliation -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="s-alumni">Alma Mater / Affiliation <span class="text-outline font-normal">(optional)</span></label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">school</span>
+              <input type="text" id="s-alumni" name="alumni" value="{{ user.alumni or '' }}"
+                     class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="e.g. SSN College of Engineering">
+            </div>
+          </div>
+
+          <!-- Portfolio URL -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="s-portfolio">Portfolio / LinkedIn URL <span class="text-outline font-normal">(optional)</span></label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">link</span>
+              <input type="url" id="s-portfolio" name="portfolio_url" value="{{ user.portfolio_url or '' }}"
+                     class="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="https://linkedin.com/in/yourname">
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit"
+                    class="w-full sm:w-auto px-8 py-3 rounded-xl bg-secondary text-on-secondary font-title-md text-title-md hover:bg-on-secondary-container transition-all shadow-sm flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              <span>Save changes</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Change Password Form -->
+      <section class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg md:p-space-xl">
+        <div class="flex items-center gap-2 mb-space-lg">
+          <span class="material-symbols-outlined text-secondary text-[20px]">lock_reset</span>
+          <h2 class="font-title-lg text-title-lg text-primary">Change Password</h2>
+        </div>
+
+        <form action="{{ url_for('change_password') }}" method="POST" class="flex flex-col gap-space-md">
+          <!-- Current password -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="cp-current">Current password</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">lock</span>
+              <input type="password" id="cp-current" name="current_password" required autocomplete="current-password"
+                     class="w-full pl-10 pr-11 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md tracking-wider focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="••••••••">
+              <button type="button" onclick="togglePwd('cp-current', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors p-1">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- New password -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="cp-new">New password <span class="text-outline font-normal">(min 8 characters)</span></label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">key</span>
+              <input type="password" id="cp-new" name="new_password" required minlength="8" autocomplete="new-password"
+                     class="w-full pl-10 pr-11 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md tracking-wider focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="••••••••">
+              <button type="button" onclick="togglePwd('cp-new', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors p-1">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirm new password -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface" for="cp-confirm">Confirm new password</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none">key</span>
+              <input type="password" id="cp-confirm" name="confirm_password" required minlength="8" autocomplete="new-password"
+                     class="w-full pl-10 pr-11 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md tracking-wider focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30"
+                     placeholder="••••••••">
+              <button type="button" onclick="togglePwd('cp-confirm', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors p-1">
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit"
+                    class="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary-container text-on-primary-container font-title-md text-title-md hover:bg-primary hover:text-on-primary transition-all shadow-sm flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">lock_reset</span>
+              <span>Change password</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePwd(fieldId, btn) {
+    const f = document.getElementById(fieldId);
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (f.type === 'password') {
+      f.type = 'text';
+      icon.textContent = 'visibility_off';
+    } else {
+      f.type = 'password';
+      icon.textContent = 'visibility';
+    }
+  }
+
+  function previewPhoto(input) {
+    const btn = document.getElementById('upload-btn');
+    const preview = document.getElementById('photo-preview');
+    const initial = document.getElementById('avatar-initial');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        if (initial) initial.classList.add('hidden');
+        btn.classList.remove('hidden');
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+{% endblock %}

@@ -129,6 +129,10 @@
           {% if current_user.role in ['admin', 'institution', 'staff'] %}
           <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'reports' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('reports') }}">Reports</a>
           {% endif %}
+
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'settings' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('settings') }}">
+            <span class="material-symbols-outlined text-[18px] align-middle">settings</span>
+          </a>
         </nav>
         {% endif %}
       </div>
@@ -146,6 +150,18 @@
         </a>
 
         <div class="flex items-center gap-2 pl-space-xs">
+          <!-- Photo avatar or initial letter -->
+          <a href="{{ url_for('settings') }}" class="flex-shrink-0 text-decoration-none" title="Settings">
+            {% if current_user.profile_photo %}
+              <img src="{{ url_for('serve_profile_photo', user_id=current_user.id) }}"
+                   alt="{{ current_user.name }}"
+                   class="w-8 h-8 rounded-full object-cover border border-outline-variant/40 shadow-sm">
+            {% else %}
+              <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-bold text-sm">
+                {{ current_user.name[:1]|upper }}
+              </div>
+            {% endif %}
+          </a>
           <span class="hidden md:inline font-label-md text-label-md font-medium text-primary">{{ current_user.name }}</span>
           <a href="{{ url_for('logout') }}" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-colors">Log out</a>
         </div>

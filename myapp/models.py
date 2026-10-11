@@ -22,6 +22,8 @@ class User(db.Model, UserMixin):
     portfolio_url = db.Column(db.String(200))
     is_profile_setup = db.Column(db.Boolean, default=False)
     institution_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    profile_photo = db.Column(db.LargeBinary, nullable=True)
+    profile_photo_mimetype = db.Column(db.String(50), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
