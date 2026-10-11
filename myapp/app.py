@@ -117,6 +117,9 @@ def dashboard():
     unclaimed = []
     claimed = []
 
+    templates_list = []
+    recent_issued = []
+
     if current_user.role == 'admin':
         stats = {
             'total_users': User.query.count(),
@@ -125,12 +128,20 @@ def dashboard():
             'total_templates': Certificate.query.count(),
             'total_issued': IssuedCertificate.query.count()
         }
+        templates_list = Certificate.query.order_by(Certificate.created_at.desc()).all()
+        recent_issued = db.session.query(IssuedCertificate, Certificate).join(
+            Certificate, IssuedCertificate.certificate_id == Certificate.id
+        ).order_by(IssuedCertificate.issued_at.desc()).limit(10).all()
     elif current_user.role == 'institution':
         stats = {
             'templates_count': Certificate.query.filter_by(institution_id=current_user.id).count(),
             'issued_count': IssuedCertificate.query.filter_by(institution_id=current_user.id).count(),
             'claimed_count': IssuedCertificate.query.filter_by(institution_id=current_user.id, status='claimed').count()
         }
+        templates_list = Certificate.query.filter_by(institution_id=current_user.id).order_by(Certificate.created_at.desc()).all()
+        recent_issued = db.session.query(IssuedCertificate, Certificate).join(
+            Certificate, IssuedCertificate.certificate_id == Certificate.id
+        ).filter(IssuedCertificate.institution_id == current_user.id).order_by(IssuedCertificate.issued_at.desc()).limit(10).all()
     elif current_user.role == 'member':
         # Unclaimed issued certificates (status != 'claimed')
         unclaimed_raw = db.session.query(IssuedCertificate, Certificate, User).join(
@@ -176,6 +187,8 @@ def dashboard():
         stats=stats,
         unclaimed=unclaimed,
         claimed=claimed,
+        templates=templates_list,
+        recent_issued=recent_issued,
         unread_notif_count=unread_notif_count
     )
 

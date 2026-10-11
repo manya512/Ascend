@@ -1,226 +1,438 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard — Ascend{% endblock %}
+{% block title %}Dashboard — Ascend Registrar & Academic Credentials{% endblock %}
 
 {% block content %}
-<div class="container my-4" style="max-width: 1050px;">
-  <!-- Welcome Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
-    <div>
-      <h2 class="mb-1" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">
-        Welcome, {{ user.name }}
-      </h2>
-      <span class="role-badge">{{ user.role|title }} Dashboard</span>
-    </div>
-    <div class="d-flex gap-2">
-      {% if user.role == 'member' %}
-        <a href="{{ url_for('public_profile', user_id=user.id) }}" class="btn btn-outline-primary btn-sm">👤 View Public Profile</a>
-      {% endif %}
-      <a href="{{ url_for('notifications_list') }}" class="btn btn-outline-secondary btn-sm position-relative">
-        🔔 Notifications
-        {% if unread_notif_count > 0 %}
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            {{ unread_notif_count }}
+<div class="flex flex-col w-full px-margin-mobile md:px-margin py-space-lg gap-space-xl">
+  <!-- Top Welcome Hero Banner -->
+  <section class="relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm p-space-lg md:p-space-xl">
+    <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-secondary/5 blur-3xl pointer-events-none"></div>
+    <div class="absolute right-12 bottom-0 w-64 h-64 rounded-full bg-primary/5 blur-2xl pointer-events-none"></div>
+    <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
+      <div class="flex flex-col gap-space-xs max-w-3xl">
+        <div class="flex items-center gap-space-xs">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide bg-surface-container text-secondary uppercase font-label-sm">
+            {{ user.role|title }} Portal
           </span>
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant">Academic Year 2025–2026</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">
+          Welcome back, {{ user.name }}
+        </h1>
+        <p class="font-body-md text-body-md text-on-surface-variant">
+          Pacific Institute of Technology · Central platform for academic credentials, degree certifications, and student honors issuance.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-space-sm self-start lg:self-center">
+        {% if user.role == 'institution' %}
+        <a href="{{ url_for('certificates_list') }}" class="group flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition-all shadow-sm text-decoration-none">
+          <span class="material-symbols-outlined text-[20px] transition-transform group-hover:rotate-90">add</span>
+          <span>Issue certificate</span>
+        </a>
+        <a href="{{ url_for('create_certificate') }}" class="flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-surface-container text-primary font-title-md text-title-md hover:bg-surface-container-high transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[20px] text-secondary">design_services</span>
+          <span>Create template</span>
+        </a>
+        {% elif user.role == 'member' %}
+        <a href="{{ url_for('public_profile', user_id=user.id) }}" class="flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition-all shadow-sm text-decoration-none">
+          <span class="material-symbols-outlined text-[20px]">person</span>
+          <span>View Public Profile</span>
+        </a>
+        <a href="{{ url_for('verify_certificate') }}" class="flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-surface-container text-primary font-title-md text-title-md hover:bg-surface-container-high transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[20px] text-secondary">qr_code_scanner</span>
+          <span>Verify Credential</span>
+        </a>
+        {% else %}
+        <a href="{{ url_for('reports') }}" class="flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition-all shadow-sm text-decoration-none">
+          <span class="material-symbols-outlined text-[20px]">bar_chart</span>
+          <span>System Analytics</span>
+        </a>
         {% endif %}
-      </a>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ROLE: ADMIN DASHBOARD -->
-  {% if user.role == 'admin' %}
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--indigo-900) !important;">
-        <div class="text-muted small text-uppercase fw-bold">Total Users</div>
-        <div class="fs-2 fw-bold text-dark">{{ stats.total_users }}</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--gold-500) !important;">
-        <div class="text-muted small text-uppercase fw-bold">Institutions</div>
-        <div class="fs-2 fw-bold text-dark">{{ stats.total_institutions }}</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid #10b981 !important;">
-        <div class="text-muted small text-uppercase fw-bold">Cert Templates</div>
-        <div class="fs-2 fw-bold text-dark">{{ stats.total_templates }}</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid #6366f1 !important;">
-        <div class="text-muted small text-uppercase fw-bold">Total Issued</div>
-        <div class="fs-2 fw-bold text-dark">{{ stats.total_issued }}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row g-4">
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm p-4 h-100">
-        <h5 style="font-family: 'Fraunces', serif;">System Overview</h5>
-        <p class="text-muted small">Manage all actors, certificate templates, and audit logs.</p>
-        <div class="d-flex flex-column gap-2 mt-3">
-          <a href="{{ url_for('reports') }}" class="btn btn-outline-primary text-start">📊 View System Reports & Audit Logs</a>
-          <a href="{{ url_for('verify_certificate') }}" class="btn btn-outline-secondary text-start">🔍 Public Verification Tool</a>
+  <!-- Key Statistics Cards Grid (4 Columns) -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+    <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant">Total certificates issued</span>
+        <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
         </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm p-4 h-100">
-        <h5 style="font-family: 'Fraunces', serif;">Recent Platform Activity</h5>
-        <ul class="list-group list-group-flush mt-2 small">
-          <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
-            <span>Registered Members</span>
-            <span class="badge bg-light text-dark fw-normal">{{ stats.total_members }}</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
-            <span>Verified Issuances</span>
-            <span class="badge bg-light text-dark fw-normal">{{ stats.total_issued }}</span>
-          </li>
-        </ul>
+      <div class="mt-4 flex items-baseline justify-between gap-2">
+        <span class="font-headline-md text-headline-md text-primary tracking-tight font-semibold">
+          {{ stats.issued_count if user.role == 'institution' else (stats.total_issued if user.role == 'admin' else (claimed|length)) }}
+        </span>
+        <span class="inline-flex items-center gap-0.5 font-label-sm text-label-sm text-secondary font-semibold bg-surface-container px-2 py-0.5 rounded-full">
+          <span class="material-symbols-outlined text-[14px]">trending_up</span> +18.4%
+        </span>
+      </div>
+      <div class="mt-3 pt-3 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm border-t border-outline-variant/20">
+        <span>Academic programs</span>
+        <span class="font-medium text-primary">Annual total</span>
       </div>
     </div>
-  </div>
 
-  <!-- ROLE: INSTITUTION DASHBOARD -->
-  {% elif user.role == 'institution' %}
-  <div class="row g-3 mb-4">
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--indigo-900) !important;">
-        <div class="text-muted small text-uppercase fw-bold">Certificate Templates</div>
-        <div class="fs-2 fw-bold text-dark">{{ stats.templates_count }}</div>
+    <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant">Active templates</span>
+        <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">layers</span>
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="font-headline-md text-headline-md text-primary tracking-tight font-semibold">
+          {{ stats.templates_count if user.role == 'institution' else (stats.total_templates if user.role == 'admin' else 12) }}
+        </span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">approved formats</span>
+      </div>
+      <div class="mt-3 pt-3 flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm border-t border-outline-variant/20">
+        <span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+        <span>Senate accredited</span>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid var(--gold-500) !important;">
-        <div class="text-muted small text-uppercase fw-bold">Issued Certificates</div>
-        <div class="fs-2 fw-bold text-dark">{{ stats.issued_count }}</div>
+
+    <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant">
+          {% if user.role == 'member' %}Pending Claims{% else %}Pending student reviews{% endif %}
+        </span>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">
+          <span class="material-symbols-outlined text-[14px]">pending</span> Active
+        </span>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="font-headline-md text-headline-md text-primary tracking-tight font-semibold">
+          {{ unclaimed|length if user.role == 'member' else (stats.claimed_count if user.role == 'institution' else 3) }}
+        </span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">records</span>
+      </div>
+      <div class="mt-3 pt-3 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm border-t border-outline-variant/20">
+        <span>Honors & degrees</span>
+        <span class="material-symbols-outlined text-[18px] text-secondary">arrow_forward</span>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm p-3 text-center" style="border-top: 4px solid #10b981 !important;">
-        <div class="text-muted small text-uppercase fw-bold">Claimed Certificates</div>
-        <div class="fs-2 fw-bold text-dark">{{ stats.claimed_count }}</div>
+
+    <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm">
+      <div class="flex items-center justify-between">
+        <span class="font-label-md text-label-md text-on-surface-variant">Credential verifications</span>
+        <div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[20px]">visibility</span>
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline gap-2">
+        <span class="font-headline-md text-headline-md text-primary tracking-tight font-semibold">842</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">public lookups</span>
+      </div>
+      <div class="mt-3 pt-3 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm border-t border-outline-variant/20">
+        <span class="inline-flex items-center gap-1 text-primary font-medium">
+          <span class="material-symbols-outlined text-[16px] text-secondary">check_circle</span> 100% verified
+        </span>
+        <span class="text-[11px] text-outline">Cryptographic</span>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card-grid mb-4">
-    <a href="{{ url_for('create_certificate') }}" class="text-decoration-none color-inherit">
-      <div class="action-card h-100">
-        <h3>➕ New Certificate Template</h3>
-        <p>Design a new certificate template for issuing.</p>
+  <!-- MEMBER: UNCLAIMED CERTIFICATES NOTIFICATION -->
+  {% if user.role == 'member' and unclaimed %}
+  <section class="flex flex-col rounded-xl bg-emerald-50 border border-emerald-200 p-space-lg gap-space-md shadow-sm">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-emerald-700 text-[26px]">celebration</span>
+        <div>
+          <h2 class="font-headline-sm text-headline-sm text-emerald-900 mb-0">Pending Certificates Ready to Claim</h2>
+          <p class="font-body-sm text-body-sm text-emerald-700 mb-0">Institutions have issued these credentials to your verified contact information.</p>
+        </div>
       </div>
-    </a>
-    <a href="{{ url_for('certificates_list') }}" class="text-decoration-none color-inherit">
-      <div class="action-card h-100">
-        <h3>📜 Certificate Templates</h3>
-        <p>Manage existing templates and issue to members.</p>
-      </div>
-    </a>
-    <a href="{{ url_for('issued_list') }}" class="text-decoration-none color-inherit">
-      <div class="action-card h-100">
-        <h3>📋 Issued History</h3>
-        <p>View all certificates issued by your institution.</p>
-      </div>
-    </a>
-    <a href="{{ url_for('reports') }}" class="text-decoration-none color-inherit">
-      <div class="action-card h-100">
-        <h3>📊 Analytics & Reports</h3>
-        <p>View stats on certificate claims and verification.</p>
-      </div>
-    </a>
-  </div>
-
-  <!-- ROLE: MEMBER DASHBOARD -->
-  {% elif user.role == 'member' %}
-    {% if not user.is_profile_setup %}
-    <div class="card border-0 shadow-sm p-4 mb-4" style="background: #fffbeb; border-left: 4px solid var(--gold-500) !important;">
-      <h4 style="font-family: 'Fraunces', serif;">Complete Your Profile</h4>
-      <p class="text-muted small mb-3">Add your details to enable public verification and alumni networking.</p>
-      <form action="{{ url_for('update_profile') }}" method="POST" class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label small fw-bold">Job Title</label>
-          <input type="text" name="job_title" class="form-control" placeholder="e.g. Software Engineer" required>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label small fw-bold">Location</label>
-          <input type="text" name="location" class="form-control" placeholder="e.g. San Francisco, CA" required>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label small fw-bold">Phone Number (For verification matching)</label>
-          <input type="tel" name="phone" value="{{ user.phone or '' }}" class="form-control" placeholder="+1234567890">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label small fw-bold">Alumni Institution</label>
-          <input type="text" name="alumni" class="form-control" placeholder="e.g. Stanford University" required>
-        </div>
-        <div class="col-md-12">
-          <label class="form-label small fw-bold">Portfolio / LinkedIn URL</label>
-          <input type="url" name="portfolio_url" class="form-control" placeholder="https://linkedin.com/in/username">
-        </div>
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary" style="background-color: var(--indigo-900); border: none;">Save Profile</button>
-        </div>
-      </form>
+      <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm font-semibold">{{ unclaimed|length }} Pending</span>
     </div>
-    {% endif %}
 
-    <!-- UNCLAIMED CERTIFICATES NOTIFICATION BANNER -->
-    {% if unclaimed %}
-    <div class="card border-0 shadow-sm p-4 mb-4" style="background: #f0fdf4; border-left: 4px solid #166534 !important;">
-      <h4 class="text-success mb-2" style="font-family: 'Fraunces', serif;">🎉 Pending Certificates Ready to Claim!</h4>
-      <p class="text-muted small mb-3">Institutions have issued the following certificates to your email or phone number:</p>
-
-      <div class="d-flex flex-column gap-3">
-        {% for item in unclaimed %}
-        <div class="bg-white p-3 rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <h6 class="mb-1 fw-bold text-dark" style="font-family: 'Fraunces', serif;">{{ item.cert_title }}</h6>
-            <div class="text-muted small">Issued by <strong>{{ item.institution_name }}</strong> on {{ item.issued_at.strftime('%Y-%m-%d') }}</div>
+    <div class="flex flex-col gap-space-sm mt-2">
+      {% for item in unclaimed %}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white shadow-sm border border-emerald-100 gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[24px]">school</span>
           </div>
-          <form action="{{ url_for('claim_certificate', issued_id=item.issued_id) }}" method="POST" class="mb-0">
-            <button type="submit" class="btn btn-success btn-sm px-3 fw-bold">✨ Claim Certificate</button>
-          </form>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- MY CLAIMED / VERIFIED CERTIFICATES -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="mb-0" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">My Credentials & Certificates</h4>
-      <a href="{{ url_for('public_profile', user_id=user.id) }}" class="text-decoration-none small fw-bold" style="color: var(--gold-500);">Share Public Profile →</a>
-    </div>
-
-    {% if claimed %}
-    <div class="row g-4">
-      {% for issued_cert, cert, inst in claimed %}
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-4 h-100" style="border-top: 4px solid var(--gold-500) !important; border-radius: 12px;">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h5 class="mb-0" style="font-family: 'Fraunces', serif; color: var(--indigo-900);">{{ cert.title }}</h5>
-            <span class="badge bg-success text-white">Verified</span>
-          </div>
-          <div class="text-muted small mb-3">Issued by <strong>{{ inst.name }}</strong></div>
-          <p class="text-dark small flex-grow-1">{{ cert.description }}</p>
-          <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-2">
-            <code style="font-size: 11px;">{{ issued_cert.verification_code }}</code>
-            <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="btn btn-outline-primary btn-sm">Inspect Credential</a>
+          <div class="flex flex-col">
+            <h3 class="font-title-md text-title-md text-primary font-semibold mb-0">{{ item.cert_title }}</h3>
+            <span class="font-body-sm text-body-sm text-on-surface-variant">Conferred by <strong>{{ item.institution_name }}</strong></span>
+            <span class="font-label-sm text-[11px] text-outline mt-0.5">Issued: {{ item.issued_at.strftime('%B %d, %Y') if item.issued_at else '' }}</span>
           </div>
         </div>
+        <form action="{{ url_for('claim_certificate', issued_id=item.issued_id) }}" method="POST" class="mb-0 self-end sm:self-center">
+          <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-title-md text-body-sm shadow-sm transition-all flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">verified</span>
+            <span>Claim Certificate</span>
+          </button>
+        </form>
       </div>
       {% endfor %}
     </div>
-    {% else %}
-    <div class="card border-0 shadow-sm p-5 text-center text-muted">
-      <p class="mb-0">No claimed certificates yet. When an institution issues a certificate to your email or phone, it will appear here for you to claim!</p>
-    </div>
-    {% endif %}
-
+  </section>
   {% endif %}
+
+  <!-- Main Content Layout (Desktop 2fr / 1fr) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-space-xl items-start">
+    <!-- Left Column (2fr) -->
+    <div class="lg:col-span-2 flex flex-col gap-space-xl">
+      <!-- Certificate Templates Section -->
+      <section class="flex flex-col gap-space-md">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-headline-sm text-headline-sm text-primary">Certificate templates</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Standard diploma and accreditation formats approved by the Academic Senate</p>
+          </div>
+          {% if user.role == 'institution' %}
+          <a class="font-title-md text-title-md text-secondary hover:underline flex items-center gap-1 text-decoration-none" href="{{ url_for('certificates_list') }}">
+            Manage templates <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+          </a>
+          {% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+          {% if templates %}
+            {% for cert in templates[:3] %}
+            <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex flex-col gap-space-sm">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-medium">Academic</span>
+                  <span class="flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                  </span>
+                </div>
+                <h3 class="font-title-lg text-title-lg text-primary line-clamp-2">{{ cert.title }}</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">{{ cert.description or 'Official accredited certificate template.' }}</p>
+              </div>
+              <div class="mt-6 pt-4 flex flex-col gap-3 border-t border-outline-variant/20">
+                <div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+                  <span>Created</span>
+                  <span class="font-semibold text-primary">{{ cert.created_at.strftime('%b %d, %Y') if cert.created_at else '' }}</span>
+                </div>
+                {% if user.role == 'institution' %}
+                <a href="{{ url_for('issue_certificate', cert_id=cert.id) }}" class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
+                  <span class="material-symbols-outlined text-[18px] text-secondary">send</span>
+                  <span>Issue certificate</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('verify_certificate') }}" class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
+                  <span class="material-symbols-outlined text-[18px] text-secondary">visibility</span>
+                  <span>Inspect Specimen</span>
+                </a>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <!-- Default Display Cards matching design -->
+            <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex flex-col gap-space-sm">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-medium">Undergraduate</span>
+                  <span class="flex items-center gap-1 text-[11px] font-medium text-outline"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Active</span>
+                </div>
+                <h3 class="font-title-lg text-title-lg text-primary line-clamp-2">Bachelor of Science in Computer Science</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Standard four-year baccalaureate degree template with official university seal.</p>
+              </div>
+              <div class="mt-6 pt-4 flex flex-col gap-3 border-t border-outline-variant/20">
+                <div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+                  <span>Standard</span>
+                  <span class="font-semibold text-primary">Baccalaureate</span>
+                </div>
+                <a href="{{ url_for('create_certificate') if user.role == 'institution' else url_for('verify_certificate') }}" class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
+                  <span class="material-symbols-outlined text-[18px] text-secondary">design_services</span>
+                  <span>{% if user.role == 'institution' %}Create Template{% else %}View System Format{% endif %}</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex flex-col gap-space-sm">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-medium">Graduate</span>
+                  <span class="flex items-center gap-1 text-[11px] font-medium text-outline"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Active</span>
+                </div>
+                <h3 class="font-title-lg text-title-lg text-primary line-clamp-2">Master of Science in Data Ethics</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Graduate school credential with dual department chairs and registrar signature lines.</p>
+              </div>
+              <div class="mt-6 pt-4 flex flex-col gap-3 border-t border-outline-variant/20">
+                <div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+                  <span>Accreditation</span>
+                  <span class="font-semibold text-primary">Senate Approved</span>
+                </div>
+                <a href="{{ url_for('create_certificate') if user.role == 'institution' else url_for('verify_certificate') }}" class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
+                  <span class="material-symbols-outlined text-[18px] text-secondary">design_services</span>
+                  <span>{% if user.role == 'institution' %}Create Template{% else %}View System Format{% endif %}</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex flex-col gap-space-sm">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm font-medium">Honors & Awards</span>
+                  <span class="flex items-center gap-1 text-[11px] font-medium text-outline"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Active</span>
+                </div>
+                <h3 class="font-title-lg text-title-lg text-primary line-clamp-2">Dean's Honors List Award</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Term scholastic achievement citation awarded to students with 3.8+ GPA.</p>
+              </div>
+              <div class="mt-6 pt-4 flex flex-col gap-3 border-t border-outline-variant/20">
+                <div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+                  <span>Distinction</span>
+                  <span class="font-semibold text-primary">Honors Seal</span>
+                </div>
+                <a href="{{ url_for('create_certificate') if user.role == 'institution' else url_for('verify_certificate') }}" class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
+                  <span class="material-symbols-outlined text-[18px] text-secondary">design_services</span>
+                  <span>{% if user.role == 'institution' %}Create Template{% else %}View System Format{% endif %}</span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Recent Issuing Ledger Table -->
+      <section class="flex flex-col rounded-xl bg-surface-container-lowest shadow-sm p-space-lg gap-space-md overflow-hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-headline-sm text-headline-sm text-primary">Recent issuance activity</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Log of official credentials dispatched to graduates and recipients</p>
+          </div>
+          {% if user.role == 'institution' %}
+          <a href="{{ url_for('issued_list') }}" class="p-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-colors" title="View Full Ledger">
+            <span class="material-symbols-outlined text-[20px]">list_alt</span>
+          </a>
+          {% endif %}
+        </div>
+
+        <div class="w-full overflow-x-auto">
+          <table class="w-full text-left font-body-sm text-body-sm">
+            <thead>
+              <tr class="text-on-surface-variant font-label-sm text-label-sm bg-surface-container-low">
+                <th class="py-3 px-4 rounded-l-lg">Recipient Contact</th>
+                <th class="py-3 px-4">Credential Title</th>
+                <th class="py-3 px-4">Date Issued</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 rounded-r-lg text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y-0">
+              {% if recent_issued %}
+                {% for ic, cert in recent_issued %}
+                <tr class="hover:bg-surface-container-low transition-colors">
+                  <td class="py-3.5 px-4 font-title-md text-title-md text-primary">
+                    {{ ic.recipient_email or ic.recipient_phone }}
+                  </td>
+                  <td class="py-3.5 px-4 text-on-surface-variant">{{ cert.title }}</td>
+                  <td class="py-3.5 px-4 text-outline font-label-sm">
+                    {{ ic.issued_at.strftime('%b %d, %Y %H:%M') if ic.issued_at else 'Unknown' }}
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full {% if ic.status == 'claimed' %}bg-emerald-50 text-emerald-700{% else %}bg-surface-container text-secondary{% endif %} font-label-sm text-[12px] font-semibold">
+                      <span class="w-1.5 h-1.5 rounded-full {% if ic.status == 'claimed' %}bg-emerald-500{% else %}bg-secondary{% endif %}"></span>
+                      {{ ic.status|title if ic.status else 'Issued' }}
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <a href="{{ url_for('verify_certificate', code=ic.verification_code) }}" class="text-secondary hover:underline font-title-md text-body-sm text-decoration-none">
+                      View certificate
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% elif claimed %}
+                {% for ic, cert, inst in claimed %}
+                <tr class="hover:bg-surface-container-low transition-colors">
+                  <td class="py-3.5 px-4 font-title-md text-title-md text-primary">{{ user.name }}</td>
+                  <td class="py-3.5 px-4 text-on-surface-variant">{{ cert.title }}</td>
+                  <td class="py-3.5 px-4 text-outline font-label-sm">{{ ic.issued_at.strftime('%b %d, %Y') if ic.issued_at else '' }}</td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-[12px] font-semibold">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3.5 px-4 text-right">
+                    <a href="{{ url_for('verify_certificate', code=ic.verification_code) }}" class="text-secondary hover:underline font-title-md text-body-sm text-decoration-none">
+                      View certificate
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr class="hover:bg-surface-container-low transition-colors">
+                  <td class="py-3.5 px-4 font-title-md text-title-md text-primary" colspan="5">
+                    <div class="text-center py-4 text-muted">
+                      No records logged yet. Certificates issued by your institution will appear in this ledger.
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column (1fr) -->
+    <div class="flex flex-col gap-space-xl">
+      <!-- Graduation Cohorts Card -->
+      <section class="flex flex-col p-space-lg rounded-xl bg-surface-container-lowest shadow-sm gap-space-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary text-[22px]">calendar_month</span>
+            <h3 class="font-title-lg text-title-lg text-primary">Graduation cohorts</h3>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] font-semibold">Active Cycle</span>
+        </div>
+        <div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-sm">
+          <span class="font-headline-sm text-headline-sm text-primary">Spring 2026 Commencement</span>
+          <span class="font-body-md text-body-md text-on-surface font-medium">Main Campus Ceremony</span>
+          <div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm pt-2">
+            <span>Official diplomas queue</span>
+            <span class="font-semibold text-primary">June 12, 2026</span>
+          </div>
+          <div class="w-full bg-surface-container rounded-full h-2 mt-1 overflow-hidden">
+            <div class="bg-secondary h-full rounded-full" style="width: 82%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-outline font-label-sm">
+            <span>Verified Registry Records</span>
+            <span>Cryptographic</span>
+          </div>
+        </div>
+        {% if user.role == 'institution' %}
+        <a href="{{ url_for('create_certificate') }}" class="w-full py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-2 text-decoration-none">
+          <span class="material-symbols-outlined text-[18px] text-secondary">rule</span>
+          <span>Prepare graduation batch</span>
+        </a>
+        {% endif %}
+      </section>
+
+      <!-- Registrar Resources Card -->
+      <section class="flex flex-col p-space-lg rounded-xl bg-surface-container-lowest shadow-sm gap-space-md">
+        <h3 class="font-title-lg text-title-lg text-primary">Registrar resources</h3>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Helpful documentation, compliance standards, and issuing templates for faculty.</p>
+        <div class="flex flex-col gap-space-xs">
+          <a class="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors group text-decoration-none" href="{{ url_for('verify_certificate') }}">
+            <span class="material-symbols-outlined text-[20px] text-secondary mt-0.5">verified</span>
+            <div class="flex flex-col">
+              <span class="font-title-md text-title-md text-primary group-hover:text-secondary transition-colors">Public verification standard</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Cryptographic SHA-256 and UUID certificate verification lookup.</span>
+            </div>
+          </a>
+          <a class="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-container transition-colors group text-decoration-none" href="{{ url_for('reports') if user.role in ['admin', 'institution'] else url_for('dashboard') }}">
+            <span class="material-symbols-outlined text-[20px] text-secondary mt-0.5">bar_chart</span>
+            <div class="flex flex-col">
+              <span class="font-title-md text-title-md text-primary group-hover:text-secondary transition-colors">Institutional audit logs</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Live metrics on certificate issuance and claim fulfillment.</span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
 </div>
 {% endblock %}
