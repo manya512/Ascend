@@ -1145,6 +1145,270 @@ def reports():
     )
 
 
+# ── Institution Head Dashboard ──────────────────────────────────────────────
+
+def _require_institution_head():
+    """Return (institution_user, None) or (None, redirect_response)."""
+    if not current_user.is_authenticated:
+        from flask_login import login_url
+        return None, redirect(url_for('login'))
+    if current_user.role != 'institution':
+        abort(403)
+    if current_user.approval_status != 'approved':
+        flash('Your institution account is not approved.')
+        return None, redirect(url_for('dashboard'))
+    return current_user, None
+
+
+@app.route('/institution/dashboard')
+@login_required
+def institution_dashboard():
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    inst_id = inst.id
+
+    # Overview stats
+    total_students = User.query.filter_by(role='member', institution_id=inst_id).count()
+    total_staff = User.query.filter_by(role='staff', institution_id=inst_id).count()
+    verified_staff = User.query.filter_by(role='staff', institution_id=inst_id, staff_status='verified').count()
+    pending_staff = User.query.filter_by(role='staff', institution_id=inst_id, staff_status='pending').count()
+    num_departments = Department.query.filter_by(institution_id=inst_id).count()
+    num_clubs = Club.query.filter_by(institution_id=inst_id).count()
+    total_issued = IssuedCertificate.query.filter_by(institution_id=inst_id).count()
+    claimed_issued = IssuedCertificate.query.filter_by(institution_id=inst_id, status='claimed').count()
+    unclaimed_issued = total_issued - claimed_issued
+
+    # Per-department table
+    departments = Department.query.filter_by(institution_id=inst_id).order_by(Department.name).all()
+    dept_rows = []
+    for dept in departments:
+        dept_students = User.query.filter_by(role='member', department_id=dept.id, institution_id=inst_id).count()
+        dept_staff = User.query.filter_by(role='staff', department_id=dept.id, institution_id=inst_id).count()
+        # issued certs to students in this dept
+        student_emails = db.session.query(User.email).filter_by(
+            role='member', department_id=dept.id, institution_id=inst_id
+        ).all()
+        email_list = [e[0].strip().lower() for e in student_emails if e[0]]
+        if email_list:
+            dept_certs = IssuedCertificate.query.filter(
+                IssuedCertificate.institution_id == inst_id,
+                db.func.lower(IssuedCertificate.recipient_email).in_(email_list)
+            ).count()
+        else:
+            dept_certs = 0
+        dept_rows.append({
+            'id': dept.id,
+            'name': dept.name,
+            'students': dept_students,
+            'staff': dept_staff,
+            'certs': dept_certs
+        })
+
+    # Recent 5 issuances
+    recent_issuances = db.session.query(IssuedCertificate, Certificate).join(
+        Certificate, IssuedCertificate.certificate_id == Certificate.id
+    ).filter(IssuedCertificate.institution_id == inst_id).order_by(
+        IssuedCertificate.issued_at.desc()
+    ).limit(5).all()
+
+    stats = {
+        'total_students': total_students,
+        'total_staff': total_staff,
+        'verified_staff': verified_staff,
+        'pending_staff': pending_staff,
+        'num_departments': num_departments,
+        'num_clubs': num_clubs,
+        'total_issued': total_issued,
+        'claimed_issued': claimed_issued,
+        'unclaimed_issued': unclaimed_issued,
+    }
+
+    clubs = Club.query.filter_by(institution_id=inst_id).order_by(Club.name).all()
+    all_staff = User.query.filter_by(role='staff', institution_id=inst_id).order_by(
+        db.case((User.staff_status == 'pending', 0), else_=1),
+        User.name
+    ).all()
+    students = User.query.filter_by(role='member', institution_id=inst_id).order_by(User.name).all()
+
+    return render_template(
+        'institution_dashboard.html',
+        user=inst,
+        stats=stats,
+        dept_rows=dept_rows,
+        recent_issuances=recent_issuances,
+        departments=departments,
+        clubs=clubs,
+        all_staff=all_staff,
+        students=students,
+        active_tab=request.args.get('tab', 'overview')
+    )
+
+
+@app.route('/institution/departments/add', methods=['POST'])
+@login_required
+def institution_add_department():
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Department name cannot be empty.')
+        return redirect(url_for('institution_dashboard', tab='departments'))
+    existing = Department.query.filter_by(institution_id=inst.id, name=name).first()
+    if existing:
+        flash(f'Department "{name}" already exists.')
+        return redirect(url_for('institution_dashboard', tab='departments'))
+    dept = Department(institution_id=inst.id, name=name)
+    db.session.add(dept)
+    db.session.commit()
+    flash(f'Department "{name}" added.')
+    return redirect(url_for('institution_dashboard', tab='departments'))
+
+
+@app.route('/institution/departments/<int:dept_id>/rename', methods=['POST'])
+@login_required
+def institution_rename_department(dept_id):
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    dept = Department.query.filter_by(id=dept_id, institution_id=inst.id).first_or_404()
+    new_name = request.form.get('name', '').strip()
+    if not new_name:
+        flash('Department name cannot be empty.')
+        return redirect(url_for('institution_dashboard', tab='departments'))
+    conflict = Department.query.filter_by(institution_id=inst.id, name=new_name).first()
+    if conflict and conflict.id != dept_id:
+        flash(f'Department "{new_name}" already exists.')
+        return redirect(url_for('institution_dashboard', tab='departments'))
+    dept.name = new_name
+    db.session.commit()
+    flash(f'Department renamed to "{new_name}".')
+    return redirect(url_for('institution_dashboard', tab='departments'))
+
+
+@app.route('/institution/departments/<int:dept_id>/delete', methods=['POST'])
+@login_required
+def institution_delete_department(dept_id):
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    dept = Department.query.filter_by(id=dept_id, institution_id=inst.id).first_or_404()
+    # Block if any user is assigned
+    user_count = User.query.filter_by(department_id=dept_id).count()
+    if user_count > 0:
+        flash(f'Cannot delete "{dept.name}": {user_count} user(s) are assigned to it. Reassign or remove them first.')
+        return redirect(url_for('institution_dashboard', tab='departments'))
+    db.session.delete(dept)
+    db.session.commit()
+    flash(f'Department "{dept.name}" deleted.')
+    return redirect(url_for('institution_dashboard', tab='departments'))
+
+
+@app.route('/institution/clubs/add', methods=['POST'])
+@login_required
+def institution_add_club():
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Club name cannot be empty.')
+        return redirect(url_for('institution_dashboard', tab='clubs'))
+    existing = Club.query.filter_by(institution_id=inst.id, name=name).first()
+    if existing:
+        flash(f'Club "{name}" already exists.')
+        return redirect(url_for('institution_dashboard', tab='clubs'))
+    club = Club(institution_id=inst.id, name=name)
+    db.session.add(club)
+    db.session.commit()
+    flash(f'Club "{name}" added.')
+    return redirect(url_for('institution_dashboard', tab='clubs'))
+
+
+@app.route('/institution/clubs/<int:club_id>/delete', methods=['POST'])
+@login_required
+def institution_delete_club(club_id):
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    club = Club.query.filter_by(id=club_id, institution_id=inst.id).first_or_404()
+    name = club.name
+    db.session.delete(club)
+    db.session.commit()
+    flash(f'Club "{name}" deleted.')
+    return redirect(url_for('institution_dashboard', tab='clubs'))
+
+
+@app.route('/institution/staff/<int:staff_id>/verify', methods=['POST'])
+@login_required
+def institution_verify_staff(staff_id):
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    staff = User.query.filter_by(id=staff_id, role='staff', institution_id=inst.id).first_or_404()
+    staff.staff_status = 'verified'
+    notif = Notification(
+        user_id=staff.id,
+        recipient_email=staff.email,
+        message=f"Your staff account at {inst.name} has been verified. You can now issue certificates.",
+        link="/dashboard"
+    )
+    db.session.add(notif)
+    db.session.commit()
+    flash(f'{staff.name} has been verified as staff.')
+    return redirect(url_for('institution_dashboard', tab='staff'))
+
+
+@app.route('/institution/staff/<int:staff_id>/reject', methods=['POST'])
+@login_required
+def institution_reject_staff(staff_id):
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    staff = User.query.filter_by(id=staff_id, role='staff', institution_id=inst.id).first_or_404()
+    staff.staff_status = 'rejected'
+    notif = Notification(
+        user_id=staff.id,
+        recipient_email=staff.email,
+        message=f"Your staff application at {inst.name} has been rejected. Please contact the institution for more information.",
+        link="/dashboard"
+    )
+    db.session.add(notif)
+    db.session.commit()
+    flash(f'{staff.name} staff status set to rejected.')
+    return redirect(url_for('institution_dashboard', tab='staff'))
+
+
+@app.route('/institution/staff/<int:staff_id>/remove', methods=['POST'])
+@login_required
+def institution_remove_staff(staff_id):
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    staff = User.query.filter_by(id=staff_id, role='staff', institution_id=inst.id).first_or_404()
+    staff.institution_id = None
+    staff.department_id = None
+    staff.staff_status = None
+    db.session.commit()
+    flash(f'{staff.name} removed from institution.')
+    return redirect(url_for('institution_dashboard', tab='staff'))
+
+
+@app.route('/institution/students/<int:student_id>/remove', methods=['POST'])
+@login_required
+def institution_remove_student(student_id):
+    inst, err = _require_institution_head()
+    if err:
+        return err
+    student = User.query.filter_by(id=student_id, role='member', institution_id=inst.id).first_or_404()
+    student.institution_id = None
+    student.department_id = None
+    db.session.commit()
+    flash(f'{student.name} removed from institution.')
+    return redirect(url_for('institution_dashboard', tab='students'))
+
+
 @app.route('/logout')
 @login_required
 def logout():

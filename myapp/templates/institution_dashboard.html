@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}Institution Dashboard — {{ user.name }} — Ascend{% endblock %}
+
+{% block content %}
+<div class="min-h-screen" style="background: #f5f3ff;">
+
+  <!-- ── Top Hero Banner ── -->
+  <div style="background: linear-gradient(135deg, #26215C 0%, #3C3489 60%, #4e42a8 100%); padding: 2rem 2rem 0 2rem;">
+    <div style="max-width: 1280px; margin: 0 auto;">
+      <!-- Breadcrumb -->
+      <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:1.25rem;">
+        <a href="{{ url_for('dashboard') }}" style="color:#c4b8ff; font-size:.8rem; text-decoration:none; font-family:'Inter',sans-serif; opacity:.8;">Dashboard</a>
+        <span style="color:#7c6fd4; font-size:.75rem;">›</span>
+        <span style="color:#e0d8ff; font-size:.8rem; font-family:'Inter',sans-serif;">Institution Management</span>
+      </div>
+
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:1.5rem; padding-bottom:1.5rem;">
+        <div>
+          <div style="display:inline-flex; align-items:center; gap:.5rem; background:rgba(239,159,39,.15); border:1px solid rgba(239,159,39,.35); border-radius:100px; padding:.3rem .9rem; margin-bottom:.75rem;">
+            <span class="material-symbols-outlined" style="font-size:14px; color:#EF9F27;">account_balance</span>
+            <span style="font-size:.7rem; font-weight:600; color:#EF9F27; letter-spacing:.08em; font-family:'Inter',sans-serif;">INSTITUTION HEAD</span>
+          </div>
+          <h1 style="font-family:'Fraunces',serif; font-size:2rem; font-weight:700; color:#fff; margin:0 0 .35rem; line-height:1.15;">{{ user.name }}</h1>
+          <p style="font-family:'Inter',sans-serif; font-size:.875rem; color:#c4b8ff; margin:0;">
+            Institution Management Portal &nbsp;·&nbsp; Academic Year 2025–2026
+          </p>
+        </div>
+        <a href="{{ url_for('certificates_list') }}" style="display:inline-flex; align-items:center; gap:.5rem; background:#EF9F27; color:#26215C; font-family:'Inter',sans-serif; font-size:.85rem; font-weight:700; padding:.6rem 1.25rem; border-radius:8px; text-decoration:none; transition:opacity .2s;">
+          <span class="material-symbols-outlined" style="font-size:18px;">workspace_premium</span>
+          Issue Certificates
+        </a>
+      </div>
+
+      <!-- Tab Nav -->
+      <nav style="display:flex; gap:0; border-bottom:none; overflow-x:auto; padding-bottom:0;">
+        {% set tabs = [
+          ('overview', 'bar_chart', 'Overview'),
+          ('departments', 'account_tree', 'Departments'),
+          ('clubs', 'groups', 'Clubs'),
+          ('staff', 'badge', 'Staff'),
+          ('students', 'school', 'Students'),
+        ] %}
+        {% for tab_id, icon, label in tabs %}
+        <a href="{{ url_for('institution_dashboard', tab=tab_id) }}"
+           id="tab-{{ tab_id }}"
+           style="display:inline-flex; align-items:center; gap:.45rem; padding:.7rem 1.25rem; font-family:'Inter',sans-serif; font-size:.84rem; font-weight:600; text-decoration:none; border-radius:8px 8px 0 0; margin-right:2px; white-space:nowrap; transition:all .15s;
+                  {% if active_tab == tab_id %}background:rgba(255,255,255,.13); color:#fff; border-bottom:3px solid #EF9F27;{% else %}color:#c4b8ff; border-bottom:3px solid transparent;{% endif %}">
+          <span class="material-symbols-outlined" style="font-size:17px;">{{ icon }}</span>
+          {{ label }}
+          {% if tab_id == 'staff' and stats.pending_staff > 0 %}
+          <span style="background:#EF9F27; color:#26215C; border-radius:100px; padding:.1rem .45rem; font-size:.65rem; font-weight:800;">{{ stats.pending_staff }}</span>
+          {% endif %}
+        </a>
+        {% endfor %}
+      </nav>
+    </div>
+  </div>
+
+  <!-- ── Flash Messages ── -->
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  <div style="max-width:1280px; margin:0 auto; padding:1rem 2rem 0;">
+    {% for msg in messages %}
+    <div style="background:#fff; border:1px solid #ddd6fe; border-left:4px solid #3C3489; border-radius:8px; padding:.75rem 1.25rem; margin-bottom:.5rem; font-family:'Inter',sans-serif; font-size:.85rem; color:#26215C; display:flex; align-items:center; gap:.6rem;">
+      <span class="material-symbols-outlined" style="font-size:18px; color:#3C3489;">info</span>
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- ── Main Content ── -->
+  <div style="max-width:1280px; margin:0 auto; padding:2rem;">
+
+    {# ====== OVERVIEW TAB ====== #}
+    {% if active_tab == 'overview' %}
+
+    <!-- Stat Cards Row -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.75rem;">
+
+      {% set cards = [
+        ('people', 'Total Students', stats.total_students, None, '#26215C'),
+        ('badge', 'Total Staff', stats.total_staff, stats.verified_staff|string + ' verified · ' + stats.pending_staff|string + ' pending', '#3C3489'),
+        ('account_tree', 'Departments', stats.num_departments, None, '#4e42a8'),
+        ('groups', 'Clubs', stats.num_clubs, None, '#6558c4'),
+        ('workspace_premium', 'Certificates Issued', stats.total_issued, stats.claimed_issued|string + ' claimed · ' + stats.unclaimed_issued|string + ' unclaimed', '#EF9F27'),
+      ] %}
+      {% for icon, label, value, sub, accent in cards %}
+      <div style="background:#fff; border-radius:14px; padding:1.25rem 1.5rem; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:-18px; right:-18px; width:72px; height:72px; background:{{ accent }}12; border-radius:50%;"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem;">
+          <span style="font-family:'Inter',sans-serif; font-size:.75rem; font-weight:600; color:#6b6b8a; text-transform:uppercase; letter-spacing:.06em;">{{ label }}</span>
+          <div style="width:36px; height:36px; border-radius:10px; background:{{ accent }}15; display:flex; align-items:center; justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:20px; color:{{ accent }};">{{ icon }}</span>
+          </div>
+        </div>
+        <div style="font-family:'Fraunces',serif; font-size:2rem; font-weight:700; color:#26215C; line-height:1;">{{ value }}</div>
+        {% if sub %}
+        <div style="font-family:'Inter',sans-serif; font-size:.72rem; color:#8b86b0; margin-top:.4rem;">{{ sub }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Per-Department Table -->
+    <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; overflow:hidden; margin-bottom:1.75rem;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #f0edff; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <h2 style="font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; color:#26215C; margin:0 0 .2rem;">Department Breakdown</h2>
+          <p style="font-family:'Inter',sans-serif; font-size:.8rem; color:#8b86b0; margin:0;">Students, staff, and issued certificates per department</p>
+        </div>
+        <a href="{{ url_for('institution_dashboard', tab='departments') }}" style="font-family:'Inter',sans-serif; font-size:.8rem; color:#3C3489; font-weight:600; text-decoration:none;">Manage →</a>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; font-size:.85rem;">
+          <thead>
+            <tr style="background:#f8f6ff;">
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Department</th>
+              <th style="padding:.75rem 1.25rem; text-align:center; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Students</th>
+              <th style="padding:.75rem 1.25rem; text-align:center; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Staff</th>
+              <th style="padding:.75rem 1.25rem; text-align:center; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Certs Issued to Students</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in dept_rows %}
+            <tr style="border-top:1px solid #f5f3ff; {% if loop.index is odd %}background:#faf9ff;{% endif %}">
+              <td style="padding:.85rem 1.25rem; color:#26215C; font-weight:600;">
+                <div style="display:flex; align-items:center; gap:.6rem;">
+                  <span class="material-symbols-outlined" style="font-size:16px; color:#3C3489;">account_tree</span>
+                  {{ row.name }}
+                </div>
+              </td>
+              <td style="padding:.85rem 1.25rem; text-align:center; color:#26215C; font-weight:700;">{{ row.students }}</td>
+              <td style="padding:.85rem 1.25rem; text-align:center; color:#3C3489; font-weight:700;">{{ row.staff }}</td>
+              <td style="padding:.85rem 1.25rem; text-align:center;">
+                <span style="background:{{ '#eef9ee' if row.certs > 0 else '#f5f3ff' }}; color:{{ '#1a7f1a' if row.certs > 0 else '#8b86b0' }}; padding:.2rem .7rem; border-radius:100px; font-size:.78rem; font-weight:700;">{{ row.certs }}</span>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="padding:2rem; text-align:center; color:#8b86b0; font-family:'Inter',sans-serif;">No departments yet. <a href="{{ url_for('institution_dashboard', tab='departments') }}" style="color:#3C3489;">Add one →</a></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Issuances -->
+    <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; overflow:hidden;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #f0edff; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <h2 style="font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; color:#26215C; margin:0 0 .2rem;">Recent Issuances</h2>
+          <p style="font-family:'Inter',sans-serif; font-size:.8rem; color:#8b86b0; margin:0;">Latest 5 certificates dispatched by your institution</p>
+        </div>
+        <a href="{{ url_for('issued_list') }}" style="font-family:'Inter',sans-serif; font-size:.8rem; color:#3C3489; font-weight:600; text-decoration:none;">View all →</a>
+      </div>
+      {% if recent_issuances %}
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; font-size:.85rem;">
+          <thead>
+            <tr style="background:#f8f6ff;">
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Recipient</th>
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Certificate</th>
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Date</th>
+              <th style="padding:.75rem 1.25rem; text-align:center; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Status</th>
+              <th style="padding:.75rem 1.25rem; text-align:right; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">View</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ic, cert in recent_issuances %}
+            <tr style="border-top:1px solid #f5f3ff;">
+              <td style="padding:.8rem 1.25rem; color:#26215C; font-weight:500;">{{ ic.recipient_email or ic.recipient_phone or '—' }}</td>
+              <td style="padding:.8rem 1.25rem; color:#48464d;">{{ cert.title }}</td>
+              <td style="padding:.8rem 1.25rem; color:#8b86b0; font-size:.78rem;">{{ ic.issued_at.strftime('%b %d, %Y') if ic.issued_at else '—' }}</td>
+              <td style="padding:.8rem 1.25rem; text-align:center;">
+                <span style="background:{{ '#e8f5e9' if ic.status == 'claimed' else '#f5f3ff' }}; color:{{ '#1b5e20' if ic.status == 'claimed' else '#3C3489' }}; padding:.2rem .7rem; border-radius:100px; font-size:.75rem; font-weight:700;">{{ ic.status|title }}</span>
+              </td>
+              <td style="padding:.8rem 1.25rem; text-align:right;">
+                <a href="{{ url_for('view_certificate', code=ic.verification_code) }}" style="color:#3C3489; font-size:.8rem; font-weight:600; text-decoration:none;">View →</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:3rem; text-align:center; color:#8b86b0; font-family:'Inter',sans-serif;">
+        <span class="material-symbols-outlined" style="font-size:40px; display:block; margin-bottom:.5rem; color:#c4b8ff;">workspace_premium</span>
+        No certificates issued yet.
+      </div>
+      {% endif %}
+    </div>
+
+    {# ====== DEPARTMENTS TAB ====== #}
+    {% elif active_tab == 'departments' %}
+
+    <div style="display:grid; grid-template-columns:1fr 380px; gap:1.5rem; align-items:start;">
+      <!-- Department list -->
+      <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; overflow:hidden;">
+        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #f0edff;">
+          <h2 style="font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; color:#26215C; margin:0 0 .2rem;">Departments</h2>
+          <p style="font-family:'Inter',sans-serif; font-size:.8rem; color:#8b86b0; margin:0;">{{ departments|length }} department(s) registered</p>
+        </div>
+        {% if departments %}
+        <div>
+          {% for dept in departments %}
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid #f8f6ff; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:.75rem; flex:1; min-width:0;">
+              <div style="width:36px; height:36px; border-radius:10px; background:#f0edff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:18px; color:#3C3489;">account_tree</span>
+              </div>
+              <div style="min-width:0;">
+                <div style="font-family:'Inter',sans-serif; font-weight:600; color:#26215C; font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ dept.name }}</div>
+                <div style="font-family:'Inter',sans-serif; font-size:.75rem; color:#8b86b0;">Created {{ dept.created_at.strftime('%b %d, %Y') if dept.created_at else 'N/A' }}</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:.5rem; flex-shrink:0;">
+              <!-- Rename inline form trigger -->
+              <button onclick="document.getElementById('rename-form-{{ dept.id }}').style.display=document.getElementById('rename-form-{{ dept.id }}').style.display==='none'?'flex':'none'"
+                      style="display:inline-flex; align-items:center; gap:.3rem; padding:.35rem .75rem; border-radius:7px; border:1px solid #ddd6fe; background:#fff; color:#3C3489; font-family:'Inter',sans-serif; font-size:.78rem; font-weight:600; cursor:pointer; transition:all .15s;"
+                      onmouseover="this.style.background='#f0edff'" onmouseout="this.style.background='#fff'">
+                <span class="material-symbols-outlined" style="font-size:14px;">edit</span> Rename
+              </button>
+              <form action="{{ url_for('institution_delete_department', dept_id=dept.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Delete department \'{{ dept.name }}\'?')">
+                <button type="submit" style="display:inline-flex; align-items:center; gap:.3rem; padding:.35rem .75rem; border-radius:7px; border:1px solid #fecaca; background:#fff; color:#dc2626; font-family:'Inter',sans-serif; font-size:.78rem; font-weight:600; cursor:pointer; transition:all .15s;"
+                        onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">
+                  <span class="material-symbols-outlined" style="font-size:14px;">delete</span> Delete
+                </button>
+              </form>
+            </div>
+          </div>
+          <!-- Inline rename form (hidden) -->
+          <div id="rename-form-{{ dept.id }}" style="display:none; background:#faf9ff; padding:.75rem 1.5rem; border-bottom:1px solid #f0edff; align-items:center; gap:.75rem; flex-wrap:wrap;">
+            <form action="{{ url_for('institution_rename_department', dept_id=dept.id) }}" method="POST" style="display:flex; gap:.5rem; align-items:center; flex:1; min-width:0;">
+              <input type="text" name="name" value="{{ dept.name }}" required
+                     style="flex:1; padding:.5rem .85rem; border:1px solid #ddd6fe; border-radius:8px; font-family:'Inter',sans-serif; font-size:.85rem; color:#26215C; outline:none; min-width:0;"
+                     onfocus="this.style.borderColor='#3C3489'" onblur="this.style.borderColor='#ddd6fe'">
+              <button type="submit" style="padding:.5rem 1rem; background:#3C3489; color:#fff; border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:.8rem; font-weight:600; cursor:pointer;">Save</button>
+              <button type="button" onclick="document.getElementById('rename-form-{{ dept.id }}').style.display='none'"
+                      style="padding:.5rem .85rem; background:#f0edff; color:#3C3489; border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:.8rem; cursor:pointer;">Cancel</button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="padding:3rem; text-align:center; color:#8b86b0; font-family:'Inter',sans-serif;">
+          <span class="material-symbols-outlined" style="font-size:40px; display:block; margin-bottom:.5rem; color:#c4b8ff;">account_tree</span>
+          No departments yet. Add one to get started.
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Add Department -->
+      <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; padding:1.5rem;">
+        <h3 style="font-family:'Fraunces',serif; font-size:1rem; font-weight:700; color:#26215C; margin:0 0 1rem;">Add Department</h3>
+        <form action="{{ url_for('institution_add_department') }}" method="POST">
+          <label style="display:block; font-family:'Inter',sans-serif; font-size:.8rem; font-weight:600; color:#48464d; margin-bottom:.4rem;">Department Name</label>
+          <input type="text" name="name" id="dept-name-input" placeholder="e.g. Computer Science" required
+                 style="width:100%; padding:.6rem .9rem; border:1px solid #ddd6fe; border-radius:9px; font-family:'Inter',sans-serif; font-size:.875rem; color:#26215C; box-sizing:border-box; margin-bottom:.85rem; outline:none;"
+                 onfocus="this.style.borderColor='#3C3489'" onblur="this.style.borderColor='#ddd6fe'">
+          <button type="submit" style="width:100%; padding:.65rem; background:linear-gradient(135deg, #26215C, #3C3489); color:#fff; border:none; border-radius:9px; font-family:'Inter',sans-serif; font-size:.875rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.5rem;">
+            <span class="material-symbols-outlined" style="font-size:18px;">add</span> Add Department
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# ====== CLUBS TAB ====== #}
+    {% elif active_tab == 'clubs' %}
+
+    <div style="display:grid; grid-template-columns:1fr 380px; gap:1.5rem; align-items:start;">
+      <!-- Club list -->
+      <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; overflow:hidden;">
+        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #f0edff;">
+          <h2 style="font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; color:#26215C; margin:0 0 .2rem;">Clubs</h2>
+          <p style="font-family:'Inter',sans-serif; font-size:.8rem; color:#8b86b0; margin:0;">{{ clubs|length }} club(s) registered</p>
+        </div>
+        {% if clubs %}
+        <div>
+          {% for club in clubs %}
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid #f8f6ff; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:.75rem;">
+              <div style="width:36px; height:36px; border-radius:10px; background:#fef9ee; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:18px; color:#EF9F27;">groups</span>
+              </div>
+              <div>
+                <div style="font-family:'Inter',sans-serif; font-weight:600; color:#26215C; font-size:.9rem;">{{ club.name }}</div>
+                <div style="font-family:'Inter',sans-serif; font-size:.75rem; color:#8b86b0;">Created {{ club.created_at.strftime('%b %d, %Y') if club.created_at else 'N/A' }}</div>
+              </div>
+            </div>
+            <form action="{{ url_for('institution_delete_club', club_id=club.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Delete club \'{{ club.name }}\'?')">
+              <button type="submit" style="display:inline-flex; align-items:center; gap:.3rem; padding:.35rem .75rem; border-radius:7px; border:1px solid #fecaca; background:#fff; color:#dc2626; font-family:'Inter',sans-serif; font-size:.78rem; font-weight:600; cursor:pointer; transition:all .15s;"
+                      onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">
+                <span class="material-symbols-outlined" style="font-size:14px;">delete</span> Delete
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="padding:3rem; text-align:center; color:#8b86b0; font-family:'Inter',sans-serif;">
+          <span class="material-symbols-outlined" style="font-size:40px; display:block; margin-bottom:.5rem; color:#EF9F27;">groups</span>
+          No clubs yet. Add one to get started.
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Add Club -->
+      <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; padding:1.5rem;">
+        <h3 style="font-family:'Fraunces',serif; font-size:1rem; font-weight:700; color:#26215C; margin:0 0 1rem;">Add Club</h3>
+        <form action="{{ url_for('institution_add_club') }}" method="POST">
+          <label style="display:block; font-family:'Inter',sans-serif; font-size:.8rem; font-weight:600; color:#48464d; margin-bottom:.4rem;">Club Name</label>
+          <input type="text" name="name" placeholder="e.g. Robotics Club" required
+                 style="width:100%; padding:.6rem .9rem; border:1px solid #ddd6fe; border-radius:9px; font-family:'Inter',sans-serif; font-size:.875rem; color:#26215C; box-sizing:border-box; margin-bottom:.85rem; outline:none;"
+                 onfocus="this.style.borderColor='#EF9F27'" onblur="this.style.borderColor='#ddd6fe'">
+          <button type="submit" style="width:100%; padding:.65rem; background:linear-gradient(135deg, #a06000, #EF9F27); color:#fff; border:none; border-radius:9px; font-family:'Inter',sans-serif; font-size:.875rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:.5rem;">
+            <span class="material-symbols-outlined" style="font-size:18px;">add</span> Add Club
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# ====== STAFF TAB ====== #}
+    {% elif active_tab == 'staff' %}
+
+    <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; overflow:hidden;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #f0edff; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <h2 style="font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; color:#26215C; margin:0 0 .2rem;">Staff Management</h2>
+          <p style="font-family:'Inter',sans-serif; font-size:.8rem; color:#8b86b0; margin:0;">{{ all_staff|length }} staff member(s) · pending first</p>
+        </div>
+        {% if stats.pending_staff > 0 %}
+        <span style="background:#fff8e7; border:1px solid #EF9F27; color:#a06000; padding:.3rem .85rem; border-radius:100px; font-family:'Inter',sans-serif; font-size:.78rem; font-weight:700;">
+          {{ stats.pending_staff }} awaiting verification
+        </span>
+        {% endif %}
+      </div>
+      {% if all_staff %}
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; font-size:.85rem;">
+          <thead>
+            <tr style="background:#f8f6ff;">
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Name</th>
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Email</th>
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Department</th>
+              <th style="padding:.75rem 1.25rem; text-align:center; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Status</th>
+              <th style="padding:.75rem 1.25rem; text-align:right; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in all_staff %}
+            <tr style="border-top:1px solid #f5f3ff; {% if s.staff_status == 'pending' %}background:#fffdf5;{% endif %}">
+              <td style="padding:.85rem 1.25rem;">
+                <div style="display:flex; align-items:center; gap:.6rem;">
+                  <div style="width:32px; height:32px; border-radius:50%; background:{% if s.staff_status == 'pending' %}#fff8e7{% elif s.staff_status == 'verified' %}#e8f5e9{% else %}#fef2f2{% endif %}; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Fraunces',serif; font-weight:700; font-size:.85rem; color:{% if s.staff_status == 'pending' %}#a06000{% elif s.staff_status == 'verified' %}#1b5e20{% else %}#dc2626{% endif %};">
+                    {{ s.name[0] }}
+                  </div>
+                  <span style="font-weight:600; color:#26215C;">{{ s.name }}</span>
+                </div>
+              </td>
+              <td style="padding:.85rem 1.25rem; color:#48464d; font-size:.82rem; font-family:monospace;">{{ s.email }}</td>
+              <td style="padding:.85rem 1.25rem; color:#48464d;">
+                {% if s.department %}{{ s.department.name }}{% else %}<span style="color:#c4b8ff;">—</span>{% endif %}
+              </td>
+              <td style="padding:.85rem 1.25rem; text-align:center;">
+                {% if s.staff_status == 'pending' %}
+                <span style="background:#fff8e7; color:#a06000; border:1px solid #EF9F27; padding:.2rem .7rem; border-radius:100px; font-size:.75rem; font-weight:700;">Pending</span>
+                {% elif s.staff_status == 'verified' %}
+                <span style="background:#e8f5e9; color:#1b5e20; padding:.2rem .7rem; border-radius:100px; font-size:.75rem; font-weight:700;">Verified</span>
+                {% elif s.staff_status == 'rejected' %}
+                <span style="background:#fef2f2; color:#dc2626; padding:.2rem .7rem; border-radius:100px; font-size:.75rem; font-weight:700;">Rejected</span>
+                {% else %}
+                <span style="background:#f5f3ff; color:#8b86b0; padding:.2rem .7rem; border-radius:100px; font-size:.75rem;">—</span>
+                {% endif %}
+              </td>
+              <td style="padding:.85rem 1.25rem; text-align:right;">
+                <div style="display:inline-flex; align-items:center; gap:.4rem;">
+                  {% if s.staff_status in ('pending', 'rejected') %}
+                  <form action="{{ url_for('institution_verify_staff', staff_id=s.id) }}" method="POST" style="margin:0;">
+                    <button type="submit" style="display:inline-flex; align-items:center; gap:.3rem; padding:.32rem .7rem; border-radius:7px; background:#e8f5e9; color:#1b5e20; border:1px solid #a5d6a7; font-family:'Inter',sans-serif; font-size:.75rem; font-weight:700; cursor:pointer; white-space:nowrap;"
+                            onmouseover="this.style.background='#c8e6c9'" onmouseout="this.style.background='#e8f5e9'">
+                      <span class="material-symbols-outlined" style="font-size:14px;">verified</span> Verify
+                    </button>
+                  </form>
+                  {% endif %}
+                  {% if s.staff_status in ('pending', 'verified') %}
+                  <form action="{{ url_for('institution_reject_staff', staff_id=s.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Reject this staff member?')">
+                    <button type="submit" style="display:inline-flex; align-items:center; gap:.3rem; padding:.32rem .7rem; border-radius:7px; background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; font-family:'Inter',sans-serif; font-size:.75rem; font-weight:700; cursor:pointer; white-space:nowrap;"
+                            onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                      <span class="material-symbols-outlined" style="font-size:14px;">close</span> Reject
+                    </button>
+                  </form>
+                  {% endif %}
+                  {% if s.staff_status == 'verified' %}
+                  <form action="{{ url_for('institution_remove_staff', staff_id=s.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Remove {{ s.name }} from institution?')">
+                    <button type="submit" style="display:inline-flex; align-items:center; gap:.3rem; padding:.32rem .7rem; border-radius:7px; background:#f5f3ff; color:#48464d; border:1px solid #ddd6fe; font-family:'Inter',sans-serif; font-size:.75rem; font-weight:700; cursor:pointer; white-space:nowrap;"
+                            onmouseover="this.style.background='#ede9ff'" onmouseout="this.style.background='#f5f3ff'">
+                      <span class="material-symbols-outlined" style="font-size:14px;">person_remove</span> Remove
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div style="padding:3rem; text-align:center; color:#8b86b0; font-family:'Inter',sans-serif;">
+        <span class="material-symbols-outlined" style="font-size:40px; display:block; margin-bottom:.5rem; color:#c4b8ff;">badge</span>
+        No staff members yet. Staff can register and select your institution.
+      </div>
+      {% endif %}
+    </div>
+
+    {# ====== STUDENTS TAB ====== #}
+    {% elif active_tab == 'students' %}
+
+    <div style="background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(38,33,92,.08); border:1px solid #ede9ff; overflow:hidden;">
+      <div style="padding:1.25rem 1.5rem; border-bottom:1px solid #f0edff; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem;">
+        <div>
+          <h2 style="font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; color:#26215C; margin:0 0 .2rem;">Students</h2>
+          <p style="font-family:'Inter',sans-serif; font-size:.8rem; color:#8b86b0; margin:0;">{{ students|length }} student(s) affiliated with your institution</p>
+        </div>
+        <!-- Search box -->
+        <div style="position:relative;">
+          <span class="material-symbols-outlined" style="position:absolute; left:.65rem; top:50%; transform:translateY(-50%); font-size:18px; color:#8b86b0;">search</span>
+          <input type="text" id="student-search" placeholder="Search by name or email…"
+                 oninput="filterStudents(this.value)"
+                 style="padding:.5rem .85rem .5rem 2.2rem; border:1px solid #ddd6fe; border-radius:9px; font-family:'Inter',sans-serif; font-size:.83rem; color:#26215C; width:240px; outline:none;"
+                 onfocus="this.style.borderColor='#3C3489'" onblur="this.style.borderColor='#ddd6fe'">
+        </div>
+      </div>
+      {% if students %}
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-family:'Inter',sans-serif; font-size:.85rem;" id="students-table">
+          <thead>
+            <tr style="background:#f8f6ff;">
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Name</th>
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Email</th>
+              <th style="padding:.75rem 1.25rem; text-align:left; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Department</th>
+              <th style="padding:.75rem 1.25rem; text-align:right; color:#8b86b0; font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+            <tr class="student-row" data-name="{{ s.name|lower }}" data-email="{{ s.email|lower }}" style="border-top:1px solid #f5f3ff;">
+              <td style="padding:.85rem 1.25rem;">
+                <div style="display:flex; align-items:center; gap:.6rem;">
+                  <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #f0edff, #ddd6fe); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Fraunces',serif; font-weight:700; font-size:.85rem; color:#3C3489;">
+                    {{ s.name[0] }}
+                  </div>
+                  <span style="font-weight:600; color:#26215C;">{{ s.name }}</span>
+                </div>
+              </td>
+              <td style="padding:.85rem 1.25rem; color:#48464d; font-size:.82rem; font-family:monospace;">{{ s.email }}</td>
+              <td style="padding:.85rem 1.25rem; color:#48464d;">
+                {% if s.department %}{{ s.department.name }}{% else %}<span style="color:#c4b8ff;">—</span>{% endif %}
+              </td>
+              <td style="padding:.85rem 1.25rem; text-align:right;">
+                <form action="{{ url_for('institution_remove_student', student_id=s.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Remove {{ s.name }} from your institution?')">
+                  <button type="submit" style="display:inline-flex; align-items:center; gap:.3rem; padding:.32rem .75rem; border-radius:7px; background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; font-family:'Inter',sans-serif; font-size:.75rem; font-weight:700; cursor:pointer;"
+                          onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                    <span class="material-symbols-outlined" style="font-size:14px;">person_remove</span> Remove
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="no-students-msg" style="display:none; padding:2rem; text-align:center; color:#8b86b0; font-family:'Inter',sans-serif; font-size:.9rem;">No students match your search.</div>
+      {% else %}
+      <div style="padding:3rem; text-align:center; color:#8b86b0; font-family:'Inter',sans-serif;">
+        <span class="material-symbols-outlined" style="font-size:40px; display:block; margin-bottom:.5rem; color:#c4b8ff;">school</span>
+        No students are currently affiliated with your institution.
+      </div>
+      {% endif %}
+    </div>
+
+    {% endif %}
+  </div><!-- /main content -->
+</div>
+
+<script>
+function filterStudents(q) {
+  q = q.toLowerCase().trim();
+  const rows = document.querySelectorAll('.student-row');
+  let visible = 0;
+  rows.forEach(row => {
+    const match = row.dataset.name.includes(q) || row.dataset.email.includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  const noMsg = document.getElementById('no-students-msg');
+  if (noMsg) noMsg.style.display = visible === 0 && q ? 'block' : 'none';
+}
+</script>
+{% endblock %}

@@ -27,6 +27,12 @@
 
       <div class="flex flex-wrap items-center gap-space-sm self-start lg:self-center">
         {% if user.role in ['institution', 'staff'] %}
+        {% if user.role == 'institution' %}
+        <a href="{{ url_for('institution_dashboard') }}" class="group flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-[#EF9F27] text-[#26215C] font-title-md text-title-md hover:bg-[#d88e1f] transition-all shadow-sm text-decoration-none">
+          <span class="material-symbols-outlined text-[20px]">account_balance</span>
+          <span>Manage Institution</span>
+        </a>
+        {% endif %}
         <a href="{{ url_for('certificates_list') }}" class="group flex items-center gap-space-xs px-5 py-2.5 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition-all shadow-sm text-decoration-none">
           <span class="material-symbols-outlined text-[20px] transition-transform group-hover:rotate-90">add</span>
           <span>Issue certificate</span>
@@ -51,6 +57,7 @@
         </a>
         {% endif %}
       </div>
+
     </div>
   </section>
 
