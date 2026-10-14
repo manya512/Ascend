@@ -1,38 +1,152 @@
-# Ascend — Digital Certificate Verification System
+# Ascend — Digital Credential Registry & Verification Platform
 
-Ascend is a Flask-based digital credential issuance and verification platform (similar to Credly) built for collegiate faculties, academic institutions, and verified members.
+Ascend is an institutional digital credential issuance and verification platform built with Flask and PostgreSQL. Designed for collegiate faculties, universities, accredited institutions, and recipient members, Ascend provides tamper-evident credential issuing, bulk batch workflows, live verification, and automated notification ecosystems.
 
 ---
 
 ## 🏛️ Key Features & Modules
 
-- **Unified Multi-Role Dashboard**: Single adaptive `dashboard.html` tailored for Administrators, Institutions, and Members.
-- **Interactive Certificate Template Studio**: 2-column editor featuring real-time 2-way sync between form controls and an authentic parchment specimen canvas with official university seals and guilloche vector borders.
-- **Dual Issuance Mechanism**: Issue credentials to recipients by either **Email Address** or **Phone Number** with automated recipient notifications.
-- **Member Claim & Portfolio Flow**: Members can claim credentials issued to their contact details in a single click and showcase verified certificates on public portfolio profiles.
-- **Instant Cryptographic Verification**: In-memory QR code generation (`qrcode` + `io.BytesIO`) and public verification screen accessible via shareable URLs with no login required.
-- **Institutional Gateway Auth & SSO**: Clean institutional sign-in with email, member registration, password visibility toggles, and SSO integration.
-- **In-App Notifications**: Real-time notifications for certificate issuance and member claims with unread count badges.
-- **System Reports & Audit Analytics**: High-level platform statistics for Administrators and template issuance/claim rate breakdowns for Institutions.
-- **Serverless Ready**: In-memory QR rendering and stateless architecture compatible with Vercel, Render, and other cloud providers without persistent filesystem dependencies.
+### 1. Unified Multi-Role Architecture
+Ascend provides tailored experiences based on four core organizational roles:
+- **Platform Administrator (`admin`)**: Platform-wide oversight and review/approval workflow for registering institutions.
+- **Institution Head (`institution`)**: Comprehensive institutional dashboard, department and club structure management, staff issuer verification, and aggregate issuance analytics.
+- **Staff Issuer (`staff`)**: Department-affiliated instructors and faculty authorized to design templates and issue credentials.
+- **Recipient Member (`member`)**: Students and credential holders who receive credentials, claim verified records to their portfolio, and share credentials publicly.
+
+### 2. Institution Management Dashboard (`/institution/dashboard`)
+A dedicated tabbed workspace for institution administrators:
+- **Overview Analytics**: Real-time stats for enrolled students, verified vs. pending staff, department counts, club counts, and total vs. claimed issuance rates. Includes a per-department analytics table and a feed of recent issuances.
+- **Department Management**: Add, rename, or delete academic departments. Features guarded deletion rules to prevent removing departments that have active staff or students assigned.
+- **Club Management**: Add and delete affiliated student clubs and societies.
+- **Staff Verification Center**: Review pending staff applications, verify or reject faculty issuers with automatic notification triggers, and revoke staff affiliations.
+- **Student Roster**: Filter and view affiliated students with administrative options to manage institution links.
+
+### 3. Certificate Studio & Interactive Specimen Canvas
+- **Two-Column Live Studio**: Real-time two-way synchronization between template form fields and a collegiate parchment canvas.
+- **Parchment Aesthetics**: Official institution seals, Latin mottoes, vector guilloche security borders, and authentic typography.
+- **Dynamic Preview**: Instant visual preview before finalizing template creation.
+
+### 4. Single & Bulk Credential Issuance
+- **Dual Recipient Targeting**: Issue credentials by either **Email Address** or **Phone Number**.
+- **Excel Spreadsheet Bulk Issuance (`/certificates/<id>/bulk-issue`)**:
+  - Upload `.xlsx` spreadsheets (supporting up to 500 recipients per batch).
+  - Downloadable standardized template (`/certificates/bulk-template.xlsx`).
+  - Pre-issuance validation and duplicate filtering (within the uploaded spreadsheet and against prior issuances in the database).
+  - Comprehensive results reporting detailing issued credentials, duplicates skipped, and invalid rows with specific error explanations.
+
+### 5. Automated Background Email Delivery (`mail_utils.py`)
+- **Branded HTML Emails**: Responsive email styling with Ascend's signature indigo header (`#26215C`), gold action buttons (`#EF9F27`), and plain-text fallbacks.
+- **Key Email Triggers**:
+  - **Certificate Issuance**: Direct "View Certificate" action link (`/verify/<code >`). For unregistered recipients, includes a pre-filled "Register to Claim" button linking to `/register?email=...`.
+  - **Institution Approval & Rejection**: Official onboarding notices triggered by administrator reviews.
+  - **Staff Issuer Verification**: Status updates sent upon approval or rejection by institution heads.
+- **Non-Blocking Daemon Threads**: All SMTP network interactions run in daemon background threads, ensuring web requests never block or lag.
+- **Throttled Bulk Sending**: Bulk issuance emails process sequentially through a background worker with a 0.5-second inter-message delay to avoid SMTP rate limiting.
+- **Graceful Fallbacks & Demo Protection**: Automatic console logging when mail credentials are unset, and automatic email suppression for demo addresses ending in `.ascend.demo` or `@example.com`.
+
+### 6. In-App Notification Hub (`/notifications`)
+- **Real-Time Alerts**: Receive immediate notifications upon credential issuance, claiming, or institutional approval changes.
+- **Click-Through Routing**: One-click navigation that automatically marks the notification as read and forwards to the underlying credential or dashboard.
+- **Bulk Operations**: "Mark all as read" capability and dynamic unread badge counts in the navigation bar.
+- **Retroactive Notification Linking**: Automatically associates pre-existing pending credentials to newly registered users matching email or phone.
+
+### 7. Instant Cryptographic Verification & Public Portfolios
+- **Public Verification (`/verify/<verification_code>`)**: Zero-login verification screen displaying credential status, recipient identifier, issuing college, department, and issue timestamp.
+- **In-Memory QR Code Rendering**: Dynamic QR code generation powered by `qrcode` and `Pillow` operating directly in memory (`io.BytesIO`) without persistent disk storage requirements.
+- **Print & Export Support**: Printable certificate layout optimized for print dialogues and PDF export.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Python 3.10+, Flask, Flask-SQLAlchemy, Flask-Login, Werkzeug
+- **Backend Framework**: Python 3.10+, Flask, Flask-SQLAlchemy, Flask-Login, Werkzeug
+- **Spreadsheet Processing**: `openpyxl`
+- **Email Delivery**: Python `smtplib` (STARTTLS, MIMEMultipart, background daemon threads)
 - **Database**: PostgreSQL (hosted on Supabase via Session Pooler)
-- **Frontend**: Tailwind CSS (custom collegiate theme), Jinja2, Material Symbols Outlined, Google Fonts (Newsreader & Inter)
-- **Utilities**: `qrcode`, `pillow`, `python-dotenv`, `psycopg2-binary`
+- **Database Driver**: `psycopg2-binary`
+- **Frontend / UI**: Jinja2 Templates, Tailwind CSS (custom collegiate theme), Material Symbols Outlined, Google Fonts (Newsreader, Fraunces, and Inter)
+- **Image & QR Rendering**: `qrcode`, `pillow`
+- **Environment Management**: `python-dotenv`
 
 ---
 
 ## 🗄️ Database Architecture
 
-- **`users`**: `id`, `name`, `email`, `phone`, `password_hash`, `role` (`admin` / `institution` / `member`), `job_title`, `location`, `alumni`, `portfolio_url`, `is_profile_setup`, `created_at`
-- **`certificates`**: `id`, `title`, `description`, `institution_id`, `created_at`
-- **`issued_certificates`**: `id`, `certificate_id`, `institution_id`, `recipient_email`, `recipient_phone`, `verification_code`, `status` (`issued` / `claimed`), `claimed_at`, `claimed_by_id`, `issued_at`
-- **`notifications`**: `id`, `user_id`, `recipient_email`, `recipient_phone`, `message`, `link`, `is_read`, `created_at`
+```mermaid
+erDiagram
+    users ||--o{ departments : "institution owns"
+    users ||--o{ clubs : "institution owns"
+    users ||--o{ certificates : "institution/staff creates"
+    users ||--o{ issued_certificates : "claims"
+    users ||--o{ notifications : "receives"
+    departments ||--o{ users : "staff/members belong to"
+    certificates ||--o{ issued_certificates : "instantiates"
+
+    users {
+        int id PK
+        string name
+        string email UK
+        string phone
+        string password_hash
+        string role "admin | institution | staff | member"
+        int institution_id FK
+        int department_id FK
+        string staff_status "pending | verified | rejected"
+        string approval_status "pending | approved | rejected"
+        string job_title
+        string location
+        string alumni
+        string portfolio_url
+        boolean is_profile_setup
+        datetime created_at
+    }
+
+    departments {
+        int id PK
+        int institution_id FK
+        string name
+        datetime created_at
+    }
+
+    clubs {
+        int id PK
+        int institution_id FK
+        string name
+        datetime created_at
+    }
+
+    certificates {
+        int id PK
+        int institution_id FK
+        string title
+        text description
+        datetime created_at
+    }
+
+    issued_certificates {
+        int id PK
+        int certificate_id FK
+        int institution_id FK
+        string recipient_email
+        string recipient_phone
+        string verification_code UK
+        string status "issued | claimed"
+        datetime claimed_at
+        int claimed_by_id FK
+        datetime issued_at
+    }
+
+    notifications {
+        int id PK
+        int user_id FK
+        string recipient_email
+        string recipient_phone
+        text message
+        string link
+        boolean is_read
+        datetime created_at
+    }
+```
 
 ---
 
@@ -53,6 +167,8 @@ Create and activate a virtual environment:
 python -m venv venv
 # On Windows PowerShell:
 .\venv\Scripts\Activate.ps1
+# On macOS / Linux:
+source venv/bin/activate
 ```
 
 Install all required dependencies:
@@ -61,16 +177,36 @@ pip install -r requirements.txt
 ```
 
 ### 3. Environment Configuration
-Create a `.env` file in `myapp/` (do not commit this file):
+Create a `.env` file in `myapp/` (a template is available in `.env.example`):
 ```env
-SECRET_KEY=your_secret_key_here
+# Database
 DATABASE_URL=postgresql://user:password@host:port/dbname
+
+# Flask Security
+SECRET_KEY=your_secret_key_here
+
+# SMTP Email Configuration (Optional - falls back to console logging)
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_FROM=your_email@gmail.com
+APP_BASE_URL=http://localhost:5000
 ```
 
-### 4. Database Schema Migration
-Run the non-destructive database schema migration script:
+> [!NOTE]
+> If `MAIL_USERNAME` or `MAIL_PASSWORD` are left empty, the application will not crash; all outgoing emails will be logged to the console.
+
+### 4. Database Schema Migration & Seeding
+Initialize or update the database schema:
 ```bash
 python alter_db.py
+python migrate_institutions.py
+```
+
+*(Optional)* Seed demo accounts (22 student members and 5 colleges):
+```bash
+python seed_demo_users.py
 ```
 
 ### 5. Run the Application
@@ -79,15 +215,35 @@ Launch the Flask development server:
 python app.py
 ```
 
-The application will be live at:
-- **Local URL**: `http://127.0.0.1:5000`
-- **Sign In**: `http://127.0.0.1:5000/login`
-- **Verification Portal**: `http://127.0.0.1:5000/verify`
+The application will be accessible at:
+- **Homepage**: `http://127.0.0.1:5000`
+- **Sign In / Registration**: `http://127.0.0.1:5000/login`
+- **Public Verification**: `http://127.0.0.1:5000/verify`
+
+---
+
+## 🧪 Testing & Quality Assurance
+
+Ascend contains automated test suites covering core functionality:
+
+```bash
+# Test notifications, click-through routing, and badge counts
+python test_notifications_feature.py
+
+# Test institution restructuring, departments, and club associations
+python test_institution_restructure.py
+
+# Test institution head dashboard, department/club CRUD, and staff verification
+python test_institution_dashboard.py
+
+# Test SMTP mail utility, payload generation, fallback logging, and bulk delivery
+python test_email_sending.py
+```
 
 ---
 
 ## 🔒 Security & Deployment Rules
 
-- Sensitive credentials (`.env`, database URLs, secret keys) and virtual environment folders (`venv/`) are excluded via `.gitignore`.
-- All credentials and configuration values are loaded securely from environment variables.
-- Pure in-memory generation for dynamic assets (such as QR codes) guarantees seamless serverless hosting.
+- **Credential Hygiene**: Sensitive credentials (`.env`, database connection strings, passwords) are strictly excluded from source control via `.gitignore`.
+- **Non-Fatal Email Resilience**: Email transmission errors or misconfigurations are handled asynchronously without disrupting credential issuance or user onboarding.
+- **In-Memory Rendering**: Dynamic QR codes and rendered graphics are computed entirely in memory, ensuring compatibility with containerized environments and serverless platforms without persistent disk dependencies.
