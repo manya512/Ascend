@@ -18,6 +18,8 @@ Ascend aims to make digital credentials more trustworthy, accessible, and easy t
 * 🏫 **Institution Management Dashboard**: Accredited institutions can create, preview, edit, and delete certificate templates, as well as audit their complete issuance ledger.
 * 📜 **Dual Issuance Mechanism**: Issue credentials directly to recipients using either an **Email Address** or a **Phone Number** (or both).
 * 👤 **Member Profiles & Claim Flow**: Logged-in members can claim credentials matched to their verified email or phone in a single click, and showcase verified credentials on a shareable public portfolio (`/profile/<user_id>`).
+* 🖼️ **Rendered Certificate View & Print / Save as PDF**: Landscape formal diploma card (`/certificate/<code>`) featuring institution branding, recipient attestation, issue & claim dates, in-memory QR code, and browser-native `@media print` support to save as PDF on one page.
+* ⚙️ **Profile Settings & Photo Management**: Dedicated `/settings` portal for logged-in users to update profile metadata, securely change passwords, and upload square-cropped profile photos (stored in PostgreSQL via `BYTEA`).
 * 🔍 **QR Code-Based Public Verification**: Standalone public verification portal (`/verify` and `/verify/<code>`) that resolves credentials by unique UUID with in-memory QR code rendering and no login required.
 * 🔔 **In-App Notification Center**: Real-time notifications for credential issuance and member claim confirmations, complete with unread badges and mark-as-read controls.
 * 📊 **Certificate Lifecycle Tracking**: Real-time database tracking for `Issued` and `Claimed` credential statuses.
@@ -28,7 +30,6 @@ Ascend aims to make digital credentials more trustworthy, accessible, and easy t
 * 📩 **Certificate Request and Approval Workflow**: Direct workflow allowing members to formally request certificates from institutions through the portal for registrar approval.
 * 🚫 **Credential Revocation & Expiration**: Automated handling and audit logging for `Revoked` and `Expired` credential status transitions.
 * 📦 **Bulk Issuance via CSV**: Uploading class rosters or CSV files to batch-issue diplomas and certificates to hundreds of students simultaneously.
-* 📑 **Tamper-Evident Vector PDF Export**: Generating downloadable, print-ready PDF certificates with embedded cryptographic verification metadata and printable QR codes.
 
 ---
 
@@ -42,46 +43,22 @@ Before running the application, make sure you have:
 * **Git** installed
 * A **PostgreSQL** database (a hosted Supabase project is recommended)
 
-### 2. Clone the Repository
-Clone the repository using Git and navigate to the application folder:
+### 2. Clone the Repository & Navigate to the App Folder
+Clone the repository using Git and navigate directly into the `myapp/` folder where `requirements.txt` and `app.py` reside:
 
 ```bash
 git clone https://github.com/manya512/Ascend.git
-```
-
-```bash
 cd Ascend/myapp
 ```
 
-### 3. Create and Activate a Virtual Environment
-Create an isolated Python virtual environment to manage dependencies.
-
-**On Windows PowerShell:**
-```powershell
-python -m venv venv
-```
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-**On macOS / Linux:**
-```bash
-python3 -m venv venv
-```
+### 3. Install Dependencies
+Install all required Python packages directly using `pip`:
 
 ```bash
-source venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
-### 4. Install Dependencies
-Install all required Python packages listed in `requirements.txt`:
-
-```bash
-pip install -r requirements.txt
-```
-
-### 5. Configure Environment Variables
+### 4. Configure Environment Variables
 Ascend reads configuration settings from environment variables via `python-dotenv`. Create a `.env` file in the `myapp/` directory (you can copy `.env.example` as a template):
 
 ```env
@@ -94,7 +71,7 @@ The application reads the following variables:
 * `DATABASE_URL`: The PostgreSQL database connection URI.
   > **Note on Supabase:** Always use the **Supabase Session Pooler** connection string (port `6543` or `5432` with IPv4 pooler mode) to ensure reliable connections with serverless and local Flask workers.
 
-### 6. Database Setup & Initialization
+### 5. Database Setup & Initialization
 Ascend uses SQLAlchemy models defined in `models.py`.
 
 1. To run the safe, non-destructive schema migration (which adds all required columns to PostgreSQL without dropping tables):
@@ -107,7 +84,7 @@ python alter_db.py
 python create_test_users.py
 ```
 
-### 7. Run the Application
+### 6. Run the Application
 Launch the Flask development server:
 
 ```bash
@@ -149,6 +126,8 @@ Ascend/
         ├── issued_list.html  # Registrar ledger of all issued credentials, statuses, and codes
         ├── profile.html      # Public verified member profile and credentials portfolio
         ├── member.html       # Member profile setup screen and verified achievements showcase
+        ├── certificate.html  # Formal landscape rendered certificate with QR code and print styles
+        ├── settings.html     # Profile settings, photo upload/removal, and password change
         ├── institution.html  # Institution workspace portal with registrar action shortcuts
         ├── admin.html        # Platform administration console and system telemetry
         ├── reports.html      # Audit reports showing institution and template claim breakdowns
@@ -283,6 +262,9 @@ Represents administrators, accredited institutions, and recipient members.
 | `alumni` | `VARCHAR(100)` | NULL | Alma mater or university |
 | `portfolio_url` | `VARCHAR(200)` | NULL | External portfolio or registry link |
 | `is_profile_setup`| `BOOLEAN` | Default: `FALSE` | Indicates whether the profile has been initialized |
+| `institution_id` | `INTEGER` | Foreign Key (`users.id`), NULL | Institution association for staff members |
+| `profile_photo` | `BYTEA` | NULL | Binary data of 256x256 cropped JPEG avatar |
+| `profile_photo_mimetype`| `VARCHAR(50)` | NULL | MIME type of stored profile avatar |
 
 ### `certificates`
 Templates created by institutions defining credential types (e.g., Bachelor of Science, Honors Award).
@@ -350,4 +332,4 @@ Ascend is configured to be deployment-ready for cloud platforms such as Render, 
 * **Pinned Dependencies**: All required packages and versions are locked in `requirements.txt`.
 * **Stateless Dynamic Assets**: QR codes are generated directly into memory buffers via `io.BytesIO` and streamed as Base64 strings, avoiding ephemeral filesystem write issues on serverless or container hosts.
 * **Database Pooling**: Configured with `pool_pre_ping=True` and `pool_recycle=300` in `config.py` to maintain stable connections with Supabase.
-* **Environment Isolation**: `.env` and `venv/` are excluded from version control in `.gitignore`. Secrets, database connection strings, and virtual environments must never be committed to Git. In production, configure environment variables directly in your hosting provider's dashboard.
+* **Environment Isolation**: `.env` is excluded from version control in `.gitignore`. Secrets and database connection strings must never be committed to Git. In production, configure environment variables directly in your hosting provider's dashboard.

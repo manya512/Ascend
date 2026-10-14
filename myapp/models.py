@@ -5,6 +5,40 @@ import uuid
 
 db = SQLAlchemy()
 
+class Department(db.Model):
+    __tablename__ = 'departments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    institution_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    __table_args__ = (
+        db.UniqueConstraint('institution_id', 'name', name='uq_department_institution_name'),
+    )
+
+    institution = db.relationship('User', foreign_keys=[institution_id], backref=db.backref('departments', lazy=True))
+
+    def __repr__(self):
+        return f'<Department {self.name} (Inst: {self.institution_id})>'
+
+class Club(db.Model):
+    __tablename__ = 'clubs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    institution_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    __table_args__ = (
+        db.UniqueConstraint('institution_id', 'name', name='uq_club_institution_name'),
+    )
+
+    institution = db.relationship('User', foreign_keys=[institution_id], backref=db.backref('clubs', lazy=True))
+
+    def __repr__(self):
+        return f'<Club {self.name} (Inst: {self.institution_id})>'
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
@@ -13,7 +47,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone = db.Column(db.String(20), nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False)  # 'admin', 'institution', or 'member'
+    role = db.Column(db.String(20), nullable=False)  # 'admin', 'institution', 'staff', or 'member'
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     
     job_title = db.Column(db.String(100))
@@ -22,8 +56,13 @@ class User(db.Model, UserMixin):
     portfolio_url = db.Column(db.String(200))
     is_profile_setup = db.Column(db.Boolean, default=False)
     institution_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
+    staff_status = db.Column(db.String(20), nullable=True)  # 'pending', 'verified', 'rejected'
+    approval_status = db.Column(db.String(20), nullable=True)  # 'pending', 'approved', 'rejected'
     profile_photo = db.Column(db.LargeBinary, nullable=True)
     profile_photo_mimetype = db.Column(db.String(50), nullable=True)
+
+    department = db.relationship('Department', foreign_keys=[department_id], backref=db.backref('users', lazy=True))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
