@@ -123,6 +123,19 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
+    # Link prior unattached notifications to the newly registered user
+    conditions = [
+        db.func.lower(db.func.trim(Notification.recipient_email)) == email.lower()
+    ]
+    if new_user.phone:
+        conditions.append(Notification.recipient_phone == new_user.phone)
+
+    Notification.query.filter(
+        Notification.user_id.is_(None),
+        db.or_(*conditions)
+    ).update({"user_id": new_user.id}, synchronize_session=False)
+    db.session.commit()
+
     if role == 'institution':
         flash('Institution administrator account registered successfully! Please sign in.')
     elif role == 'staff':
@@ -534,7 +547,7 @@ def issue_certificate(cert_id):
         return redirect(url_for('certificates_list'))
         
     if request.method == 'POST':
-        recipient_email = request.form.get('recipient_email', '').strip()
+        recipient_email = request.form.get('recipient_email', '').strip().lower()
         recipient_phone = request.form.get('recipient_phone', '').strip()
         
         if not recipient_email and not recipient_phone:
@@ -554,7 +567,7 @@ def issue_certificate(cert_id):
         # Find matching member user to associate notification directly if exists
         target_user = None
         if recipient_email:
-            target_user = User.query.filter_by(email=recipient_email).first()
+            target_user = User.query.filter(db.func.lower(User.email) == recipient_email).first()
         if not target_user and recipient_phone:
             target_user = User.query.filter_by(phone=recipient_phone).first()
             
@@ -768,4 +781,4 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
