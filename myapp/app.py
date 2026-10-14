@@ -4,12 +4,12 @@ import base64
 import re
 import uuid
 import openpyxl
-from flask import Flask, render_template, redirect, url_for, request, flash, Response, make_response, abort, send_file
+from flask import Flask, render_template, redirect, url_for, request, flash, Response, make_response, abort, send_file, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from PIL import Image
 
 from config import Config
-from models import db, User, Certificate, IssuedCertificate, Notification
+from models import db, User, Certificate, IssuedCertificate, Notification, Department, Club
 
 def generate_qr_base64(url):
     qr = qrcode.QRCode(version=1, box_size=6, border=2)
@@ -60,32 +60,46 @@ def forgot_password():
     flash('Password reset requested. Please enter your email on the login screen.')
     return redirect(url_for('login'))
 
+@app.route('/api/institutions/<int:inst_id>/departments')
+def api_institution_departments(inst_id):
+    depts = Department.query.filter_by(institution_id=inst_id).order_by(Department.name).all()
+    return jsonify([{'id': d.id, 'name': d.name} for d in depts])
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password')
 
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter(db.func.lower(User.email) == email).first()
 
         if user and user.check_password(password):
+            if user.role == 'institution':
+                if user.approval_status == 'pending':
+                    flash("Your institution account is awaiting approval by the Ascend admin.")
+                    return redirect(url_for('login'))
+                elif user.approval_status == 'rejected':
+                    flash("Your institution account was not approved.")
+                    return redirect(url_for('login'))
             login_user(user)
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid email or password.')
 
-    institutions = User.query.filter_by(role='institution').order_by(User.name).all()
+    institutions = User.query.filter_by(role='institution', approval_status='approved').order_by(User.name).all()
     return render_template('login.html', institutions=institutions)
 
 
 @app.route('/register', methods=['POST'])
 def register():
     name = request.form.get('name', '').strip()
-    email = request.form.get('email', '').strip()
+    email = request.form.get('email', '').strip().lower()
     password = request.form.get('password', '').strip()
     role = request.form.get('role', 'member').strip().lower()
     phone = request.form.get('phone', '').strip()
-    institution_id_raw = request.form.get('institution_id')
+    institution_id_raw = request.form.get('institution_id', '').strip()
+    department_id_raw = request.form.get('department_id', '').strip()
 
     if not name or not email or not password:
         flash('Please fill out all required fields.')
@@ -94,32 +108,65 @@ def register():
     if role not in ['institution', 'staff', 'member']:
         role = 'member'
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter(db.func.lower(User.email) == email).first()
     if user:
         flash('Email address already exists.')
         return redirect(url_for('login'))
 
     assigned_inst_id = None
-    if role == 'staff':
-        if not institution_id_raw:
-            flash('Please select an accredited institution for your staff account.')
+    assigned_dept_id = None
+    staff_status = None
+    approval_status = None
+
+    if role == 'institution':
+        approval_status = 'pending'
+    elif role == 'staff':
+        staff_status = 'pending'
+        if not institution_id_raw or not department_id_raw:
+            flash('Please select both an accredited institution and a department for your staff account.')
             return redirect(url_for('login'))
         try:
             assigned_inst_id = int(institution_id_raw)
-            inst_check = User.query.filter_by(id=assigned_inst_id, role='institution').first()
+            assigned_dept_id = int(department_id_raw)
+            inst_check = User.query.filter_by(id=assigned_inst_id, role='institution', approval_status='approved').first()
             if not inst_check:
-                flash('Selected institution was not found.')
+                flash('Selected institution was not found or is not currently approved.')
+                return redirect(url_for('login'))
+            dept_check = Department.query.filter_by(id=assigned_dept_id, institution_id=assigned_inst_id).first()
+            if not dept_check:
+                flash('Selected department was not found under this institution.')
                 return redirect(url_for('login'))
         except (ValueError, TypeError):
-            flash('Invalid institution selected.')
+            flash('Invalid institution or department selected.')
             return redirect(url_for('login'))
+    elif role == 'member':
+        if institution_id_raw:
+            try:
+                assigned_inst_id = int(institution_id_raw)
+                inst_check = User.query.filter_by(id=assigned_inst_id, role='institution', approval_status='approved').first()
+                if inst_check:
+                    if department_id_raw:
+                        try:
+                            assigned_dept_id = int(department_id_raw)
+                            dept_check = Department.query.filter_by(id=assigned_dept_id, institution_id=assigned_inst_id).first()
+                            if not dept_check:
+                                assigned_dept_id = None
+                        except (ValueError, TypeError):
+                            assigned_dept_id = None
+                else:
+                    assigned_inst_id = None
+            except (ValueError, TypeError):
+                assigned_inst_id = None
 
     new_user = User(
         name=name,
         email=email,
         phone=phone if phone else None,
         role=role,
-        institution_id=assigned_inst_id
+        institution_id=assigned_inst_id,
+        department_id=assigned_dept_id,
+        staff_status=staff_status,
+        approval_status=approval_status
     )
     new_user.set_password(password)
 
@@ -128,7 +175,7 @@ def register():
 
     # Link prior unattached notifications to the newly registered user
     conditions = [
-        db.func.lower(db.func.trim(Notification.recipient_email)) == email.lower()
+        db.func.lower(db.func.trim(Notification.recipient_email)) == email
     ]
     if new_user.phone:
         conditions.append(Notification.recipient_phone == new_user.phone)
@@ -140,9 +187,9 @@ def register():
     db.session.commit()
 
     if role == 'institution':
-        flash('Institution administrator account registered successfully! Please sign in.')
+        flash('Institution administrator account registered successfully! Your account is awaiting approval by the Ascend admin.')
     elif role == 'staff':
-        flash('Staff issuer account registered successfully! Please sign in.')
+        flash('Staff account registered successfully! Your account is pending verification by your institution.')
     else:
         flash('Member account registered successfully! Please sign in.')
     return redirect(url_for('login'))
@@ -211,8 +258,10 @@ def dashboard():
 
     templates_list = []
     recent_issued = []
+    pending_institutions = []
 
     if current_user.role == 'admin':
+        pending_institutions = User.query.filter_by(role='institution', approval_status='pending').order_by(User.created_at.desc()).all()
         stats = {
             'total_users': User.query.count(),
             'total_institutions': User.query.filter_by(role='institution').count(),
@@ -283,8 +332,42 @@ def dashboard():
         templates=templates_list,
         recent_issued=recent_issued,
         unread_notif_count=unread_notif_count,
-        institution_name=get_institution_name(current_user)
+        institution_name=get_institution_name(current_user),
+        pending_institutions=pending_institutions
     )
+
+
+@app.route('/admin')
+@login_required
+def admin_console():
+    if current_user.role != 'admin':
+        return redirect(url_for('dashboard'))
+    pending_institutions = User.query.filter_by(role='institution', approval_status='pending').order_by(User.created_at.desc()).all()
+    return render_template('admin.html', user=current_user, pending_institutions=pending_institutions)
+
+
+@app.route('/admin/institutions/<int:user_id>/approve', methods=['POST'])
+@login_required
+def admin_approve_institution(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+    inst = User.query.filter_by(id=user_id, role='institution').first_or_404()
+    inst.approval_status = 'approved'
+    db.session.commit()
+    flash(f"Institution '{inst.name}' has been approved.")
+    return redirect(request.referrer or url_for('dashboard'))
+
+
+@app.route('/admin/institutions/<int:user_id>/reject', methods=['POST'])
+@login_required
+def admin_reject_institution(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+    inst = User.query.filter_by(id=user_id, role='institution').first_or_404()
+    inst.approval_status = 'rejected'
+    db.session.commit()
+    flash(f"Institution '{inst.name}' was not approved.")
+    return redirect(request.referrer or url_for('dashboard'))
 
 
 @app.route('/update-profile', methods=['POST'])
@@ -629,6 +712,14 @@ def issue_certificate(cert_id):
     if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
         
+    if current_user.role == 'institution' and current_user.approval_status != 'approved':
+        flash('Your institution account must be approved before issuing certificates.')
+        return redirect(url_for('dashboard'))
+
+    if current_user.role == 'staff' and current_user.staff_status != 'verified':
+        flash('Your staff account is pending verification and cannot issue certificates.')
+        return redirect(url_for('dashboard'))
+
     inst_id = get_effective_institution_id(current_user)
     cert = Certificate.query.get(cert_id)
     if not cert or cert.institution_id != inst_id:
@@ -657,6 +748,12 @@ def download_bulk_template():
     if current_user.role not in ['institution', 'staff']:
         return redirect(url_for('dashboard'))
 
+    if current_user.role == 'institution' and current_user.approval_status != 'approved':
+        return redirect(url_for('dashboard'))
+
+    if current_user.role == 'staff' and current_user.staff_status != 'verified':
+        return redirect(url_for('dashboard'))
+
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Recipients"
@@ -678,6 +775,14 @@ def download_bulk_template():
 @login_required
 def bulk_issue_certificate(cert_id):
     if current_user.role not in ['institution', 'staff']:
+        return redirect(url_for('dashboard'))
+
+    if current_user.role == 'institution' and current_user.approval_status != 'approved':
+        flash('Your institution account must be approved before issuing certificates.')
+        return redirect(url_for('dashboard'))
+
+    if current_user.role == 'staff' and current_user.staff_status != 'verified':
+        flash('Your staff account is pending verification and cannot issue certificates.')
         return redirect(url_for('dashboard'))
 
     inst_id = get_effective_institution_id(current_user)

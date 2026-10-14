@@ -54,6 +54,99 @@
     </div>
   </section>
 
+  <!-- STAFF PENDING VERIFICATION NOTICE -->
+  {% if user.role == 'staff' and user.staff_status != 'verified' %}
+  <section class="flex items-center gap-space-md p-space-lg rounded-xl bg-amber-50 border border-[#EF9F27]/40 text-[#784600] shadow-sm">
+    <div class="w-12 h-12 rounded-xl bg-[#EF9F27]/15 text-[#EF9F27] flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined text-[28px]">pending_actions</span>
+    </div>
+    <div class="flex flex-col">
+      <h3 class="font-title-lg text-title-lg font-semibold text-[#663b00] mb-0.5">Staff Account Verification Pending</h3>
+      <p class="font-body-md text-body-md text-[#784600] mb-0 leading-relaxed">
+        Your staff issuer account is currently awaiting administrative verification by your affiliated institution. You can review templates and ledgers, but certificate issuance will be enabled once your status is verified.
+      </p>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ADMIN: INSTITUTION APPROVALS SECTION -->
+  {% if user.role == 'admin' %}
+  <section class="flex flex-col rounded-2xl bg-surface-container-lowest border border-outline-variant/30 shadow-sm p-space-lg md:p-space-xl gap-space-md">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-sm border-b border-outline-variant/20 gap-2">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary text-[26px]">verified_user</span>
+        <div>
+          <h2 class="font-headline-sm text-headline-sm text-primary mb-0 font-serif">Institution Approvals</h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Accredited institutions requesting access to issue credentials on the Ascend Registry</p>
+        </div>
+      </div>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold {% if pending_institutions %}bg-[#EF9F27]/15 text-[#854d0e] border border-[#EF9F27]/30{% else %}bg-surface-container text-on-surface-variant{% endif %}">
+        <span class="w-2 h-2 rounded-full {% if pending_institutions %}bg-[#EF9F27]{% else %}bg-emerald-600{% endif %}"></span>
+        {{ pending_institutions|length if pending_institutions else 0 }} Pending Approval
+      </span>
+    </div>
+
+    {% if pending_institutions %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-xs uppercase tracking-wider border-b border-outline-variant/20">
+            <th class="py-3 px-4">Institution Name</th>
+            <th class="py-3 px-4">Official Email</th>
+            <th class="py-3 px-4">Registered Date</th>
+            <th class="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-outline-variant/15 font-body-sm text-body-sm">
+          {% for inst in pending_institutions %}
+          <tr class="hover:bg-surface-container-low/40 transition-colors">
+            <td class="py-3.5 px-4 font-semibold text-primary">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-surface-container text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                  <span class="material-symbols-outlined text-[18px]">account_balance</span>
+                </div>
+                <span>{{ inst.name }}</span>
+              </div>
+            </td>
+            <td class="py-3.5 px-4 font-mono text-xs text-on-surface-variant">
+              {{ inst.email }}
+            </td>
+            <td class="py-3.5 px-4 text-on-surface-variant">
+              {{ inst.created_at.strftime('%b %d, %Y • %I:%M %p') if inst.created_at else 'Recent' }}
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <div class="inline-flex items-center justify-end gap-2">
+                <form action="{{ url_for('admin_approve_institution', user_id=inst.id) }}" method="POST" class="mb-0 inline">
+                  <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-title-md text-xs transition-colors shadow-sm cursor-pointer">
+                    <span class="material-symbols-outlined text-[16px]">check</span>
+                    <span>Approve</span>
+                  </button>
+                </form>
+                <form action="{{ url_for('admin_reject_institution', user_id=inst.id) }}" method="POST" class="mb-0 inline" onsubmit="return confirm('Are you sure you want to reject this institution?');">
+                  <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-300 hover:bg-red-50 text-red-700 font-title-md text-xs transition-colors shadow-sm cursor-pointer">
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                    <span>Reject</span>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/20 text-center flex flex-col items-center justify-center">
+      <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-2">
+        <span class="material-symbols-outlined text-[26px]">task_alt</span>
+      </div>
+      <h4 class="font-title-md text-title-md text-primary font-semibold mb-0.5">No Pending Institution Approvals</h4>
+      <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">All registered academic institutions on Ascend are currently verified and approved.</p>
+    </div>
+    {% endif %}
+  </section>
+  {% endif %}
+
   <!-- Key Statistics Cards Grid (4 Columns) -->
   <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
     <div class="flex flex-col justify-between p-space-lg rounded-xl bg-surface-container-lowest shadow-sm">

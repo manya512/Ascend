@@ -174,23 +174,42 @@
           </div>
         </div>
 
-        <!-- Staff Institution Selection Dropdown (Only shown for staff) -->
-        <div id="staff-institution-group" class="flex flex-col gap-1.5" style="display: none;">
-          <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-institution">Accredited Institution</label>
-          <div class="relative">
-            <select class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40 cursor-pointer" id="reg-institution" name="institution_id">
-              <option value="" disabled selected>Select the institution you represent...</option>
-              {% if institutions %}
-                {% for inst in institutions %}
-                  <option value="{{ inst.id }}">{{ inst.name }} ({{ inst.email }})</option>
-                {% endfor %}
-              {% else %}
-                <option value="" disabled>No institutions registered yet. Register an institution administrator first!</option>
-              {% endif %}
-            </select>
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">account_balance</span>
+        <!-- College & Department Selection Group (Shown for Staff and Member) -->
+        <div id="affiliation-group" class="flex flex-col gap-3" style="display: none;">
+          <!-- College Dropdown -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-institution" id="label-reg-institution">
+              Accredited College / Institution
+            </label>
+            <div class="relative">
+              <select class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40 cursor-pointer" id="reg-institution" name="institution_id" onchange="onInstitutionChange(this.value);">
+                <option value="" id="opt-inst-placeholder" selected>Select an institution...</option>
+                {% if institutions %}
+                  {% for inst in institutions %}
+                    <option value="{{ inst.id }}">{{ inst.name }}</option>
+                  {% endfor %}
+                {% else %}
+                  <option value="" disabled>No accredited institutions registered yet.</option>
+                {% endif %}
+              </select>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">account_balance</span>
+            </div>
+            <span id="help-reg-institution" class="text-[11px] text-on-surface-variant"></span>
           </div>
-          <span class="text-[11px] text-on-surface-variant">Your issuances will be verified and logged under this institution's name.</span>
+
+          <!-- Department Dropdown -->
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-md text-label-md text-on-surface font-semibold" for="reg-department" id="label-reg-department">
+              Academic Department
+            </label>
+            <div class="relative">
+              <select class="w-full py-3 pl-10 pr-4 rounded-xl bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/40 shadow-sm border border-outline-variant/40 cursor-pointer" id="reg-department" name="department_id">
+                <option value="" id="opt-dept-placeholder" selected>Select a college first...</option>
+              </select>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">domain</span>
+            </div>
+            <span id="help-reg-department" class="text-[11px] text-on-surface-variant"></span>
+          </div>
         </div>
 
         <!-- Email Address -->
@@ -332,8 +351,14 @@
     const nameIcon = document.getElementById('icon-reg-name');
     const emailLabel = document.getElementById('label-reg-email');
     const emailInput = document.getElementById('reg-email');
-    const staffGroup = document.getElementById('staff-institution-group');
-    const staffSelect = document.getElementById('reg-institution');
+    const affiliationGroup = document.getElementById('affiliation-group');
+    const instSelect = document.getElementById('reg-institution');
+    const deptSelect = document.getElementById('reg-department');
+    const instLabel = document.getElementById('label-reg-institution');
+    const deptLabel = document.getElementById('label-reg-department');
+    const instPlaceholder = document.getElementById('opt-inst-placeholder');
+    const instHelp = document.getElementById('help-reg-institution');
+    const deptHelp = document.getElementById('help-reg-department');
     const phoneGroup = document.getElementById('member-phone-group');
     const submitBtnText = document.getElementById('btn-submit-text');
     const explainer = document.getElementById('role-explainer');
@@ -344,34 +369,100 @@
       nameIcon.textContent = 'account_balance';
       emailLabel.textContent = 'Official Institutional Email';
       emailInput.placeholder = 'registrar@pit.edu';
-      staffGroup.style.display = 'none';
-      staffSelect.removeAttribute('required');
+      if (affiliationGroup) affiliationGroup.style.display = 'none';
+      if (instSelect) instSelect.removeAttribute('required');
+      if (deptSelect) deptSelect.removeAttribute('required');
       phoneGroup.style.display = 'none';
       submitBtnText.textContent = 'Register Institution';
-      explainer.innerHTML = '<span class="font-semibold text-primary">Institution Administrator:</span> Registers your academic institution. You will be able to design templates, oversee staff issuers, and audit all certificates issued using your institution’s name.';
+      explainer.innerHTML = '<span class="font-semibold text-primary">Institution Administrator:</span> Registers your academic institution. Your account will undergo administrative approval before granting issuance access.';
     } else if (role === 'staff') {
       nameLabel.textContent = 'Staff Member Full Name';
       nameInput.placeholder = 'e.g. Prof. Alice Walker';
       nameIcon.textContent = 'badge';
       emailLabel.textContent = 'Staff Email Address';
       emailInput.placeholder = 'faculty@institution.edu';
-      staffGroup.style.display = 'flex';
-      staffSelect.setAttribute('required', 'required');
+      if (affiliationGroup) affiliationGroup.style.display = 'flex';
+      if (instSelect) instSelect.setAttribute('required', 'required');
+      if (deptSelect) deptSelect.setAttribute('required', 'required');
+      if (instLabel) instLabel.innerHTML = 'College / Accredited Institution <span class="text-red-500">*</span>';
+      if (deptLabel) deptLabel.innerHTML = 'Academic Department <span class="text-red-500">*</span>';
+      if (instPlaceholder) instPlaceholder.textContent = 'Select your accredited college (Required)...';
+      if (instHelp) instHelp.textContent = 'Your staff account will issue credentials under this institution accreditation.';
+      if (deptHelp) deptHelp.textContent = 'Select the academic department you represent.';
       phoneGroup.style.display = 'none';
       submitBtnText.textContent = 'Register Staff Account';
-      explainer.innerHTML = '<span class="font-semibold text-primary">Staff / Certificate Issuer:</span> Registers an authorized faculty or department member. You will issue official certificates under your selected institution’s authority.';
+      explainer.innerHTML = '<span class="font-semibold text-primary">Staff / Certificate Issuer:</span> Registers an authorized faculty or department member. Requires institution and department selection.';
+      onInstitutionChange(instSelect.value);
     } else {
       nameLabel.textContent = 'Full Name';
       nameInput.placeholder = 'e.g. Eleanor Vance';
       nameIcon.textContent = 'person';
       emailLabel.textContent = 'Email Address';
       emailInput.placeholder = 'member@example.com';
-      staffGroup.style.display = 'none';
-      staffSelect.removeAttribute('required');
+      if (affiliationGroup) affiliationGroup.style.display = 'flex';
+      if (instSelect) instSelect.removeAttribute('required');
+      if (deptSelect) deptSelect.removeAttribute('required');
+      if (instLabel) instLabel.textContent = 'College / Institution (Optional)';
+      if (deptLabel) deptLabel.textContent = 'Academic Department (Optional)';
+      if (instPlaceholder) instPlaceholder.textContent = 'Not affiliated';
+      if (instHelp) instHelp.textContent = 'Select your college if enrolled or alumni (optional).';
+      if (deptHelp) deptHelp.textContent = 'Select your academic department if affiliated (optional).';
       phoneGroup.style.display = 'flex';
       submitBtnText.textContent = 'Create Member Account';
       explainer.innerHTML = '<span class="font-semibold text-primary">Recipient Member:</span> Receive credentials, claim them to your verified portfolio, and share authenticated credentials publicly.';
+      onInstitutionChange(instSelect.value);
     }
+  }
+
+  function onInstitutionChange(instId) {
+    const deptSelect = document.getElementById('reg-department');
+    if (!deptSelect) return;
+    const roleEl = document.getElementById('reg-role');
+    const role = roleEl ? roleEl.value : 'member';
+    deptSelect.innerHTML = '';
+
+    if (!instId) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = (role === 'staff') ? 'Select a college first...' : 'Not affiliated';
+      deptSelect.appendChild(opt);
+      return;
+    }
+
+    const loadingOpt = document.createElement('option');
+    loadingOpt.value = '';
+    loadingOpt.textContent = 'Loading departments...';
+    deptSelect.appendChild(loadingOpt);
+
+    fetch('/api/institutions/' + instId + '/departments')
+      .then(res => res.json())
+      .then(data => {
+        deptSelect.innerHTML = '';
+        const depts = Array.isArray(data) ? data : (data.departments || []);
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = (role === 'staff') ? 'Select a department (Required)...' : 'Not affiliated / None';
+        deptSelect.appendChild(defaultOpt);
+
+        if (depts.length === 0) {
+          const noneOpt = document.createElement('option');
+          noneOpt.value = '';
+          noneOpt.disabled = true;
+          noneOpt.textContent = 'No departments registered for this college';
+          deptSelect.appendChild(noneOpt);
+        } else {
+          depts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.name;
+            deptSelect.appendChild(opt);
+          });
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching departments:', err);
+        deptSelect.innerHTML = '<option value="">Failed to load departments</option>';
+      });
   }
 </script>
 {% endblock %}
