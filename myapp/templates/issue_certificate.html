@@ -19,6 +19,10 @@
     </div>
 
     <div class="flex items-center gap-space-sm">
+      <a href="{{ url_for('bulk_issue_certificate', cert_id=certificate.id) }}" class="px-space-md py-2 rounded-lg border border-[#EF9F27]/60 bg-surface-container-lowest hover:bg-[#EF9F27]/10 text-primary transition-colors font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px] text-[#EF9F27]">upload_file</span>
+        <span>Bulk issue (Excel)</span>
+      </a>
       <a href="{{ url_for('certificates_list') }}" class="px-space-md py-2 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none">
         <span class="material-symbols-outlined text-[18px]">arrow_back</span>
         <span>Cancel</span>

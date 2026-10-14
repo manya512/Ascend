@@ -223,11 +223,17 @@
                   <span>Created</span>
                   <span class="font-semibold text-primary">{{ cert.created_at.strftime('%b %d, %Y') if cert.created_at else '' }}</span>
                 </div>
-                {% if user.role == 'institution' %}
-                <a href="{{ url_for('issue_certificate', cert_id=cert.id) }}" class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
-                  <span class="material-symbols-outlined text-[18px] text-secondary">send</span>
-                  <span>Issue certificate</span>
-                </a>
+                {% if user.role in ['institution', 'staff'] %}
+                <div class="flex items-center gap-2">
+                  <a href="{{ url_for('issue_certificate', cert_id=cert.id) }}" class="flex-1 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
+                    <span class="material-symbols-outlined text-[18px] text-secondary">send</span>
+                    <span>Issue</span>
+                  </a>
+                  <a href="{{ url_for('bulk_issue_certificate', cert_id=cert.id) }}" class="flex-1 py-2 rounded-lg border border-[#EF9F27]/60 bg-surface-container-lowest hover:bg-[#EF9F27]/10 text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none" title="Bulk issue from Excel">
+                    <span class="material-symbols-outlined text-[18px] text-[#EF9F27]">upload_file</span>
+                    <span>Bulk (Excel)</span>
+                  </a>
+                </div>
                 {% else %}
                 <a href="{{ url_for('verify_certificate') }}" class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-title-md transition-colors flex items-center justify-center gap-1.5 text-decoration-none">
                   <span class="material-symbols-outlined text-[18px] text-secondary">visibility</span>

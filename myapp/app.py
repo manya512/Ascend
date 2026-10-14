@@ -1,7 +1,10 @@
 import qrcode
 import io
 import base64
-from flask import Flask, render_template, redirect, url_for, request, flash, Response, make_response, abort
+import re
+import uuid
+import openpyxl
+from flask import Flask, render_template, redirect, url_for, request, flash, Response, make_response, abort, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from PIL import Image
 
@@ -582,6 +585,44 @@ def delete_certificate(cert_id):
     flash('Certificate deleted successfully!')
     return redirect(url_for('certificates_list'))
 
+def issue_to_recipient(cert, inst_id, email, phone):
+    """
+    Creates an IssuedCertificate and its associated Notification without committing.
+    Returns the created IssuedCertificate.
+    """
+    code = str(uuid.uuid4())
+    clean_email = email.strip().lower() if email else None
+    clean_phone = phone.strip() if phone else None
+
+    issued_cert = IssuedCertificate(
+        certificate_id=cert.id,
+        institution_id=inst_id,
+        recipient_email=clean_email,
+        recipient_phone=clean_phone,
+        verification_code=code,
+        status='issued'
+    )
+    db.session.add(issued_cert)
+
+    # Find matching member user to associate notification directly if exists
+    target_user = None
+    if clean_email:
+        target_user = User.query.filter(db.func.lower(User.email) == clean_email).first()
+    if not target_user and clean_phone:
+        target_user = User.query.filter_by(phone=clean_phone).first()
+
+    inst_user = User.query.get(inst_id)
+    issuer_name = inst_user.name if inst_user else (current_user.name if current_user.is_authenticated else 'Institution')
+    notif = Notification(
+        user_id=target_user.id if target_user else None,
+        recipient_email=clean_email,
+        recipient_phone=clean_phone,
+        message=f"You received a new certificate: '{cert.title}' from {issuer_name}.",
+        link=f"/verify/{issued_cert.verification_code}"
+    )
+    db.session.add(notif)
+    return issued_cert
+
 @app.route('/certificates/<int:cert_id>/issue', methods=['GET', 'POST'])
 @login_required
 def issue_certificate(cert_id):
@@ -601,33 +642,7 @@ def issue_certificate(cert_id):
             flash('Please enter at least an email or a phone number for the recipient.')
             return redirect(url_for('issue_certificate', cert_id=cert_id))
         
-        issued_cert = IssuedCertificate(
-            certificate_id=cert_id,
-            institution_id=inst_id,
-            recipient_email=recipient_email if recipient_email else None,
-            recipient_phone=recipient_phone if recipient_phone else None,
-            status='issued'
-        )
-        db.session.add(issued_cert)
-        db.session.commit()
-        
-        # Find matching member user to associate notification directly if exists
-        target_user = None
-        if recipient_email:
-            target_user = User.query.filter(db.func.lower(User.email) == recipient_email).first()
-        if not target_user and recipient_phone:
-            target_user = User.query.filter_by(phone=recipient_phone).first()
-            
-        inst_user = User.query.get(inst_id)
-        issuer_name = inst_user.name if inst_user else current_user.name
-        notif = Notification(
-            user_id=target_user.id if target_user else None,
-            recipient_email=recipient_email if recipient_email else None,
-            recipient_phone=recipient_phone if recipient_phone else None,
-            message=f"You received a new certificate: '{cert.title}' from {issuer_name}.",
-            link=f"/verify/{issued_cert.verification_code}"
-        )
-        db.session.add(notif)
+        issued_cert = issue_to_recipient(cert, inst_id, recipient_email, recipient_phone)
         db.session.commit()
         
         recipient_display = recipient_email or recipient_phone
@@ -635,6 +650,213 @@ def issue_certificate(cert_id):
         return redirect(url_for('issued_list'))
         
     return render_template('issue_certificate.html', user=current_user, certificate=cert)
+
+@app.route('/certificates/bulk-template.xlsx')
+@login_required
+def download_bulk_template():
+    if current_user.role not in ['institution', 'staff']:
+        return redirect(url_for('dashboard'))
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Recipients"
+    ws.append(["email", "phone"])
+    ws.append(["student@example.com", "+911234567890"])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    return send_file(
+        buf,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name="bulk-template.xlsx"
+    )
+
+@app.route('/certificates/<int:cert_id>/bulk-issue', methods=['GET', 'POST'])
+@login_required
+def bulk_issue_certificate(cert_id):
+    if current_user.role not in ['institution', 'staff']:
+        return redirect(url_for('dashboard'))
+
+    inst_id = get_effective_institution_id(current_user)
+    cert = Certificate.query.get(cert_id)
+    if not cert or cert.institution_id != inst_id:
+        return redirect(url_for('certificates_list'))
+
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file was provided in the upload request.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        file = request.files['file']
+        if not file or not file.filename:
+            flash('Please select an Excel (.xlsx) file to upload.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        if not file.filename.lower().endswith('.xlsx'):
+            flash('Unsupported file format. Please upload an Excel workbook (.xlsx).')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        file_bytes = file.read()
+        if len(file_bytes) > 2 * 1024 * 1024:
+            flash('File size exceeds the 2 MB limit.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        try:
+            buf = io.BytesIO(file_bytes)
+            wb = openpyxl.load_workbook(buf, read_only=True, data_only=True)
+            sheet = wb.worksheets[0]
+            rows = list(sheet.iter_rows(values_only=True))
+            wb.close()
+        except Exception:
+            flash('Failed to read Excel file. Please ensure it is a valid, uncorrupted .xlsx workbook.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        if not rows:
+            flash('The uploaded spreadsheet contains no rows.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        header_row = rows[0]
+        email_col_idx = None
+        phone_col_idx = None
+        for idx, cell in enumerate(header_row):
+            if cell is not None:
+                col_name = str(cell).strip().lower()
+                if col_name == 'email' and email_col_idx is None:
+                    email_col_idx = idx
+                elif col_name == 'phone' and phone_col_idx is None:
+                    phone_col_idx = idx
+
+        if email_col_idx is None and phone_col_idx is None:
+            flash('Spreadsheet must include at least an "email" or "phone" column header.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        data_rows = rows[1:]
+        # Check non-empty rows limit of 500
+        non_empty_count = sum(1 for r in data_rows if any(c is not None and str(c).strip() != '' for c in r))
+        if non_empty_count > 500:
+            flash('The uploaded spreadsheet exceeds the maximum limit of 500 data rows.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        existing_certs = IssuedCertificate.query.filter_by(certificate_id=cert_id).all()
+        existing_emails = {c.recipient_email.strip().lower() for c in existing_certs if c.recipient_email}
+        existing_phones = {c.recipient_phone.strip() for c in existing_certs if c.recipient_phone}
+
+        seen_emails = set()
+        seen_phones = set()
+
+        issued_count = 0
+        skipped_count = 0
+        invalid_count = 0
+        row_details = []
+
+        EMAIL_REGEX = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
+        for row_idx, row in enumerate(data_rows, start=2):
+            if not row or all(c is None or str(c).strip() == '' for c in row):
+                continue
+
+            # Extract and normalize email
+            raw_email = row[email_col_idx] if email_col_idx is not None and email_col_idx < len(row) else None
+            email = str(raw_email).strip().lower() if raw_email is not None and str(raw_email).strip() != '' else None
+
+            # Extract and normalize phone
+            raw_phone = row[phone_col_idx] if phone_col_idx is not None and phone_col_idx < len(row) else None
+            phone = None
+            if raw_phone is not None:
+                if isinstance(raw_phone, (int,)):
+                    val = str(raw_phone).strip()
+                    phone = val if val else None
+                elif isinstance(raw_phone, float):
+                    if raw_phone.is_integer():
+                        val = str(int(raw_phone)).strip()
+                    else:
+                        val = str(raw_phone).strip()
+                        if val.endswith('.0'):
+                            val = val[:-2].strip()
+                    phone = val if val else None
+                else:
+                    val = str(raw_phone).strip()
+                    if val.endswith('.0'):
+                        val = val[:-2].strip()
+                    phone = val if val else None
+
+            display_val = email or phone or '(empty)'
+
+            # Invalid: no email and no phone, or email that doesn't match basic email regex
+            if not email and not phone:
+                invalid_count += 1
+                row_details.append({
+                    'row_num': row_idx,
+                    'value': display_val,
+                    'status': 'invalid',
+                    'reason': 'Missing both email and phone number'
+                })
+                continue
+
+            if email and not EMAIL_REGEX.match(email):
+                invalid_count += 1
+                row_details.append({
+                    'row_num': row_idx,
+                    'value': display_val,
+                    'status': 'invalid',
+                    'reason': f"Invalid email format: '{email}'"
+                })
+                continue
+
+            # Skipped as duplicate: in file or already in DB
+            is_duplicate = False
+            dup_reason = ""
+            if email and email in seen_emails:
+                is_duplicate = True
+                dup_reason = 'Duplicate email earlier in file'
+            elif phone and phone in seen_phones:
+                is_duplicate = True
+                dup_reason = 'Duplicate phone number earlier in file'
+            elif email and email in existing_emails:
+                is_duplicate = True
+                dup_reason = 'Certificate already issued to this email'
+            elif phone and phone in existing_phones:
+                is_duplicate = True
+                dup_reason = 'Certificate already issued to this phone number'
+
+            if is_duplicate:
+                skipped_count += 1
+                row_details.append({
+                    'row_num': row_idx,
+                    'value': display_val,
+                    'status': 'skipped',
+                    'reason': dup_reason
+                })
+                continue
+
+            # Valid recipient
+            if email:
+                seen_emails.add(email)
+            if phone:
+                seen_phones.add(phone)
+
+            issue_to_recipient(cert, inst_id, email, phone)
+            issued_count += 1
+
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            flash('A database error occurred during bulk issuance. Changes have been rolled back.')
+            return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        results = {
+            'issued': issued_count,
+            'skipped': skipped_count,
+            'invalid': invalid_count,
+            'details': row_details
+        }
+        return render_template('bulk_issue_results.html', user=current_user, certificate=cert, results=results)
+
+    return render_template('bulk_issue.html', user=current_user, certificate=cert)
 
 @app.route('/issued')
 @login_required

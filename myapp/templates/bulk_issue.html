@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Issue Certificates — Ascend{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+
+  <!-- Header Section with Breadcrumbs -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/30">
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+        <a href="{{ url_for('dashboard') }}" class="hover:text-primary transition-colors text-decoration-none">Dashboard</a>
+        <span>/</span>
+        <a href="{{ url_for('certificates_list') }}" class="hover:text-primary transition-colors text-decoration-none">Certificates</a>
+        <span>/</span>
+        <span class="text-primary font-medium">Bulk Issue</span>
+      </div>
+      <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">
+        Bulk Certificate Issuance
+      </h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mb-0">
+        Upload an Excel spreadsheet to batch-issue digital credentials to multiple recipients at once.
+      </p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('certificates_list') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        <span>Back to Certificates</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="w-full flex flex-col gap-6">
+    <!-- Target Credential Preview Banner -->
+    <div class="w-full bg-primary-container text-on-primary rounded-2xl p-space-lg shadow-md flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-space-md">
+        <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-secondary-fixed-dim">
+          <span class="material-symbols-outlined text-[32px]">school</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-label-sm text-[11px] font-bold tracking-wider uppercase text-secondary-fixed-dim">Target Credential</span>
+          <h2 class="font-headline-sm text-headline-sm text-white tracking-tight leading-tight my-0.5">{{ certificate.title }}</h2>
+          <p class="font-body-sm text-body-sm text-on-primary-container line-clamp-1 mb-0">{{ certificate.description or 'Official accredited certificate template.' }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="{{ url_for('issue_certificate', cert_id=certificate.id) }}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-title-md text-body-sm transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[16px]">person</span>
+          <span>Single Recipient</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Instructions & Template Download Card -->
+    <div class="w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 p-space-lg md:p-space-xl">
+      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-space-md border-b border-outline-variant/20">
+        <div class="flex items-start gap-space-sm">
+          <div class="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0 mt-0.5">
+            <span class="material-symbols-outlined text-[24px]">description</span>
+          </div>
+          <div>
+            <h3 class="font-title-lg text-title-lg text-primary font-semibold mb-1">Spreadsheet Guidelines</h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">
+              Prepare your recipient roster according to the registry standards below.
+            </p>
+          </div>
+        </div>
+
+        <a href="{{ url_for('download_bulk_template') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#EF9F27]/60 bg-surface-container-lowest hover:bg-[#EF9F27]/10 text-primary font-title-md text-body-sm transition-colors text-decoration-none shadow-sm shrink-0">
+          <span class="material-symbols-outlined text-[20px] text-[#EF9F27]">download</span>
+          <span>Download Template (.xlsx)</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-space-md">
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1.5">
+          <div class="flex items-center gap-2 text-primary font-title-md text-body-sm font-semibold">
+            <span class="material-symbols-outlined text-[18px] text-secondary">view_column</span>
+            <span>Required Columns</span>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Must include an <strong class="text-primary font-mono text-xs">email</strong> or <strong class="text-primary font-mono text-xs">phone</strong> column header (case-insensitive). Extra columns like names are ignored.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1.5">
+          <div class="flex items-center gap-2 text-primary font-title-md text-body-sm font-semibold">
+            <span class="material-symbols-outlined text-[18px] text-secondary">speed</span>
+            <span>Batch Capacity</span>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Upload up to <strong class="text-primary">500 data rows</strong> per batch. File size must not exceed <strong class="text-primary">2 MB</strong>. Completely empty rows are skipped silently.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1.5">
+          <div class="flex items-center gap-2 text-primary font-title-md text-body-sm font-semibold">
+            <span class="material-symbols-outlined text-[18px] text-secondary">verified_user</span>
+            <span>Safe Deduplication</span>
+          </div>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Duplicate entries within the file or recipients who already hold this credential are automatically skipped without interrupting valid issuances.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Form Card -->
+    <div class="w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 p-space-lg md:p-space-xl">
+      <div class="flex items-center gap-space-sm mb-space-md pb-space-sm border-b border-outline-variant/20">
+        <span class="material-symbols-outlined text-[24px] text-secondary">upload_file</span>
+        <div>
+          <h3 class="font-title-lg text-title-lg text-primary font-semibold mb-0">Upload Recipient Workbook</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Select an Excel file (.xlsx) from your device to initiate verification and issuance</p>
+        </div>
+      </div>
+
+      <form action="{{ url_for('bulk_issue_certificate', cert_id=certificate.id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <!-- File Picker -->
+        <div class="flex flex-col gap-2">
+          <label for="excel-file-input" class="font-label-md text-label-md text-on-surface font-medium">
+            Select Spreadsheet (.xlsx)
+          </label>
+          <div class="border-2 border-dashed border-outline-variant hover:border-secondary rounded-2xl p-8 text-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer" onclick="document.getElementById('excel-file-input').click();">
+            <div class="w-16 h-16 rounded-full bg-[#EF9F27]/10 text-[#EF9F27] flex items-center justify-center mx-auto mb-3">
+              <span class="material-symbols-outlined text-[36px]">table_view</span>
+            </div>
+            <p class="font-title-md text-title-md text-primary font-medium mb-1" id="file-chosen-text">
+              Click to browse or drag & drop your Excel file here
+            </p>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">
+              Microsoft Excel OpenXML Spreadsheet (.xlsx), up to 2 MB
+            </p>
+            <input type="file" id="excel-file-input" name="file" accept=".xlsx" required class="hidden" onchange="const f = this.files[0]; if(f) { document.getElementById('file-chosen-text').innerText = f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)'; }">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-4 pt-2">
+          <a href="{{ url_for('certificates_list') }}" class="px-5 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+            Cancel
+          </a>
+          <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-all shadow-md cursor-pointer">
+            <span class="material-symbols-outlined text-[20px]">send</span>
+            <span>Process Bulk Issuance</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
