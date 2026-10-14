@@ -1,7 +1,7 @@
 import qrcode
 import io
 import base64
-from flask import Flask, render_template, redirect, url_for, request, flash, Response, make_response
+from flask import Flask, render_template, redirect, url_for, request, flash, Response, make_response, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from PIL import Image
 
@@ -162,6 +162,31 @@ def get_institution_name(user):
         return 'Ascend Platform'
     else:
         return 'Ascend Credentials'
+
+def get_user_notifications_query(user):
+    """Return query for all notifications belonging to user by user_id or email/phone."""
+    if not user or not user.is_authenticated:
+        return Notification.query.filter(db.false())
+
+    conditions = [
+        Notification.user_id == user.id
+    ]
+    if user.email:
+        conditions.append(db.func.lower(db.func.trim(Notification.recipient_email)) == user.email.strip().lower())
+    if user.phone:
+        conditions.append(Notification.recipient_phone == user.phone.strip())
+
+    return Notification.query.filter(db.or_(*conditions))
+
+
+@app.context_processor
+def inject_notifications():
+    if current_user.is_authenticated:
+        unread_count = get_user_notifications_query(current_user).filter(Notification.is_read == False).count()
+    else:
+        unread_count = 0
+    return dict(unread_notif_count=unread_count)
+
 
 @app.route('/dashboard')
 @login_required
@@ -431,24 +456,46 @@ def claim_certificate(issued_id):
 @app.route('/notifications')
 @login_required
 def notifications_list():
-    notifications = Notification.query.filter(
-        db.or_(
-            Notification.user_id == current_user.id,
-            Notification.recipient_email == current_user.email,
-            (Notification.recipient_phone == current_user.phone if current_user.phone else False)
-        )
-    ).order_by(Notification.created_at.desc()).all()
-
+    notifications = get_user_notifications_query(current_user).order_by(Notification.created_at.desc()).all()
     return render_template('notifications.html', user=current_user, notifications=notifications)
+
+
+@app.route('/notifications/<int:notif_id>/open', endpoint='open_notification')
+@app.route('/notifications/<int:notif_id>', endpoint='click_notification')
+@login_required
+def open_notification(notif_id):
+    notif = get_user_notifications_query(current_user).filter(Notification.id == notif_id).first()
+    if not notif:
+        abort(404)
+
+    if not notif.is_read:
+        notif.is_read = True
+        db.session.commit()
+
+    target_link = notif.link
+    if target_link and target_link.startswith('/') and not target_link.startswith('//'):
+        return redirect(target_link)
+    return redirect(url_for('notifications_list'))
 
 
 @app.route('/notifications/<int:notif_id>/read', methods=['POST'])
 @login_required
 def mark_notification_read(notif_id):
-    notif = Notification.query.get(notif_id)
-    if notif:
+    notif = get_user_notifications_query(current_user).filter(Notification.id == notif_id).first()
+    if notif and not notif.is_read:
         notif.is_read = True
         db.session.commit()
+    return redirect(url_for('notifications_list'))
+
+
+@app.route('/notifications/read-all', methods=['POST'])
+@login_required
+def mark_all_notifications_read():
+    unreads = get_user_notifications_query(current_user).filter(Notification.is_read == False).all()
+    for notif in unreads:
+        notif.is_read = True
+    db.session.commit()
+    flash('All notifications marked as read.')
     return redirect(url_for('notifications_list'))
 
 

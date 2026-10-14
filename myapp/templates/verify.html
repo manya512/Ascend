@@ -5,21 +5,25 @@
 {% block content %}
 <div class="flex flex-col w-full px-margin-mobile md:px-margin py-space-lg gap-space-xl">
   <!-- Sub-bar Header -->
-  <div class="w-full bg-surface-container-lowest px-space-lg py-space-md rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-space-md">
+  <div
+    class="w-full bg-surface-container-lowest px-space-lg py-space-md rounded-xl shadow-sm flex flex-wrap items-center justify-between gap-space-md">
     <div class="flex flex-col gap-1">
       <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
         <a class="hover:text-primary transition-colors text-decoration-none" href="{{ url_for('home') }}">Registry</a>
         <span>/</span>
         <span class="text-primary font-medium">Public Verification</span>
-        <span class="ml-space-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold flex items-center gap-1">
+        <span
+          class="ml-space-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-semibold flex items-center gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>SHA-256 Ledger
         </span>
       </div>
-      <h1 class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold">Credential Verification Gateway</h1>
+      <h1 class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold">Credential Verification
+        Gateway</h1>
     </div>
 
     <div class="flex items-center gap-space-sm">
-      <a href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}" class="px-space-md py-2 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none">
+      <a href="{{ url_for('dashboard') if current_user.is_authenticated else url_for('login') }}"
+        class="px-space-md py-2 rounded-lg bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors font-title-md text-body-sm flex items-center gap-1.5 text-decoration-none">
         <span class="material-symbols-outlined text-[18px]">account_circle</span>
         <span>{% if current_user.is_authenticated %}Dashboard{% else %}Sign In{% endif %}</span>
       </a>
@@ -28,23 +32,30 @@
 
   <div class="w-full max-w-4xl mx-auto flex flex-col gap-space-lg">
     <!-- Search Bar Card -->
-    <div class="w-full bg-surface-container-lowest rounded-2xl p-space-lg md:p-space-xl shadow-sm border border-outline-variant/30">
+    <div
+      class="w-full bg-surface-container-lowest rounded-2xl p-space-lg md:p-space-xl shadow-sm border border-outline-variant/30">
       <div class="flex items-center gap-space-sm mb-space-sm">
         <div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-secondary">
           <span class="material-symbols-outlined text-[22px]">qr_code_scanner</span>
         </div>
         <div>
           <h2 class="font-title-lg text-title-lg text-primary font-semibold mb-0">Inspect Credential Authenticity</h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Enter a unique verification UUID code printed on an official certificate</p>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Enter a unique verification UUID code
+            printed on an official certificate</p>
         </div>
       </div>
 
-      <form action="{{ url_for('verify_certificate') }}" method="POST" class="flex flex-col sm:flex-row gap-space-sm mt-space-md">
+      <form action="{{ url_for('verify_certificate') }}" method="POST"
+        class="flex flex-col sm:flex-row gap-space-sm mt-space-md">
         <div class="relative flex-grow">
-          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-outline pointer-events-none">fingerprint</span>
-          <input type="text" name="code" value="{{ code or '' }}" class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-mono text-body-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30 shadow-inner" placeholder="e.g. 2718d20a-aeeb-4bc7-b03c-3a42634d44f2" required>
+          <span
+            class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-outline pointer-events-none">fingerprint</span>
+          <input type="text" name="code" value="{{ code or '' }}"
+            class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-mono text-body-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-secondary/40 border border-outline-variant/30 shadow-inner"
+            placeholder="e.g. 2718d20a-aeeb-4bc7-b03c-3a42634d44f2" required>
         </div>
-        <button type="submit" class="px-6 py-3 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-all flex items-center justify-center gap-2 shrink-0">
+        <button type="submit"
+          class="px-6 py-3 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-all flex items-center justify-center gap-2 shrink-0">
           <span class="material-symbols-outlined text-[18px]">verified</span>
           <span>Verify Credential</span>
         </button>
@@ -53,16 +64,20 @@
 
     {% if result %}
     <!-- VERIFIED CERTIFICATE SPECIMEN -->
-    <div class="w-full bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden border border-outline-variant/40">
+    <div
+      class="w-full bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden border border-outline-variant/40">
       <!-- Top Authentic Status Strip -->
-      <div class="bg-gradient-to-r from-primary-container via-[#3C3489] to-primary-container text-white px-space-lg md:px-space-xl py-space-md flex flex-wrap items-center justify-between gap-space-md">
+      <div
+        class="bg-gradient-to-r from-primary-container via-[#3C3489] to-primary-container text-white px-space-lg md:px-space-xl py-space-md flex flex-wrap items-center justify-between gap-space-md">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-300">
+          <div
+            class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-300">
             <span class="material-symbols-outlined text-[24px]">verified</span>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-label-sm text-[11px] font-bold tracking-wider uppercase text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-full">
+              <span
+                class="font-label-sm text-[11px] font-bold tracking-wider uppercase text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-full">
                 Cryptographically Verified
               </span>
               <span class="font-label-sm text-[11px] text-white/70">Registry Status: Valid</span>
@@ -75,7 +90,8 @@
 
         <div class="flex flex-col text-right">
           <span class="font-label-sm text-[10px] tracking-wider uppercase text-white/70">VERIFICATION ID</span>
-          <code class="font-mono text-[12px] text-secondary-fixed-dim bg-white/10 px-2.5 py-1 rounded-md">{{ result[0].verification_code }}</code>
+          <code
+            class="font-mono text-[12px] text-secondary-fixed-dim bg-white/10 px-2.5 py-1 rounded-md">{{ result[0].verification_code }}</code>
         </div>
       </div>
 
@@ -96,22 +112,30 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-2 border-t border-outline-variant/20">
             <div>
-              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Recipient Identity</span>
+              <span
+                class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Recipient
+                Identity</span>
               <div class="font-body-md text-body-md text-primary font-medium">
                 {% if claimed_user %}
-                  <div class="font-semibold text-primary text-base">{{ claimed_user.name }}</div>
+                <div class="font-semibold text-primary text-base">{{ claimed_user.name }}</div>
                 {% endif %}
                 {% if result[0].recipient_email %}
-                  <div class="flex items-center gap-1.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-secondary">mail</span> {{ result[0].recipient_email }}</div>
+                <div class="flex items-center gap-1.5 text-sm text-on-surface-variant"><span
+                    class="material-symbols-outlined text-[16px] text-secondary">mail</span> {{
+                  result[0].recipient_email }}</div>
                 {% endif %}
                 {% if result[0].recipient_phone %}
-                  <div class="flex items-center gap-1.5 mt-0.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-secondary">call</span> {{ result[0].recipient_phone }}</div>
+                <div class="flex items-center gap-1.5 mt-0.5 text-sm text-on-surface-variant"><span
+                    class="material-symbols-outlined text-[16px] text-secondary">call</span> {{
+                  result[0].recipient_phone }}</div>
                 {% endif %}
               </div>
             </div>
 
             <div>
-              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Issuing Authority</span>
+              <span
+                class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Issuing
+                Authority</span>
               <div class="font-body-md text-body-md text-primary font-medium flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[16px] text-secondary">account_balance</span>
                 <span>{{ result[2].name }}</span>
@@ -119,7 +143,9 @@
             </div>
 
             <div>
-              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Conferred Date</span>
+              <span
+                class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Conferred
+                Date</span>
               <div class="font-body-md text-body-md text-on-surface">
                 🗓️ {{ result[0].issued_at.strftime('%B %d, %Y') if result[0].issued_at else 'Permanent Record' }}
               </div>
@@ -131,10 +157,14 @@
             </div>
 
             <div>
-              <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Claim Status</span>
+              <span
+                class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-1">Claim
+                Status</span>
               <div>
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full {% if result[0].status == 'claimed' %}bg-emerald-50 text-emerald-800{% else %}bg-surface-container text-secondary{% endif %} font-label-sm text-[12px] font-semibold">
-                  <span class="w-1.5 h-1.5 rounded-full {% if result[0].status == 'claimed' %}bg-emerald-600{% else %}bg-secondary{% endif %}"></span>
+                <span
+                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full {% if result[0].status == 'claimed' %}bg-emerald-50 text-emerald-800{% else %}bg-surface-container text-secondary{% endif %} font-label-sm text-[12px] font-semibold">
+                  <span
+                    class="w-1.5 h-1.5 rounded-full {% if result[0].status == 'claimed' %}bg-emerald-600{% else %}bg-secondary{% endif %}"></span>
                   {{ result[0].status|title if result[0].status else 'Issued' }}
                 </span>
               </div>
@@ -143,20 +173,29 @@
         </div>
 
         <!-- Right: In-Memory QR Code Specimen (5 cols) -->
-        <div class="md:col-span-5 flex flex-col items-center text-center p-space-md rounded-2xl bg-surface-container-low border border-outline-variant/30">
+        <div
+          class="md:col-span-5 flex flex-col items-center text-center p-space-md rounded-2xl bg-surface-container-low border border-outline-variant/30">
           {% if qr_b64 %}
           <div class="p-3 bg-white rounded-xl shadow-md mb-space-xs">
-            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Cryptographic Verification QR Code" class="w-40 h-40 object-contain rounded-lg">
+            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Cryptographic Verification QR Code"
+              class="w-40 h-40 object-contain rounded-lg">
           </div>
-          <span class="font-label-sm text-[11px] text-on-surface-variant font-medium">Scan to verify credential on mobile</span>
+          <span class="font-label-sm text-[11px] text-on-surface-variant font-medium">Scan to verify credential on
+            mobile</span>
           {% endif %}
 
           {% if share_url %}
           <div class="w-full mt-space-sm pt-space-xs border-t border-outline-variant/30 flex flex-col gap-1.5">
-            <span class="font-label-sm text-[10px] uppercase tracking-wider text-outline">Direct Verification Link</span>
+            <span class="font-label-sm text-[10px] uppercase tracking-wider text-outline">Direct Verification
+              Link</span>
             <div class="flex items-center gap-1">
-              <input type="text" readonly value="{{ share_url }}" class="w-full px-2.5 py-1.5 rounded-lg bg-surface-container-lowest text-[11px] font-mono text-on-surface border border-outline-variant/30 text-center" id="share-link-input">
-              <button onclick="navigator.clipboard.writeText('{{ share_url }}'); alert('Verification URL copied to clipboard!');" type="button" class="px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-[11px] font-semibold shrink-0">
+              <input type="text" readonly value="{{ share_url }}"
+                class="w-full px-2.5 py-1.5 rounded-lg bg-surface-container-lowest text-[11px] font-mono text-on-surface border border-outline-variant/30 text-center"
+                id="share-link-input">
+              <button
+                onclick="navigator.clipboard.writeText('{{ share_url }}'); alert('Verification URL copied to clipboard!');"
+                type="button"
+                class="px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-[11px] font-semibold shrink-0">
                 Copy
               </button>
             </div>
@@ -166,19 +205,24 @@
       </div>
 
       <!-- Footer Action Strip -->
-      <div class="bg-surface-container-low px-space-lg md:px-space-xl py-space-sm flex flex-wrap items-center justify-between gap-space-md border-t border-outline-variant/30">
+      <div
+        class="bg-surface-container-low px-space-lg md:px-space-xl py-space-sm flex flex-wrap items-center justify-between gap-space-md border-t border-outline-variant/30">
         <div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-[12px]">
           <span class="material-symbols-outlined text-[18px] text-emerald-600">security</span>
           <span>Cryptographically validated by {{ result[2].name if result else 'Ascend' }} Registry Authority</span>
         </div>
         <div class="flex items-center gap-2">
-          {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == result[2].id or current_user.institution_id == result[2].id or current_user.id == result[0].claimed_by_id or current_user.email == result[0].recipient_email) %}
-          <a href="{{ url_for('view_certificate', code=result[0].verification_code) }}" class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5 text-decoration-none">
+          {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == result[2].id or
+          current_user.institution_id == result[2].id or current_user.id == result[0].claimed_by_id or
+          current_user.email == result[0].recipient_email) %}
+          <a href="{{ url_for('view_certificate', code=result[0].verification_code) }}"
+            class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5 text-decoration-none">
             <span class="material-symbols-outlined text-[16px]">workspace_premium</span>
             <span>View Rendered Certificate</span>
           </a>
           {% endif %}
-          <button onclick="window.print()" type="button" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5">
+          <button onclick="window.print()" type="button"
+            class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-body-sm transition-colors flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[16px]">print</span>
             <span>Print Record</span>
           </button>
@@ -194,20 +238,25 @@
       </div>
       <h3 class="font-headline-sm text-headline-sm text-red-900 mb-1">Certificate Not Found</h3>
       <p class="font-body-md text-body-md text-red-700 max-w-md mx-auto mb-space-sm">
-        No registered certificate matched verification code <code class="font-mono bg-red-100 px-2 py-0.5 rounded text-red-900 font-semibold">{{ code }}</code>.
+        No registered certificate matched verification code <code
+          class="font-mono bg-red-100 px-2 py-0.5 rounded text-red-900 font-semibold">{{ code }}</code>.
       </p>
-      <span class="font-body-sm text-body-sm text-red-600">Please double-check the code or verify with the issuing academic authority.</span>
+      <span class="font-body-sm text-body-sm text-red-600">Please double-check the code or verify with the issuing
+        academic authority.</span>
     </div>
 
     {% else %}
     <!-- DEFAULT PROMPT -->
-    <div class="w-full bg-surface-container-lowest rounded-2xl p-space-xl text-center shadow-sm border border-outline-variant/30">
-      <div class="w-16 h-16 rounded-full bg-surface-container text-secondary flex items-center justify-center mx-auto mb-space-sm">
+    <div
+      class="w-full bg-surface-container-lowest rounded-2xl p-space-xl text-center shadow-sm border border-outline-variant/30">
+      <div
+        class="w-16 h-16 rounded-full bg-surface-container text-secondary flex items-center justify-center mx-auto mb-space-sm">
         <span class="material-symbols-outlined text-[36px]">shield</span>
       </div>
       <h3 class="font-headline-sm text-headline-sm text-primary mb-1">Official Registry Search</h3>
       <p class="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto">
-        Ascend provides instant cryptographic lookup for academic awards, professional certifications, and institutional honors. Enter a verification code above to inspect official credentials.
+        Ascend provides instant cryptographic lookup for academic awards, professional certifications, and institutional
+        honors. Enter a verification code above to inspect official credentials.
       </p>
     </div>
     {% endif %}

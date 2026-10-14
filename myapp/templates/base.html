@@ -147,6 +147,11 @@
         {% if current_user.is_authenticated %}
         <a href="{{ url_for('notifications_list') }}" aria-label="Notifications" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">
           <span class="material-symbols-outlined text-[22px]">notifications</span>
+          {% if unread_notif_count and unread_notif_count > 0 %}
+          <span class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold bg-[#EF9F27] text-[#16112c] flex items-center justify-center leading-none shadow-sm">
+            {{ '9+' if unread_notif_count > 9 else unread_notif_count }}
+          </span>
+          {% endif %}
         </a>
 
         <div class="flex items-center gap-2 pl-space-xs">

@@ -20,7 +20,16 @@
         System notices, issuance logs, and recipient claim activity updates.
       </p>
     </div>
-    <div>
+    <div class="flex items-center gap-3">
+      {% set has_unread = (unread_notif_count and unread_notif_count > 0) or (notifications and notifications|selectattr('is_read', 'equalto', false)|list|length > 0) %}
+      {% if has_unread %}
+        <form action="{{ url_for('mark_all_notifications_read') }}" method="POST" class="mb-0">
+          <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[#EF9F27]/50 bg-surface-container-lowest hover:bg-[#EF9F27]/10 text-primary font-title-md text-title-md transition-colors shadow-sm cursor-pointer">
+            <span class="material-symbols-outlined text-[18px] text-[#EF9F27]">done_all</span>
+            <span>Mark all as read</span>
+          </button>
+        </form>
+      {% endif %}
       <a href="{{ url_for('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
         <span class="material-symbols-outlined text-[18px]">arrow_back</span>
         <span>Back to Dashboard</span>
@@ -63,7 +72,7 @@
 
             {% if notif.link %}
               <div class="mt-2">
-                <a href="{{ notif.link }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-title-md text-xs transition-colors text-decoration-none shadow-sm">
+                <a href="{{ url_for('open_notification', notif_id=notif.id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-on-primary font-title-md text-xs transition-colors text-decoration-none shadow-sm">
                   <span>View Details</span>
                   <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </a>
