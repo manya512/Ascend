@@ -462,7 +462,22 @@
       .catch(err => {
         console.error('Error fetching departments:', err);
         deptSelect.innerHTML = '<option value="">Failed to load departments</option>';
-      });
   }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const emailParam = params.get('email');
+    const modeParam = params.get('mode');
+    if (emailParam || modeParam === 'register') {
+      const loginForm = document.getElementById('login-form');
+      if (loginForm && loginForm.style.display !== 'none') {
+        toggleForms();
+      }
+      if (emailParam) {
+        const regEmail = document.getElementById('reg-email');
+        if (regEmail) regEmail.value = emailParam;
+      }
+    }
+  });
 </script>
 {% endblock %}

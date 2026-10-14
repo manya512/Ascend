@@ -10,6 +10,16 @@ from PIL import Image
 
 from config import Config
 from models import db, User, Certificate, IssuedCertificate, Notification, Department, Club
+from mail_utils import (
+    send_email,
+    send_emails_bulk,
+    build_certificate_email_payload,
+    email_certificate_issued,
+    email_institution_approved,
+    email_institution_rejected,
+    email_staff_verified,
+    email_staff_rejected,
+)
 
 def generate_qr_base64(url):
     qr = qrcode.QRCode(version=1, box_size=6, border=2)
@@ -91,8 +101,12 @@ def login():
     return render_template('login.html', institutions=institutions)
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
+    if request.method == 'GET':
+        email = request.args.get('email', '').strip()
+        return redirect(url_for('login', email=email, mode='register') if email else url_for('login', mode='register'))
+
     name = request.form.get('name', '').strip()
     email = request.form.get('email', '').strip().lower()
     password = request.form.get('password', '').strip()
@@ -354,6 +368,10 @@ def admin_approve_institution(user_id):
     inst = User.query.filter_by(id=user_id, role='institution').first_or_404()
     inst.approval_status = 'approved'
     db.session.commit()
+    try:
+        email_institution_approved(inst.email, inst.name)
+    except Exception as exc:
+        app.logger.error("Failed to send institution approved email: %s", exc)
     flash(f"Institution '{inst.name}' has been approved.")
     return redirect(request.referrer or url_for('dashboard'))
 
@@ -366,6 +384,10 @@ def admin_reject_institution(user_id):
     inst = User.query.filter_by(id=user_id, role='institution').first_or_404()
     inst.approval_status = 'rejected'
     db.session.commit()
+    try:
+        email_institution_rejected(inst.email, inst.name)
+    except Exception as exc:
+        app.logger.error("Failed to send institution rejected email: %s", exc)
     flash(f"Institution '{inst.name}' was not approved.")
     return redirect(request.referrer or url_for('dashboard'))
 
@@ -735,7 +757,22 @@ def issue_certificate(cert_id):
         
         issued_cert = issue_to_recipient(cert, inst_id, recipient_email, recipient_phone)
         db.session.commit()
-        
+
+        if recipient_email:
+            try:
+                has_acct = User.query.filter(db.func.lower(User.email) == recipient_email.lower()).first() is not None
+                inst_user = User.query.get(inst_id)
+                inst_title = inst_user.name if inst_user else 'Institution'
+                email_certificate_issued(
+                    recipient_email=recipient_email,
+                    cert_title=cert.title,
+                    institution_name=inst_title,
+                    verification_code=issued_cert.verification_code,
+                    has_account=has_acct
+                )
+            except Exception as exc:
+                app.logger.error("Failed to trigger issuance email: %s", exc)
+
         recipient_display = recipient_email or recipient_phone
         flash(f'Certificate successfully issued to {recipient_display}!')
         return redirect(url_for('issued_list'))
@@ -856,6 +893,7 @@ def bulk_issue_certificate(cert_id):
         skipped_count = 0
         invalid_count = 0
         row_details = []
+        newly_issued_certs = []
 
         EMAIL_REGEX = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
@@ -943,7 +981,9 @@ def bulk_issue_certificate(cert_id):
             if phone:
                 seen_phones.add(phone)
 
-            issue_to_recipient(cert, inst_id, email, phone)
+            ic = issue_to_recipient(cert, inst_id, email, phone)
+            if email:
+                newly_issued_certs.append((ic, email))
             issued_count += 1
 
         try:
@@ -952,6 +992,26 @@ def bulk_issue_certificate(cert_id):
             db.session.rollback()
             flash('A database error occurred during bulk issuance. Changes have been rolled back.')
             return redirect(url_for('bulk_issue_certificate', cert_id=cert_id))
+
+        if newly_issued_certs:
+            try:
+                inst_user = User.query.get(inst_id)
+                inst_title = inst_user.name if inst_user else 'Institution'
+                bulk_items = []
+                for ic, em in newly_issued_certs:
+                    has_acct = User.query.filter(db.func.lower(User.email) == em.lower()).first() is not None
+                    payload = build_certificate_email_payload(
+                        recipient_email=em,
+                        cert_title=cert.title,
+                        institution_name=inst_title,
+                        verification_code=ic.verification_code,
+                        has_account=has_acct
+                    )
+                    bulk_items.append(payload)
+                if bulk_items:
+                    send_emails_bulk(bulk_items, pause=0.5)
+            except Exception as exc:
+                app.logger.error("Failed to queue bulk issuance emails: %s", exc)
 
         results = {
             'issued': issued_count,
@@ -1356,6 +1416,10 @@ def institution_verify_staff(staff_id):
     )
     db.session.add(notif)
     db.session.commit()
+    try:
+        email_staff_verified(staff.email, staff.name, inst.name)
+    except Exception as exc:
+        app.logger.error("Failed to send staff verified email: %s", exc)
     flash(f'{staff.name} has been verified as staff.')
     return redirect(url_for('institution_dashboard', tab='staff'))
 
@@ -1376,6 +1440,10 @@ def institution_reject_staff(staff_id):
     )
     db.session.add(notif)
     db.session.commit()
+    try:
+        email_staff_rejected(staff.email, staff.name, inst.name)
+    except Exception as exc:
+        app.logger.error("Failed to send staff rejected email: %s", exc)
     flash(f'{staff.name} staff status set to rejected.')
     return redirect(url_for('institution_dashboard', tab='staff'))
 
