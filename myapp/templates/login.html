@@ -5,25 +5,18 @@
 {% block content %}
 <div class="relative w-full min-h-[calc(100vh-12rem)] flex items-center justify-center px-margin-mobile md:px-gutter py-space-xl overflow-hidden">
   <!-- Background atmospheric architectural glow -->
-  <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-b from-secondary-container/15 via-surface-container-low to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
-  <div class="absolute bottom-0 right-10 w-96 h-96 bg-primary-fixed/30 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[480px] bg-gradient-to-b from-primary/10 via-surface-container-low to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="absolute bottom-0 right-10 w-96 h-96 bg-primary-light/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
 
   <div class="w-full max-w-[490px] flex flex-col items-center">
-    <!-- Institutional Emblem Badge -->
+    <!-- Institutional Emblem Badge with Ladder Icon -->
     <div class="mb-space-lg flex flex-col items-center">
-      <div class="w-16 h-16 rounded-2xl bg-surface-container-lowest shadow-md flex items-center justify-center p-3 mb-space-sm transition-transform hover:scale-105 duration-300">
-        <svg class="w-full h-full text-primary" fill="none" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <rect fill="#2B2642" height="64" rx="14" width="64"></rect>
-          <path d="M22 48L30 18H34L42 48" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5"></path>
-          <path d="M25 41H39" stroke="#C585C0" stroke-linecap="round" stroke-width="3"></path>
-          <path d="M27.5 33H36.5" stroke="#C585C0" stroke-linecap="round" stroke-width="3"></path>
-          <path d="M29.5 25H34.5" stroke="#C585C0" stroke-linecap="round" stroke-width="3"></path>
-          <circle cx="32" cy="14" fill="#C585C0" r="2.5"></circle>
-        </svg>
+      <div class="w-16 h-16 rounded-2xl bg-surface border border-outline-variant/50 shadow-md flex items-center justify-center p-3 mb-space-sm transition-transform hover:scale-105 duration-300">
+        {% with variant="icon", height_class="h-10" %}{% include "_logo.html" %}{% endwith %}
       </div>
-      <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-on-surface-variant">
+      <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary">
         <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-        <span class="font-label-sm text-label-sm tracking-wider uppercase">Institutional Gateway</span>
+        <span class="font-label-sm text-label-sm tracking-wider uppercase font-semibold">Institutional Gateway</span>
       </div>
     </div>
 
@@ -99,14 +92,14 @@
 
         <!-- Submit Button -->
         <div class="pt-2">
-          <button class="w-full py-3.5 px-6 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md tracking-tight shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2" type="submit">
+          <button class="w-full py-3.5 px-6 rounded-xl bg-secondary hover:bg-secondary-hover text-on-secondary font-title-md text-title-md font-bold tracking-tight shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer" type="submit">
             <span>Sign in</span>
             <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
           </button>
         </div>
 
         <div class="text-center pt-2">
-          <button type="button" onclick="toggleForms();" class="font-body-sm text-body-sm text-secondary hover:underline">
+          <button type="button" onclick="toggleForms();" class="font-body-sm text-body-sm text-primary font-semibold hover:underline cursor-pointer">
             Don't have an account? Register as Member
           </button>
         </div>
@@ -124,7 +117,7 @@
             <!-- Option 1: Member -->
             <button type="button" id="role-btn-member" onclick="selectRole('member');" class="p-3 rounded-xl border-2 border-secondary bg-surface-container-low text-left transition-all flex flex-col justify-between gap-1 shadow-sm role-card">
               <div class="flex items-center justify-between w-full">
-                <span class="material-symbols-outlined text-secondary text-[22px]">school</span>
+                <span class="material-symbols-outlined text-secondary text-[22px]">person</span>
                 <span id="role-check-member" class="w-4 h-4 rounded-full bg-secondary flex items-center justify-center text-white text-[10px]">✓</span>
               </div>
               <div>
@@ -244,14 +237,14 @@
 
         <!-- Submit Button -->
         <div class="pt-2">
-          <button class="w-full py-3.5 px-6 rounded-xl bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md tracking-tight shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer" type="submit">
+          <button class="w-full py-3.5 px-6 rounded-xl bg-secondary hover:bg-secondary-hover text-on-secondary font-title-md text-title-md font-bold tracking-tight shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer" type="submit">
             <span id="btn-submit-text">Create Member Account</span>
             <span class="material-symbols-outlined text-[18px]">check_circle</span>
           </button>
         </div>
 
         <div class="text-center pt-2">
-          <button type="button" onclick="toggleForms();" class="font-body-sm text-body-sm text-secondary hover:underline cursor-pointer">
+          <button type="button" onclick="toggleForms();" class="font-body-sm text-body-sm text-primary font-semibold hover:underline cursor-pointer">
             Already have an account? Sign in
           </button>
         </div>
@@ -262,7 +255,7 @@
         <p class="font-body-sm text-body-sm text-on-surface-variant mb-1">
           Are you viewing an awarded credential?
         </p>
-        <a class="inline-flex items-center gap-1 font-label-md text-label-md text-secondary hover:text-on-secondary-container transition-colors group text-decoration-none" href="{{ url_for('verify_certificate') }}">
+        <a class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold hover:text-primary-light transition-colors group text-decoration-none" href="{{ url_for('verify_certificate') }}">
           <span>Access verification without logging in</span>
           <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_outward</span>
         </a>

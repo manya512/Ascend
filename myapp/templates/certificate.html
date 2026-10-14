@@ -10,14 +10,22 @@
   
   @media print {
     @page {
-      size: landscape;
-      margin: 6mm;
+      size: A4 landscape;
+      margin: 0;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box !important;
     }
     html, body {
-      background: #ffffff !important;
-      color: #000000 !important;
+      width: 297mm !important;
+      height: 210mm !important;
+      max-width: 297mm !important;
+      max-height: 210mm !important;
       margin: 0 !important;
       padding: 0 !important;
+      background: #ffffff !important;
+      color: #26215C !important;
+      overflow: hidden !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -27,22 +35,63 @@
     .pt-20 {
       padding-top: 0 !important;
     }
+    main {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 297mm !important;
+      height: 210mm !important;
+      max-height: 210mm !important;
+      overflow: hidden !important;
+    }
     .print-certificate-wrapper {
       padding: 0 !important;
       margin: 0 !important;
-      width: 100% !important;
-      min-height: 100% !important;
+      width: 297mm !important;
+      height: 210mm !important;
+      max-width: 297mm !important;
+      max-height: 210mm !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
       box-shadow: none !important;
+      background: transparent !important;
     }
     .certificate-card {
-      width: 100% !important;
-      max-width: 100% !important;
-      box-shadow: none !important;
-      border: 4px double #26215c !important;
-      page-break-inside: avoid !important;
-      page-break-after: avoid !important;
+      width: 297mm !important;
+      height: 210mm !important;
+      max-width: 297mm !important;
+      max-height: 210mm !important;
+      box-sizing: border-box !important;
       margin: 0 !important;
-      padding: 2.25rem !important;
+      padding: 8mm 12mm !important;
+      border: 3.5mm double #26215C !important;
+      border-radius: 0 !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+      overflow: hidden !important;
+      box-shadow: none !important;
+      background: #fffdfa !important;
+    }
+    .cert-content-inner {
+      height: 100% !important;
+      justify-content: space-between !important;
+      gap: 3mm !important;
+    }
+    .cert-title-h1 {
+      font-size: 26pt !important;
+      line-height: 1.1 !important;
+    }
+    .cert-award-h3 {
+      font-size: 17pt !important;
+      line-height: 1.15 !important;
     }
   }
 </style>
@@ -50,9 +99,9 @@
 <div class="print-certificate-wrapper flex flex-col items-center w-full px-margin-mobile md:px-margin py-6 gap-6">
 
   <!-- Top Action Bar (Hidden during Print) -->
-  <div class="no-print w-full max-w-5xl bg-surface-container-lowest px-6 py-4 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-wrap items-center justify-between gap-4">
+  <div class="no-print w-full max-w-5xl bg-surface px-6 py-4 rounded-2xl shadow-sm border border-outline-variant/40 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <a href="javascript:history.back()" class="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary transition-colors text-decoration-none flex items-center" title="Go Back">
+      <a href="javascript:history.back()" class="p-2 rounded-xl bg-surface-container-high hover:bg-surface-container text-primary transition-colors text-decoration-none flex items-center" title="Go Back">
         <span class="material-symbols-outlined text-[20px]">arrow_back</span>
       </a>
       <div>
@@ -66,77 +115,77 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2.5">
-      <button onclick="window.print()" type="button" class="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-sm font-semibold transition-all shadow-sm flex items-center gap-2 cursor-pointer">
+      <button onclick="window.print()" type="button" class="px-5 py-2.5 rounded-xl bg-[#EF9F27] hover:bg-[#d98a18] text-[#26215C] font-title-md text-sm font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer">
         <span class="material-symbols-outlined text-[18px]">print</span>
         <span>Print / Save as PDF</span>
       </button>
 
-      <button onclick="navigator.clipboard.writeText('{{ verify_url }}'); alert('Public verification URL copied to clipboard!');" type="button" class="px-3.5 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-title-md text-sm transition-colors flex items-center gap-1.5 cursor-pointer">
-        <span class="material-symbols-outlined text-[18px] text-secondary">share</span>
+      <button onclick="navigator.clipboard.writeText('{{ verify_url }}'); alert('Public verification URL copied to clipboard!');" type="button" class="px-3.5 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container text-primary font-title-md text-sm font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
+        <span class="material-symbols-outlined text-[18px] text-[#EF9F27]">share</span>
         <span class="hidden sm:inline">Copy Link</span>
       </button>
 
-      <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="px-3.5 py-2.5 rounded-xl border border-outline-variant/40 hover:bg-surface-container-high text-on-surface-variant hover:text-primary font-title-md text-sm transition-colors text-decoration-none flex items-center gap-1.5">
-        <span class="material-symbols-outlined text-[18px]">verified</span>
+      <a href="{{ url_for('verify_certificate', code=issued_cert.verification_code) }}" class="px-3.5 py-2.5 rounded-xl border border-outline-variant hover:bg-surface-container-high text-primary font-title-md text-sm font-semibold transition-colors text-decoration-none flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[18px] text-primary">verified</span>
         <span>Verify Record</span>
       </a>
     </div>
   </div>
 
   <!-- Landscape Certificate Document Card -->
-  <div class="certificate-card w-full max-w-5xl bg-[#fffdfa] text-[#1e1838] rounded-2xl shadow-xl border-4 border-[#26215c] relative overflow-hidden p-6 sm:p-10 md:p-12 transition-all">
+  <div class="certificate-card w-full max-w-5xl bg-[#fffdfa] text-[#26215C] rounded-2xl shadow-xl border-4 border-[#26215C] relative overflow-hidden p-6 sm:p-10 md:p-12 transition-all">
 
     <!-- Inner Filigree Ornamental Border -->
-    <div class="absolute inset-2 sm:inset-3 border border-[#6e1647]/30 rounded-xl pointer-events-none"></div>
-    <div class="absolute inset-2.5 sm:inset-4 border border-[#e8d5b5]/80 rounded-lg pointer-events-none"></div>
+    <div class="absolute inset-2 sm:inset-3 border border-[#EF9F27]/50 rounded-xl pointer-events-none"></div>
+    <div class="absolute inset-2.5 sm:inset-4 border border-[#26215C]/20 rounded-lg pointer-events-none"></div>
 
     <!-- Corner Decorative Accents -->
-    <div class="absolute top-4 left-4 text-[#6e1647]/40 pointer-events-none select-none text-xl">✦</div>
-    <div class="absolute top-4 right-4 text-[#6e1647]/40 pointer-events-none select-none text-xl">✦</div>
-    <div class="absolute bottom-4 left-4 text-[#6e1647]/40 pointer-events-none select-none text-xl">✦</div>
-    <div class="absolute bottom-4 right-4 text-[#6e1647]/40 pointer-events-none select-none text-xl">✦</div>
+    <div class="absolute top-4 left-4 text-[#EF9F27] pointer-events-none select-none text-xl font-bold">✦</div>
+    <div class="absolute top-4 right-4 text-[#EF9F27] pointer-events-none select-none text-xl font-bold">✦</div>
+    <div class="absolute bottom-4 left-4 text-[#EF9F27] pointer-events-none select-none text-xl font-bold">✦</div>
+    <div class="absolute bottom-4 right-4 text-[#EF9F27] pointer-events-none select-none text-xl font-bold">✦</div>
 
-    <div class="relative z-10 flex flex-col justify-between gap-6 sm:gap-8 h-full">
+    <div class="cert-content-inner relative z-10 flex flex-col justify-between gap-5 sm:gap-6 h-full">
 
       <!-- Certificate Header: Institution & Crest -->
-      <div class="flex flex-col items-center text-center gap-2">
-        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#26215c] text-white flex items-center justify-center shadow-md mb-1">
-          <span class="material-symbols-outlined text-[32px] sm:text-[36px] text-[#ffd8e6]">school</span>
+      <div class="flex flex-col items-center text-center gap-1.5">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#26215C] text-white flex items-center justify-center shadow-md mb-1 p-2">
+          {% with variant="icon", dark=True, height_class="h-9 w-9" %}{% include "_logo.html" %}{% endwith %}
         </div>
 
-        <h2 class="fraunces text-2xl sm:text-3xl md:text-4xl text-[#26215c] font-bold tracking-tight mb-0 uppercase">
+        <h2 class="fraunces text-2xl sm:text-3xl text-[#26215C] font-bold tracking-tight mb-0 uppercase">
           {{ institution.name }}
         </h2>
 
         <div class="flex items-center justify-center gap-3 w-full max-w-md my-0.5">
-          <div class="h-px bg-gradient-to-r from-transparent via-[#6e1647]/40 to-transparent flex-grow"></div>
-          <span class="font-label-sm text-[11px] sm:text-[12px] tracking-[0.2em] uppercase font-semibold text-[#6e1647]">
+          <div class="h-px bg-gradient-to-r from-transparent via-[#EF9F27] to-transparent flex-grow"></div>
+          <span class="font-label-sm text-[11px] sm:text-[12px] tracking-[0.2em] uppercase font-bold text-[#EF9F27]">
             Official Credential & Academic Attestation
           </span>
-          <div class="h-px bg-gradient-to-r from-transparent via-[#6e1647]/40 to-transparent flex-grow"></div>
+          <div class="h-px bg-gradient-to-r from-transparent via-[#EF9F27] to-transparent flex-grow"></div>
         </div>
       </div>
 
       <!-- Recipient & Conferred Title Section -->
-      <div class="flex flex-col items-center text-center gap-3 sm:gap-4 my-2 sm:my-4">
-        <p class="font-serif italic text-base sm:text-lg text-neutral-600 mb-0">
+      <div class="flex flex-col items-center text-center gap-2 sm:gap-3 my-1 sm:my-2">
+        <p class="font-serif italic text-sm sm:text-base text-[#6b6b8a] mb-0">
           This is to solemnly attest that
         </p>
 
         <!-- Recipient Name -->
-        <div class="relative inline-block pb-2 px-4">
-          <h1 class="fraunces text-3xl sm:text-4xl md:text-5xl font-bold text-[#1e1838] tracking-tight mb-0">
+        <div class="relative inline-block pb-1 px-4">
+          <h1 class="cert-title-h1 fraunces text-3xl sm:text-4xl md:text-5xl font-bold text-[#26215C] tracking-tight mb-0">
             {{ recipient_name }}
           </h1>
-          <div class="w-3/4 mx-auto h-0.5 bg-gradient-to-r from-transparent via-[#6e1647] to-transparent mt-2"></div>
+          <div class="w-3/4 mx-auto h-0.5 bg-gradient-to-r from-transparent via-[#EF9F27] to-transparent mt-1.5"></div>
         </div>
 
-        <p class="font-serif italic text-sm sm:text-base text-neutral-600 mb-0 max-w-lg">
+        <p class="font-serif italic text-xs sm:text-sm text-[#6b6b8a] mb-0 max-w-lg">
           has fulfilled the required course of study and demonstrated requisite proficiency, and is hereby awarded the credential of
         </p>
 
         <!-- Certificate Award Title -->
-        <h3 class="fraunces text-2xl sm:text-3xl text-[#6e1647] font-bold tracking-tight mb-0 px-2">
+        <h3 class="cert-award-h3 fraunces text-2xl sm:text-3xl text-[#26215C] font-bold tracking-tight mb-0 px-2">
           {{ cert.title }}
         </h3>
 
@@ -149,37 +198,37 @@
       </div>
 
       <!-- Lower Attestation & Seal Grid: Signatures, Seal, QR Code -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 items-end gap-6 pt-4 border-t border-[#6e1647]/20">
+      <div class="grid grid-cols-1 sm:grid-cols-3 items-end gap-4 pt-3 border-t border-[#ede9ff]">
 
         <!-- Left: Dates & Authority -->
         <div class="flex flex-col items-center sm:items-start text-center sm:text-left gap-1 order-2 sm:order-1">
-          <div class="w-40 h-px bg-neutral-400 mb-2"></div>
-          <div class="font-label-sm text-xs font-semibold uppercase tracking-wider text-[#26215c]">
+          <div class="w-36 h-px bg-[#26215C]/30 mb-1"></div>
+          <div class="font-label-sm text-xs font-bold uppercase tracking-wider text-[#26215C]">
             Conferred Date
           </div>
-          <div class="font-body-md text-sm text-neutral-800 font-medium">
+          <div class="font-body-md text-sm text-[#26215C] font-semibold">
             {{ issued_cert.issued_at.strftime('%B %d, %Y') if issued_cert.issued_at else 'Official Record' }}
           </div>
           {% if issued_cert.claimed_at %}
-          <div class="font-label-sm text-[11px] text-neutral-500 mt-1">
+          <div class="font-label-sm text-[11px] text-[#6b6b8a] mt-0.5">
             Claimed: {{ issued_cert.claimed_at.strftime('%B %d, %Y') }}
           </div>
           {% endif %}
-          <div class="font-label-sm text-[11px] text-neutral-500 mt-0.5">
+          <div class="font-label-sm text-[11px] text-[#8b86b0] mt-0.5">
             Registrar & Senate of {{ institution.name }}
           </div>
         </div>
 
         <!-- Center: Formal Sovereign Seal -->
         <div class="flex flex-col items-center justify-center order-1 sm:order-2">
-          <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-[#6e1647] via-[#9b3c6c] to-[#471448] p-1.5 shadow-md flex items-center justify-center">
-            <div class="w-full h-full rounded-full border-2 border-dashed border-[#ffd6f8]/70 flex flex-col items-center justify-center text-center p-1 bg-[#360338]/90">
-              <span class="material-symbols-outlined text-[26px] sm:text-[30px] text-[#ffd8e6]">token</span>
-              <span class="font-label-sm text-[8px] sm:text-[9px] tracking-widest uppercase font-bold text-[#ffd8e6] mt-0.5">ASCEND SEAL</span>
-              <span class="font-label-sm text-[7px] tracking-wider text-emerald-300 uppercase font-semibold">VALIDATED</span>
+          <div class="relative w-22 h-22 sm:w-26 sm:h-26 rounded-full bg-gradient-to-tr from-[#26215C] via-[#3C3489] to-[#26215C] p-1.5 shadow-md flex items-center justify-center">
+            <div class="w-full h-full rounded-full border-2 border-dashed border-[#EF9F27]/80 flex flex-col items-center justify-center text-center p-1 bg-[#1b1742]">
+              <span class="material-symbols-outlined text-[24px] sm:text-[28px] text-[#EF9F27]">verified_user</span>
+              <span class="font-label-sm text-[8px] sm:text-[9px] tracking-widest uppercase font-bold text-[#EF9F27] mt-0.5">ASCEND SEAL</span>
+              <span class="font-label-sm text-[7px] tracking-wider text-emerald-400 uppercase font-bold">VALIDATED</span>
             </div>
           </div>
-          <span class="font-label-sm text-[10px] tracking-wider uppercase text-neutral-600 font-semibold mt-2">
+          <span class="font-label-sm text-[10px] tracking-wider uppercase text-[#6b6b8a] font-semibold mt-1.5">
             Cryptographic Attestation
           </span>
         </div>
@@ -187,29 +236,29 @@
         <!-- Right: QR Code & Verification Proof -->
         <div class="flex flex-col items-center sm:items-end text-center sm:text-right gap-1 order-3">
           {% if qr_b64 %}
-          <div class="p-1.5 bg-white border border-neutral-300 rounded-lg shadow-sm">
-            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Verification QR Code" class="w-20 h-20 sm:w-22 sm:h-22 object-contain">
+          <div class="p-1.5 bg-white border border-[#ede9ff] rounded-lg shadow-sm">
+            <img src="data:image/png;base64,{{ qr_b64 }}" alt="Verification QR Code" class="w-18 h-18 sm:w-20 sm:h-20 object-contain">
           </div>
           {% endif %}
-          <span class="font-label-sm text-[10px] tracking-wider uppercase text-neutral-600 font-semibold mt-1">
+          <span class="font-label-sm text-[10px] tracking-wider uppercase text-[#6b6b8a] font-semibold mt-0.5">
             Scan to Verify
           </span>
-          <span class="font-mono text-[10px] text-neutral-500 break-all max-w-[180px]">
+          <span class="font-mono text-[10px] text-[#8b86b0] break-all max-w-[180px]">
             {{ request.host }}/verify
           </span>
         </div>
       </div>
 
       <!-- Bottom Micro Ledger Strip -->
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-neutral-300 text-neutral-500 text-[11px] font-mono">
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#ede9ff] text-[#8b86b0] text-[10px] sm:text-[11px] font-mono">
         <div class="flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[14px] text-secondary">fingerprint</span>
-          <span>Verification Code: <strong class="text-neutral-800">{{ issued_cert.verification_code }}</strong></span>
+          <span class="material-symbols-outlined text-[13px] text-[#EF9F27]">fingerprint</span>
+          <span>Verification Code: <strong class="text-[#26215C]">{{ issued_cert.verification_code }}</strong></span>
         </div>
         <div class="flex items-center gap-2">
           <span>SHA-256 Ledger Standard</span>
           <span>•</span>
-          <span class="capitalize text-emerald-700 font-medium">Status: {{ issued_cert.status }}</span>
+          <span class="capitalize text-emerald-700 font-semibold">Status: {{ issued_cert.status }}</span>
         </div>
       </div>
 

@@ -3,15 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>{% block title %}Ascend{% endblock %}</title>
+  <title>{% block title %}Ascend — Credential Registry{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/ascend-icon.svg') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #26215C;
+      --primary-dark: #1b1742;
+      --primary-light: #3C3489;
+      --primary-tint: #f0edff;
+      --accent: #EF9F27;
+      --accent-hover: #d98a18;
+      --bg: #f5f3ff;
+      --surface: #ffffff;
+      --text: #26215C;
+      --text-muted: #8b86b0;
+      --border: #ede9ff;
+      --font-serif: 'Fraunces', 'Newsreader', Georgia, serif;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
     @layer base {
-      html, body { margin:0; padding:0; }
+      html, body { margin:0; padding:0; background: var(--bg); color: var(--text); font-family: var(--font-sans); }
       body { overscroll-behavior:none; }
+      h1, h2, h3, h4 { font-family: var(--font-serif); }
       main > :first-child { margin-top:0 !important; }
       main > :last-child { margin-bottom:0 !important; }
     }
@@ -24,60 +41,56 @@
     theme: {
       extend: {
         colors: {
-          "secondary":"#9b3c6c",
-          "on-tertiary-fixed":"#360338",
-          "secondary-container":"#fe8cc0",
-          "on-secondary-container":"#792050",
-          "on-secondary":"#ffffff",
-          "secondary-fixed-dim":"#ffafd0",
-          "tertiary-fixed":"#ffd6f8",
-          "on-error-container":"#93000a",
-          "outline-variant":"#c9c5ce",
-          "on-surface":"#1d1b1f",
-          "tertiary":"#2d0030",
-          "surface":"#fef7fd",
-          "surface-bright":"#fef7fd",
-          "outline":"#79767e",
-          "primary-container":"#2b2642",
-          "secondary-fixed":"#ffd8e6",
-          "surface-container-high":"#ece6ec",
-          "background":"#fef7fd",
-          "tertiary-fixed-dim":"#f5b0ee",
-          "on-primary-fixed-variant":"#484361",
-          "error":"#ba1a1a",
-          "surface-container-highest":"#e6e1e7",
-          "primary":"#16112c",
-          "inverse-surface":"#322f34",
-          "surface-container":"#f2ecf2",
-          "primary-fixed-dim":"#cac2e6",
-          "surface-tint":"#605a79",
-          "on-tertiary":"#ffffff",
-          "on-surface-variant":"#48464d",
-          "inverse-primary":"#cac2e6",
-          "surface-dim":"#ded8de",
-          "on-tertiary-fixed-variant":"#683267",
-          "on-secondary-fixed":"#3d0024",
-          "on-primary-fixed":"#1c1833",
-          "on-primary-container":"#948dae",
-          "on-background":"#1d1b1f",
-          "surface-variant":"#e6e1e7",
-          "primary-fixed":"#e6deff",
-          "error-container":"#ffdad6",
-          "on-primary":"#ffffff",
-          "inverse-on-surface":"#f5eff5",
-          "on-tertiary-container":"#bb7cb6",
-          "on-error":"#ffffff",
-          "surface-container-lowest":"#ffffff",
-          "tertiary-container":"#471448",
-          "surface-container-low":"#f8f2f8",
-          "on-secondary-fixed-variant":"#7d2353"
+          "primary": "#26215C",
+          "primary-dark": "#1b1742",
+          "primary-light": "#3C3489",
+          "primary-container": "#26215C",
+          "on-primary": "#ffffff",
+          "on-primary-container": "#c4b8ff",
+          "secondary": "#EF9F27",
+          "secondary-hover": "#d98a18",
+          "secondary-container": "#fef3c7",
+          "on-secondary": "#26215C",
+          "on-secondary-container": "#26215C",
+          "accent": "#EF9F27",
+          "accent-hover": "#d98a18",
+          "background": "#f5f3ff",
+          "surface": "#ffffff",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-low": "#faf9ff",
+          "surface-container": "#f8f6ff",
+          "surface-container-high": "#f0edff",
+          "surface-container-highest": "#ede9ff",
+          "on-surface": "#26215C",
+          "on-surface-variant": "#6b6b8a",
+          "text": "#26215C",
+          "text-muted": "#8b86b0",
+          "outline": "#8b86b0",
+          "outline-variant": "#ddd6fe",
+          "border": "#ede9ff",
+          "error": "#ba1a1a",
+          "error-container": "#ffdad6",
+          "on-error": "#ffffff",
+          "on-error-container": "#93000a"
         },
         borderRadius: { "DEFAULT":"0.25rem", "lg":"0.5rem", "xl":"0.75rem", "full":"9999px" },
         spacing: { "space-md":"1rem", "gutter":"1.5rem", "margin":"3rem", "space-sm":"0.75rem", "space-xl":"2.5rem", "margin-mobile":"1.25rem", "gutter-mobile":"1rem", "space-xs":"0.5rem", "space-lg":"1.5rem" },
         fontFamily: {
-          "headline-lg-mobile":["Newsreader"], "label-sm":["Inter"], "body-sm":["Inter"], "body-lg":["Inter"], "body-md":["Inter"], "title-md":["Inter"],
-          "headline-lg":["Newsreader"], "headline-md":["Newsreader"], "headline-sm":["Newsreader"], "title-lg":["Inter"], "display-lg-mobile":["Newsreader"],
-          "display-lg":["Newsreader"], "label-md":["Inter"]
+          "headline-lg-mobile": ["Fraunces", "Georgia", "serif"],
+          "headline-lg": ["Fraunces", "Georgia", "serif"],
+          "headline-md": ["Fraunces", "Georgia", "serif"],
+          "headline-sm": ["Fraunces", "Georgia", "serif"],
+          "display-lg-mobile": ["Fraunces", "Georgia", "serif"],
+          "display-lg": ["Fraunces", "Georgia", "serif"],
+          "serif": ["Fraunces", "Georgia", "serif"],
+          "sans": ["Inter", "sans-serif"],
+          "label-sm": ["Inter", "sans-serif"],
+          "label-md": ["Inter", "sans-serif"],
+          "body-sm": ["Inter", "sans-serif"],
+          "body-md": ["Inter", "sans-serif"],
+          "body-lg": ["Inter", "sans-serif"],
+          "title-md": ["Inter", "sans-serif"],
+          "title-lg": ["Inter", "sans-serif"]
         },
         fontSize: {
           "headline-lg-mobile":["30px",{"lineHeight":"38px","letterSpacing":"-0.01em","fontWeight":"600"}],
@@ -101,36 +114,33 @@
 </head>
 <body class="bg-background font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-between">
   {% block navbar %}
-  <header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(43,38,66,0.05)]">
+  <header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_1px_8px_rgba(38,33,92,0.05)]">
     <div class="h-20 w-full px-margin-mobile md:px-margin flex items-center justify-between gap-space-lg">
       <div class="flex items-center gap-space-xl">
-        <a href="{{ url_for('home') }}" class="flex items-center gap-space-sm text-decoration-none">
-          <div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary">
-            <span class="material-symbols-outlined text-[20px] text-secondary-container">school</span>
-          </div>
-          <span class="font-headline-sm text-headline-sm text-primary tracking-tight font-semibold">Ascend</span>
+        <a href="{{ url_for('home') }}" class="flex items-center text-decoration-none hover:opacity-90 transition-opacity">
+          {% with variant="full", height_class="h-9" %}{% include "_logo.html" %}{% endwith %}
         </a>
 
         {% if current_user.is_authenticated %}
         <nav class="hidden lg:flex items-center gap-1">
-          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'dashboard' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('dashboard') }}">Dashboard</a>
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'dashboard' %}bg-primary text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('dashboard') }}">Dashboard</a>
           
           {% if current_user.role in ['institution', 'staff'] %}
-          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint in ['certificates_list', 'create_certificate', 'edit_certificate'] %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('certificates_list') }}">Templates</a>
-          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'issued_list' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('issued_list') }}">Issued Certificates</a>
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint in ['certificates_list', 'create_certificate', 'edit_certificate'] %}bg-primary text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('certificates_list') }}">Templates</a>
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'issued_list' %}bg-primary text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('issued_list') }}">Issued Certificates</a>
           {% endif %}
 
           {% if current_user.role == 'member' %}
-          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'public_profile' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('public_profile', user_id=current_user.id) }}">My Credentials</a>
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'public_profile' %}bg-primary text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('public_profile', user_id=current_user.id) }}">My Credentials</a>
           {% endif %}
 
-          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'verify_certificate' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('verify_certificate') }}">Verification</a>
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'verify_certificate' %}bg-primary text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('verify_certificate') }}">Verification</a>
 
           {% if current_user.role in ['admin', 'institution', 'staff'] %}
-          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'reports' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('reports') }}">Reports</a>
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'reports' %}bg-primary text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('reports') }}">Reports</a>
           {% endif %}
 
-          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'settings' %}bg-primary-container text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('settings') }}">
+          <a class="px-space-sm py-2 rounded-lg font-title-md text-title-md {% if request.endpoint == 'settings' %}bg-primary text-on-primary{% else %}text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface{% endif %} transition-colors" href="{{ url_for('settings') }}">
             <span class="material-symbols-outlined text-[18px] align-middle">settings</span>
           </a>
         </nav>
@@ -141,14 +151,14 @@
         <!-- Verification search box -->
         <form action="{{ url_for('verify_certificate') }}" method="GET" class="relative hidden sm:flex items-center mb-0">
           <span class="material-symbols-outlined absolute left-3 text-[18px] text-outline pointer-events-none">search</span>
-          <input name="code" class="w-56 md:w-64 pl-9 pr-4 py-1.5 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface placeholder:text-outline shadow-[0_2px_8px_-2px_rgba(43,38,66,0.04)] focus:outline-none" placeholder="Verify by code..." type="text">
+          <input name="code" class="w-56 md:w-64 pl-9 pr-4 py-1.5 rounded-lg bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline border border-outline-variant/40 focus:border-primary focus:outline-none transition-colors" placeholder="Verify by code..." type="text">
         </form>
 
         {% if current_user.is_authenticated %}
         <a href="{{ url_for('notifications_list') }}" aria-label="Notifications" class="relative p-2 rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors">
           <span class="material-symbols-outlined text-[22px]">notifications</span>
           {% if unread_notif_count and unread_notif_count > 0 %}
-          <span class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold bg-[#EF9F27] text-[#16112c] flex items-center justify-center leading-none shadow-sm">
+          <span class="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold bg-[#EF9F27] text-[#26215C] flex items-center justify-center leading-none shadow-sm">
             {{ '9+' if unread_notif_count > 9 else unread_notif_count }}
           </span>
           {% endif %}
@@ -162,7 +172,7 @@
                    alt="{{ current_user.name }}"
                    class="w-8 h-8 rounded-full object-cover border border-outline-variant/40 shadow-sm">
             {% else %}
-              <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-bold text-sm">
+              <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-sm">
                 {{ current_user.name[:1]|upper }}
               </div>
             {% endif %}
@@ -171,7 +181,7 @@
           <a href="{{ url_for('logout') }}" class="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-colors">Log out</a>
         </div>
         {% else %}
-        <a href="{{ url_for('login') }}" class="px-4 py-2 rounded-lg bg-secondary text-on-secondary font-title-md text-title-md hover:bg-secondary/90 transition-all shadow-sm">Sign in</a>
+        <a href="{{ url_for('login') }}" class="px-5 py-2 rounded-lg bg-[#EF9F27] text-[#26215C] font-title-md text-title-md font-bold hover:bg-[#d98a18] transition-all shadow-sm">Sign in</a>
         {% endif %}
       </div>
     </div>
@@ -184,9 +194,9 @@
       {% if messages %}
         <div class="w-full px-margin-mobile md:px-margin mt-4">
           {% for message in messages %}
-            <div class="p-3.5 mb-2 rounded-xl bg-secondary-container/20 border border-secondary/30 text-on-secondary-container font-body-md text-body-md flex items-center justify-between shadow-sm">
+            <div class="p-3.5 mb-2 rounded-xl bg-surface border border-outline-variant/60 border-l-4 border-l-[#3C3489] text-[#26215C] font-body-md text-body-md flex items-center justify-between shadow-sm">
               <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-secondary text-[20px]">info</span>
+                <span class="material-symbols-outlined text-[#3C3489] text-[20px]">info</span>
                 <span>{{ message }}</span>
               </div>
               <button onclick="this.parentElement.remove()" class="text-on-surface-variant hover:text-primary">
@@ -203,16 +213,16 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="w-full bg-surface-container-low shadow-[0_-1px_8px_rgba(43,38,66,0.02)] py-space-xl mt-space-xl">
+  <footer class="w-full bg-surface border-t border-outline-variant/30 py-space-xl mt-space-xl">
     <div class="w-full px-margin-mobile md:px-margin flex flex-col md:flex-row items-center justify-between gap-space-md font-body-sm text-body-sm text-on-surface-variant">
       <div class="flex items-center gap-space-sm">
-        <span class="font-headline-sm text-primary font-semibold">Ascend</span>
-        <span>— Institutional Attestation & Cryptographic Registry</span>
+        {% with variant="full", height_class="h-6" %}{% include "_logo.html" %}{% endwith %}
+        <span class="text-xs text-text-muted">— Institutional Attestation & Cryptographic Registry</span>
       </div>
       <div class="flex items-center gap-space-lg">
-        <a class="hover:text-on-surface transition-colors" href="{{ url_for('verify_certificate') }}">Verify Credential</a>
-        <a class="hover:text-on-surface transition-colors" href="{{ url_for('dashboard') }}">Dashboard</a>
-        <a class="hover:text-on-surface transition-colors" href="https://supabase.com" target="_blank" rel="noopener">Supabase Ledger</a>
+        <a class="hover:text-primary transition-colors text-decoration-none" href="{{ url_for('verify_certificate') }}">Verify Credential</a>
+        <a class="hover:text-primary transition-colors text-decoration-none" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a class="hover:text-primary transition-colors text-decoration-none" href="https://supabase.com" target="_blank" rel="noopener">Supabase Ledger</a>
       </div>
       <div class="font-label-sm text-label-sm text-outline">
         © 2026 Ascend Trust Infrastructure. All rights reserved.

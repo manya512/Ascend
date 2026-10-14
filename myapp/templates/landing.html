@@ -5,45 +5,56 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ascend | Issue certificates people can trust</title>
 <meta name="description" content="Ascend helps institutions design certificate templates, issue them to recipients, and keep every record in one place.">
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/ascend-icon.svg') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
+    --primary: #26215C;
+    --primary-dark: #1b1742;
+    --primary-light: #3C3489;
+    --accent: #EF9F27;
+    --accent-hover: #d98a18;
+    --bg: #f5f3ff;
+    --surface: #ffffff;
+    --text: #26215C;
+    --text-muted: #8b86b0;
+    --border: #ede9ff;
     --white: #FFFFFF;
-    --mauve: #C585C0;
-    --orchid: #6E1647;
-    --indigo: #2B2642;
-    --mist: #F7F1F7;
-    --line: #E6DAE6;
-    --muted: #5E5877;
+    --mauve: #EF9F27;
+    --orchid: #26215C;
+    --indigo: #26215C;
+    --mist: #f5f3ff;
+    --line: #ede9ff;
+    --muted: #6b6b8a;
     --serif: "Fraunces", Georgia, "Times New Roman", serif;
     --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   *, *::before, *::after { box-sizing: border-box; }
   html { scroll-behavior: smooth; scroll-padding-top: 84px; }
-  body { margin: 0; font-family: var(--sans); color: var(--indigo); background: var(--white); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  body { margin: 0; font-family: var(--sans); color: var(--text); background: var(--bg); line-height: 1.6; -webkit-font-smoothing: antialiased; }
   img, svg { max-width: 100%; }
   a { color: inherit; }
-  h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.12; margin: 0; letter-spacing: -0.01em; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 700; line-height: 1.12; margin: 0; letter-spacing: -0.01em; color: var(--primary); }
   p { margin: 0; }
-  :focus-visible { outline: 3px solid var(--mauve); outline-offset: 3px; border-radius: 6px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
   .wrap { width: min(1160px, 100% - 48px); margin-inline: auto; }
-  .skip { position: absolute; left: -999px; top: 8px; background: var(--white); color: var(--indigo); padding: 10px 14px; border-radius: 8px; z-index: 100; }
+  .skip { position: absolute; left: -999px; top: 8px; background: var(--white); color: var(--primary); padding: 10px 14px; border-radius: 8px; z-index: 100; }
   .skip:focus { left: 8px; }
-  /* Buttons: primary is filled, secondary is outlined, tertiary is plain text */
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 0.95rem/1 var(--sans); padding: 14px 22px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; text-decoration: none; transition: background-color .15s, color .15s, border-color .15s; }
-  .btn-primary { background: var(--orchid); color: var(--white); }
-  .btn-primary:hover { background: #56123a; }
-  .btn-secondary { background: transparent; color: var(--indigo); border-color: var(--indigo); }
-  .btn-secondary:hover { background: var(--indigo); color: var(--white); }
-  .btn-text { padding: 12px 14px; color: var(--indigo); font-weight: 500; }
-  .btn-text:hover { color: var(--orchid); }
+  /* Buttons: primary is filled gold with accessible dark text, secondary is outlined */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 700 0.95rem/1 var(--sans); padding: 14px 24px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; text-decoration: none; transition: background-color .15s, color .15s, border-color .15s; }
+  .btn-primary { background: var(--accent); color: var(--primary); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary { background: transparent; color: var(--primary); border-color: var(--primary); }
+  .btn-secondary:hover { background: var(--primary); color: var(--white); }
+  .btn-text { padding: 12px 14px; color: var(--primary); font-weight: 600; }
+  .btn-text:hover { color: var(--primary-light); }
   .btn:disabled { opacity: .65; cursor: progress; }
-  .on-dark .btn-primary { background: var(--mauve); color: var(--indigo); }
-  .on-dark .btn-primary:hover { background: #d9a2d5; }
+  .on-dark .btn-primary { background: var(--accent); color: var(--primary); }
+  .on-dark .btn-primary:hover { background: var(--accent-hover); }
   .on-dark .btn-secondary { color: var(--white); border-color: rgba(255,255,255,.55); }
-  .on-dark .btn-secondary:hover { background: var(--white); color: var(--indigo); border-color: var(--white); }
+  .on-dark .btn-secondary:hover { background: var(--white); color: var(--primary); border-color: var(--white); }
   /* Navbar */
   .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.94); backdrop-filter: blur(10px); border-bottom: 1px solid transparent; transition: border-color .2s; }
   .nav.scrolled { border-color: var(--line); }
@@ -109,14 +120,14 @@
   .steps h3 { font-size: 1.3rem; }
   .steps p { margin-top: 8px; color: var(--muted); }
   /* CTA band */
-  .band { background: var(--orchid); color: var(--white); padding: 84px 0; }
+  .band { background: linear-gradient(135deg, #26215C 0%, #3C3489 100%); color: var(--white); padding: 84px 0; }
   .band-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-  .band h2 { font-size: clamp(1.8rem, 3.4vw, 2.5rem); max-width: 30rem; }
+  .band h2 { font-size: clamp(1.8rem, 3.4vw, 2.5rem); max-width: 30rem; color: #ffffff; }
   .band .actions { display: flex; gap: 14px; flex-wrap: wrap; }
-  .band .btn-primary { background: var(--white); color: var(--orchid); }
-  .band .btn-primary:hover { background: var(--mist); }
+  .band .btn-primary { background: var(--accent); color: var(--primary); font-weight: 700; }
+  .band .btn-primary:hover { background: var(--accent-hover); }
   .band .btn-secondary { color: var(--white); border-color: rgba(255,255,255,.6); }
-  .band .btn-secondary:hover { background: var(--white); color: var(--orchid); border-color: var(--white); }
+  .band .btn-secondary:hover { background: var(--white); color: var(--primary); border-color: var(--white); }
   /* Footer */
   footer { background: var(--indigo); color: rgba(255,255,255,.75); padding: 72px 0 32px; }
   .foot-grid { display: grid; grid-template-columns: 1.4fr repeat(2, .8fr) 1.4fr; gap: 40px; }
@@ -183,8 +194,7 @@
 <header class="nav" id="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="/" aria-label="Ascend home">
-      <svg aria-hidden="true"><use href="#mark"/></svg>
-      Ascend
+      {% with variant="full", height_class="h-9" %}{% include "_logo.html" %}{% endwith %}
     </a>
     <ul class="nav-links" id="nav-links">
       <li><a href="#features">Features</a></li>
@@ -201,21 +211,21 @@
   </div>
 </header>
 <main id="main">
-  <section class="hero on-dark" style="padding:0">
+  <section class="hero on-dark" style="padding:0; background: linear-gradient(135deg, #26215C 0%, #3C3489 60%, #4e42a8 100%);">
     <div class="wrap hero-grid">
       <div>
-        <h1>Certificates that carry weight, issued in minutes</h1>
+        <h1 style="color:#ffffff;">Certificates that carry weight, issued in minutes</h1>
         <p class="lede">Ascend lets institutions design certificate templates, issue them to recipients, and keep every record in one place, so achievements are easy to share and easy to trust.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="{{ url_for('login') }}">Create an account</a>
           <a class="btn btn-secondary" href="#how">See how it works</a>
         </div>
-        <p class="hero-note">Already have an account? <a href="{{ url_for('login') }}" style="text-decoration:underline">Log in</a></p>
+        <p class="hero-note">Already have an account? <a href="{{ url_for('login') }}" style="text-decoration:underline; color:#c4b8ff;">Log in</a></p>
       </div>
       <div class="stage" aria-hidden="true">
         <div class="cert">
           <span class="cert-tag">Sample</span>
-          <div class="cert-head"><svg><use href="#mark"/></svg> Ascend</div>
+          <div class="cert-head">{% with variant="full", height_class="h-7" %}{% include "_logo.html" %}{% endwith %}</div>
           <h3>Certificate of Completion</h3>
           <p class="awarded">Awarded to</p>
           <p class="name">Recipient Name</p>
@@ -306,7 +316,7 @@
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <a class="brand" href="/"><svg aria-hidden="true"><use href="#mark"/></svg> Ascend</a>
+        <a class="brand" href="/" aria-label="Ascend home">{% with variant="full", height_class="h-8", dark=True %}{% include "_logo.html" %}{% endwith %}</a>
         <p class="foot-about">Issue, track, and share certificates in one place. Since 2026.</p>
       </div>
       <nav aria-label="Product">

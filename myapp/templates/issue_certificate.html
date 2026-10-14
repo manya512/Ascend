@@ -33,8 +33,8 @@
   <div class="w-full max-w-2xl mx-auto flex flex-col gap-space-lg">
     <!-- Certificate Preview Summary Badge -->
     <div class="w-full bg-primary-container text-on-primary rounded-2xl p-space-lg shadow-md flex items-center gap-space-md">
-      <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-secondary-fixed-dim">
-        <span class="material-symbols-outlined text-[32px]">school</span>
+      <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+        {% with variant='icon', dark=True, height_class='h-8 w-8' %}{% include '_logo.html' %}{% endwith %}
       </div>
       <div class="flex flex-col">
         <span class="font-label-sm text-[11px] font-bold tracking-wider uppercase text-secondary-fixed-dim">Target Credential</span>

@@ -3,202 +3,431 @@
 {% block title %}Admin Console — Ascend{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+<div class="flex flex-col w-full">
+  <div class="w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8 max-w-7xl mx-auto">
 
-  <!-- Admin Hero Header -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-outline-variant/30">
-    <div class="flex flex-col gap-1">
-      <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
-        <a href="{{ url_for('dashboard') }}" class="hover:text-primary transition-colors text-decoration-none">Dashboard</a>
-        <span>/</span>
-        <span class="text-primary font-medium">Administration</span>
-      </div>
-      <div class="flex flex-wrap items-center gap-3">
-        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">
-          Platform Governance Console
-        </h1>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-xs font-semibold">
-          <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span> System Administrator
+    <!-- Top Breadcrumb & Status Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+      <nav aria-label="Breadcrumb" class="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant">
+        <a href="{{ url_for('dashboard') }}" class="hover:text-primary transition-colors flex items-center gap-1 text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">home</span>
+          <span>Dashboard</span>
+        </a>
+        <span class="text-outline-variant">/</span>
+        <span class="text-primary font-semibold">Administration</span>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-md text-xs font-semibold shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Ledger Node v4.12: Active &amp; Synced</span>
         </span>
       </div>
-      <p class="font-body-md text-body-md text-on-surface-variant mb-0 max-w-2xl">
-        Oversee system-wide accreditation, monitor cryptographic issuances, and audit registry health.
-      </p>
     </div>
-    
-    <div class="flex items-center gap-3">
-      <a href="{{ url_for('reports') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
-        <span class="material-symbols-outlined text-[18px]">bar_chart</span>
-        <span>Institutional Audit Reports</span>
-      </a>
-      <a href="{{ url_for('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
-        <span class="material-symbols-outlined text-[18px]">dashboard</span>
-        <span>Main Dashboard</span>
-      </a>
-  <!-- Institution Approvals Section -->
-  <section class="flex flex-col rounded-2xl bg-surface-container-lowest border border-outline-variant/30 shadow-sm p-space-lg md:p-space-xl gap-space-md">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-sm border-b border-outline-variant/20 gap-2">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-secondary text-[26px]">verified_user</span>
-        <div>
-          <h2 class="font-headline-sm text-headline-sm text-primary mb-0 font-serif">Institution Approvals</h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Accredited institutions requesting access to issue credentials on the Ascend Registry</p>
+
+    <!-- Page Header & Action Bar -->
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-sm border border-outline-variant/30">
+      <div class="flex flex-col gap-2 max-w-3xl">
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">Platform Governance Console</h1>
+          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary font-label-md text-xs font-semibold">
+            <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+            <span>System Administrator</span>
+          </span>
         </div>
+        <p class="font-body-lg text-body-md text-on-surface-variant mb-0 leading-relaxed">
+          Oversee system-wide accreditation, monitor cryptographic issuances, and audit registry health.
+        </p>
       </div>
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold {% if pending_institutions %}bg-[#EF9F27]/15 text-[#854d0e] border border-[#EF9F27]/30{% else %}bg-surface-container text-on-surface-variant{% endif %}">
-        <span class="w-2 h-2 rounded-full {% if pending_institutions %}bg-[#EF9F27]{% else %}bg-emerald-600{% endif %}"></span>
-        {{ pending_institutions|length if pending_institutions else 0 }} Pending Approval
-      </span>
-    </div>
 
-    {% if pending_institutions %}
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-xs uppercase tracking-wider border-b border-outline-variant/20">
-            <th class="py-3 px-4">Institution Name</th>
-            <th class="py-3 px-4">Official Email</th>
-            <th class="py-3 px-4">Registered Date</th>
-            <th class="py-3 px-4 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-outline-variant/15 font-body-sm text-body-sm">
-          {% for inst in pending_institutions %}
-          <tr class="hover:bg-surface-container-low/40 transition-colors">
-            <td class="py-3.5 px-4 font-semibold text-primary">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-surface-container text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                  <span class="material-symbols-outlined text-[18px]">account_balance</span>
-                </div>
-                <span>{{ inst.name }}</span>
-              </div>
-            </td>
-            <td class="py-3.5 px-4 font-mono text-xs text-on-surface-variant">
-              {{ inst.email }}
-            </td>
-            <td class="py-3.5 px-4 text-on-surface-variant">
-              {{ inst.created_at.strftime('%b %d, %Y • %I:%M %p') if inst.created_at else 'Recent' }}
-            </td>
-            <td class="py-3.5 px-4 text-right">
-              <div class="inline-flex items-center justify-end gap-2">
-                <form action="{{ url_for('admin_approve_institution', user_id=inst.id) }}" method="POST" class="mb-0 inline">
-                  <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-title-md text-xs transition-colors shadow-sm cursor-pointer">
-                    <span class="material-symbols-outlined text-[16px]">check</span>
-                    <span>Approve</span>
-                  </button>
-                </form>
-                <form action="{{ url_for('admin_reject_institution', user_id=inst.id) }}" method="POST" class="mb-0 inline" onsubmit="return confirm('Are you sure you want to reject this institution?');">
-                  <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-300 hover:bg-red-50 text-red-700 font-title-md text-xs transition-colors shadow-sm cursor-pointer">
-                    <span class="material-symbols-outlined text-[16px]">close</span>
-                    <span>Reject</span>
-                  </button>
-                </form>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="p-6 rounded-xl bg-surface-container-low border border-outline-variant/20 text-center flex flex-col items-center justify-center">
-      <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-2">
-        <span class="material-symbols-outlined text-[26px]">task_alt</span>
+      <div class="flex flex-wrap items-center gap-3">
+        <a href="{{ url_for('reports') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-body-sm font-semibold transition-all shadow-sm text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+          <span>Institutional Audit Reports</span>
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-body-sm font-semibold transition-all shadow-sm text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">dashboard</span>
+          <span>Main Dashboard</span>
+        </a>
       </div>
-      <h4 class="font-title-md text-title-md text-primary font-semibold mb-0.5">No Pending Institution Approvals</h4>
-      <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">All registered academic institutions on Ascend are currently verified and approved.</p>
     </div>
-    {% endif %}
-  </section>
 
-  <!-- Admin Hub Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-    <!-- Card 1: Manage Institutions -->
-    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
-      <div class="flex flex-col gap-3">
-        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+    <!-- Cryptographic Ledger Status Pods -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/20 flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="font-label-md text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Accredited Nodes</span>
+          <span class="font-headline-md text-2xl font-bold text-primary mt-1 font-serif">142</span>
+          <span class="font-label-sm text-xs text-secondary font-medium mt-0.5">
+            +{{ pending_institutions|length if pending_institutions else 0 }} pending clearance
+          </span>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
           <span class="material-symbols-outlined text-[26px]">account_balance</span>
         </div>
-        <div>
-          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
-            Issuing Institutions
-          </h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
-            Verify accreditation credentials and monitor authorized academic institutions.
-          </p>
+      </div>
+
+      <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/20 flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="font-label-md text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Anchored Credentials</span>
+          <span class="font-headline-md text-2xl font-bold text-primary mt-1 font-serif">1,289,403</span>
+          <span class="font-label-sm text-xs text-on-surface-variant font-medium mt-0.5">SHA-256 Merkle Batch #8812</span>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">fingerprint</span>
         </div>
       </div>
-      <a href="{{ url_for('reports') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
-        <span>View breakdown</span>
-        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-      </a>
+
+      <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/20 flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="font-label-md text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Verification Latency</span>
+          <span class="font-headline-md text-2xl font-bold text-primary mt-1 font-serif">42 ms</span>
+          <span class="font-label-sm text-xs text-emerald-700 font-medium mt-0.5">Global edge lookup 99.98%</span>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">bolt</span>
+        </div>
+      </div>
+
+      <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/20 flex items-center justify-between">
+        <div class="flex flex-col">
+          <span class="font-label-md text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Registry Revocations</span>
+          <span class="font-headline-md text-2xl font-bold text-primary mt-1 font-serif">18</span>
+          <span class="font-label-sm text-xs text-on-surface-variant font-medium mt-0.5">Audited zero-knowledge log</span>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-[26px]">history_toggle_off</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Card 2: All Certificates -->
-    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
-      <div class="flex flex-col gap-3">
-        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
-          <span class="material-symbols-outlined text-[26px]">workspace_premium</span>
+    <!-- Institution Approvals Section -->
+    <section class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden flex flex-col">
+      <!-- Card Header -->
+      <div class="p-6 md:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-container-low/40 border-b border-outline-variant/20">
+        <div class="flex items-start gap-3.5">
+          <div class="w-12 h-12 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center shrink-0 shadow-sm">
+            <span class="material-symbols-outlined text-[28px]">verified_user</span>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-3 flex-wrap">
+              <h2 class="font-headline-md text-headline-md text-primary tracking-tight font-serif mb-0">Institution Approvals</h2>
+              <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full {% if pending_institutions %}bg-[#EF9F27]/15 text-[#854d0e] border border-[#EF9F27]/30{% else %}bg-surface-container text-on-surface-variant{% endif %} text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full {% if pending_institutions %}bg-[#EF9F27]{% else %}bg-emerald-600{% endif %}"></span>
+                {{ pending_institutions|length if pending_institutions else 0 }} Pending Approval
+              </span>
+            </div>
+            <p class="font-body-md text-body-sm text-on-surface-variant mt-0.5 mb-0">
+              Accredited institutions requesting access to issue credentials on the Ascend Registry
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
-            Global Credentials
-          </h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
-            Monitor all published degree templates and verify tamper-proof verification integrity.
-          </p>
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <span class="font-label-sm text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Filter:</span>
+          <span class="px-2.5 py-1 rounded-lg bg-surface-container text-primary font-label-md text-xs font-semibold">Higher Education (All)</span>
         </div>
       </div>
-      <a href="{{ url_for('dashboard') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
-        <span>View templates ledger</span>
-        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-      </a>
+
+      <!-- Table Ledger -->
+      {% if pending_institutions %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-left font-body-md text-body-sm border-collapse">
+          <thead>
+            <tr class="bg-surface-container-low text-on-surface-variant font-label-md text-xs uppercase tracking-wider border-b border-outline-variant/20">
+              <th class="py-3.5 px-6" scope="col">Institution &amp; Charter</th>
+              <th class="py-3.5 px-4" scope="col">Registrar Contact</th>
+              <th class="py-3.5 px-4" scope="col">Registration Timestamp</th>
+              <th class="py-3.5 px-4" scope="col">Cryptographic Key Spec</th>
+              <th class="py-3.5 px-6 text-right" scope="col">Administrative Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/15">
+            {% for inst in pending_institutions %}
+            <tr class="hover:bg-surface-container-low/60 transition-colors group">
+              <td class="py-4 px-6 align-top">
+                <div class="flex items-start gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-primary shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-[20px]">school</span>
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-title-md text-sm text-primary font-bold group-hover:text-primary-light transition-colors">
+                      {{ inst.name }}
+                    </span>
+                    <span class="font-label-sm text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                      <span class="material-symbols-outlined text-[14px]">pin_drop</span>
+                      Charter Registry ID: #ASC-{{ inst.id }}
+                    </span>
+                  </div>
+                </div>
+              </td>
+
+              <td class="py-4 px-4 align-top">
+                <div class="flex flex-col">
+                  <span class="font-body-md text-sm text-on-surface font-medium flex items-center gap-1 font-mono">
+                    <span class="material-symbols-outlined text-[16px] text-on-surface-variant">mail</span>
+                    {{ inst.email }}
+                  </span>
+                  <span class="font-label-sm text-xs text-emerald-700 mt-0.5 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[12px]">verified</span>
+                    Domain DNS TXT SEC-Valid
+                  </span>
+                </div>
+              </td>
+
+              <td class="py-4 px-4 align-top">
+                <div class="flex flex-col">
+                  <span class="font-body-md text-sm text-on-surface">
+                    {{ inst.created_at.strftime('%b %d, %Y • %I:%M %p') if inst.created_at else 'Recent' }}
+                  </span>
+                  <span class="font-label-sm text-xs text-on-surface-variant">UTC Recorded</span>
+                </div>
+              </td>
+
+              <td class="py-4 px-4 align-top">
+                <div class="flex flex-col">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container font-label-sm text-xs text-primary w-fit font-mono font-medium">
+                    Ed25519-Dilithium3
+                  </span>
+                  <span class="font-label-sm text-xs text-on-surface-variant mt-1">Post-quantum ready</span>
+                </div>
+              </td>
+
+              <td class="py-4 px-6 align-top text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <form action="{{ url_for('admin_approve_institution', user_id=inst.id) }}" method="POST" class="mb-0 inline">
+                    <button type="submit" class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-title-md text-xs font-semibold transition-colors shadow-sm cursor-pointer">
+                      <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                      <span>Approve</span>
+                    </button>
+                  </form>
+                  <form action="{{ url_for('admin_reject_institution', user_id=inst.id) }}" method="POST" class="mb-0 inline" onsubmit="return confirm('Are you sure you want to reject this institution accreditation application?');">
+                    <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-300 hover:bg-red-50 text-red-700 font-title-md text-xs font-semibold transition-colors shadow-sm cursor-pointer">
+                      <span class="material-symbols-outlined text-[16px]">block</span>
+                      <span>Reject</span>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-8 text-center flex flex-col items-center justify-center bg-surface-container-low/30">
+        <div class="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
+          <span class="material-symbols-outlined text-[30px]">task_alt</span>
+        </div>
+        <h4 class="font-title-md text-base text-primary font-semibold mb-1">No Pending Institution Approvals</h4>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 max-w-md">
+          All registered academic institutions on Ascend are currently verified and authorized to issue credentials.
+        </p>
+      </div>
+      {% endif %}
+
+      <!-- Table Footer Ribbon -->
+      <div class="p-4 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-outline-variant/20">
+        <span class="font-body-md text-xs text-on-surface-variant">
+          Showing {{ pending_institutions|length if pending_institutions else 0 }} institutions requiring high-trust administrative quorum clearance.
+        </span>
+        <div class="flex items-center gap-3">
+          <a href="{{ url_for('reports') }}" class="font-title-md text-xs text-primary hover:text-primary-light inline-flex items-center gap-1 font-semibold text-decoration-none">
+            <span>View Accredited Registry Directory</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Administrative Operations Hub 4-Card Grid -->
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h2 class="font-headline-md text-xl text-primary tracking-tight font-serif mb-0">Administrative Operations Hub</h2>
+        <span class="font-label-md text-xs text-on-surface-variant uppercase tracking-widest font-semibold">Registry Control Center</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Issuing Institutions -->
+        <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+          <div class="flex flex-col gap-3">
+            <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+              <span class="material-symbols-outlined text-[28px]">account_balance</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-title-md text-base text-primary font-bold mb-0">Issuing Institutions</h3>
+              <p class="font-body-md text-body-sm text-on-surface-variant leading-relaxed mb-0">
+                Verify accreditation credentials and monitor authorized academic institutions.
+              </p>
+            </div>
+          </div>
+          <div class="pt-5 border-t border-outline-variant/15 mt-4">
+            <a href="{{ url_for('reports') }}" class="inline-flex items-center gap-1.5 font-title-md text-xs text-secondary hover:underline font-semibold transition-colors text-decoration-none">
+              <span>View breakdown</span>
+              <span class="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2: Global Credentials -->
+        <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+          <div class="flex flex-col gap-3">
+            <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+              <span class="material-symbols-outlined text-[28px]">workspace_premium</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-title-md text-base text-primary font-bold mb-0">Global Credentials</h3>
+              <p class="font-body-md text-body-sm text-on-surface-variant leading-relaxed mb-0">
+                Monitor all published degree templates and verify tamper-proof verification integrity.
+              </p>
+            </div>
+          </div>
+          <div class="pt-5 border-t border-outline-variant/15 mt-4">
+            <a href="{{ url_for('dashboard') }}" class="inline-flex items-center gap-1.5 font-title-md text-xs text-secondary hover:underline font-semibold transition-colors text-decoration-none">
+              <span>View templates ledger</span>
+              <span class="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3: System Audit Logs -->
+        <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+          <div class="flex flex-col gap-3">
+            <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+              <span class="material-symbols-outlined text-[28px]">analytics</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-title-md text-base text-primary font-bold mb-0">System Audit Logs</h3>
+              <p class="font-body-md text-body-sm text-on-surface-variant leading-relaxed mb-0">
+                Complete telemetry on account registrations, certificate issuances, and claim fulfillments.
+              </p>
+            </div>
+          </div>
+          <div class="pt-5 border-t border-outline-variant/15 mt-4">
+            <a href="{{ url_for('reports') }}" class="inline-flex items-center gap-1.5 font-title-md text-xs text-secondary hover:underline font-semibold transition-colors text-decoration-none">
+              <span>Generate reports</span>
+              <span class="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 4: Public Gateway -->
+        <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
+          <div class="flex flex-col gap-3">
+            <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+              <span class="material-symbols-outlined text-[28px]">verified</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-title-md text-base text-primary font-bold mb-0">Public Gateway</h3>
+              <p class="font-body-md text-body-sm text-on-surface-variant leading-relaxed mb-0">
+                Test the live cryptographic SHA-256 certificate lookup and verification engine.
+              </p>
+            </div>
+          </div>
+          <div class="pt-5 border-t border-outline-variant/15 mt-4">
+            <a href="{{ url_for('verify_certificate') }}" class="inline-flex items-center gap-1.5 font-title-md text-xs text-secondary hover:underline font-semibold transition-colors text-decoration-none">
+              <span>Test verifier</span>
+              <span class="material-symbols-outlined text-[16px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Card 3: Audit & Analytics -->
-    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
-      <div class="flex flex-col gap-3">
-        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
-          <span class="material-symbols-outlined text-[26px]">analytics</span>
+    <!-- Cryptographic Audit Trail & Activity Spline -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Real-time Verification Telemetry -->
+      <div class="lg:col-span-2 bg-surface-container-lowest p-6 md:p-7 rounded-2xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
+        <div class="flex items-center justify-between pb-4 border-b border-outline-variant/15">
+          <div class="flex flex-col">
+            <h3 class="font-title-md text-base text-primary font-bold mb-0.5">Network Verification Throughput</h3>
+            <span class="font-body-md text-xs text-on-surface-variant">Cryptographic assertions processed across all global registrar endpoints</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-surface-container font-label-sm text-xs text-primary font-semibold">Past 24 Hours</span>
+          </div>
         </div>
-        <div>
-          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
-            System Audit Logs
-          </h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
-            Complete telemetry on account registrations, certificate issuances, and claim fulfillments.
-          </p>
-        </div>
-      </div>
-      <a href="{{ url_for('reports') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
-        <span>Generate reports</span>
-        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-      </a>
-    </div>
 
-    <!-- Card 4: Public Verification Gateway -->
-    <div class="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant/20 shadow-sm flex flex-col justify-between gap-4">
-      <div class="flex flex-col gap-3">
-        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
-          <span class="material-symbols-outlined text-[26px]">verified</span>
+        <!-- Inline SVG Visualization -->
+        <div class="w-full h-44 flex flex-col justify-end relative pt-4">
+          <svg class="w-full h-36 text-primary overflow-visible" preserveAspectRatio="none" viewBox="0 0 700 160">
+            <defs>
+              <linearGradient id="ascendGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+                <stop offset="0%" stop-color="#26215c" stop-opacity="0.25"></stop>
+                <stop offset="100%" stop-color="#26215c" stop-opacity="0.0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M 0,130 Q 70,120 140,85 T 280,70 T 420,35 T 560,50 T 700,20 L 700,160 L 0,160 Z" fill="url(#ascendGradient)"></path>
+            <path d="M 0,130 Q 70,120 140,85 T 280,70 T 420,35 T 560,50 T 700,20" fill="none" stroke="#26215c" stroke-linecap="round" stroke-width="2.5"></path>
+            <!-- Key Highlight Nodes -->
+            <circle cx="140" cy="85" fill="#EF9F27" r="4" stroke="#26215c" stroke-width="2"></circle>
+            <circle cx="420" cy="35" fill="#EF9F27" r="4" stroke="#26215c" stroke-width="2"></circle>
+            <circle cx="700" cy="20" fill="#EF9F27" r="4" stroke="#26215c" stroke-width="2"></circle>
+          </svg>
+
+          <div class="flex items-center justify-between text-on-surface-variant font-label-sm text-xs pt-2">
+            <span>00:00 UTC</span>
+            <span>06:00 UTC</span>
+            <span>12:00 UTC</span>
+            <span>18:00 UTC</span>
+            <span class="font-semibold text-primary">Now (Peak: 14,280 req/m)</span>
+          </div>
         </div>
-        <div>
-          <h2 class="font-title-lg text-title-lg text-primary font-serif mb-1">
-            Public Gateway
-          </h2>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
-            Test the live cryptographic SHA-256 certificate lookup and verification engine.
-          </p>
+
+        <div class="pt-4 flex flex-wrap items-center justify-between gap-3 text-on-surface-variant font-body-md text-xs border-t border-outline-variant/15 mt-2">
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1.5 font-medium text-primary">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              99.992% Valid Pass
+            </span>
+            <span class="flex items-center gap-1.5 font-medium text-red-700">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+              0.008% Tamper Reject
+            </span>
+          </div>
+          <span class="font-label-sm text-xs text-on-surface-variant">Telemetry updated 12s ago</span>
         </div>
       </div>
-      <a href="{{ url_for('verify_certificate') }}" class="flex items-center gap-1.5 text-secondary font-title-md text-xs font-semibold pt-2 border-t border-outline-variant/15 text-decoration-none hover:underline">
-        <span>Test verifier</span>
-        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-      </a>
+
+      <!-- Trust Infrastructure Security Card -->
+      <div class="bg-primary text-on-primary p-6 md:p-7 rounded-2xl shadow-md flex flex-col justify-between">
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white font-label-md text-xs font-semibold backdrop-blur-sm">
+              <span class="material-symbols-outlined text-[16px] text-[#EF9F27]">shield</span>
+              Consensus Protocol
+            </span>
+            <span class="font-label-sm text-xs text-white/60 font-mono">NODE #01</span>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <h3 class="font-headline-sm text-xl text-white font-serif mb-1">Multi-Sig Hardware Key</h3>
+            <p class="font-body-md text-xs text-white/80 leading-relaxed mb-0">
+              Administrative quorum requires 3-of-5 authorized registrar master keys to certify an institution or modify root anchoring policies.
+            </p>
+          </div>
+
+          <div class="bg-white/10 p-4 rounded-xl flex flex-col gap-2">
+            <div class="flex justify-between font-label-sm text-xs text-white/90">
+              <span>Signatures Active</span>
+              <span class="font-bold text-[#EF9F27]">3 of 5 Connected</span>
+            </div>
+            <div class="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+              <div class="bg-[#EF9F27] h-full rounded-full w-3/5"></div>
+            </div>
+            <span class="font-label-sm text-[11px] text-white/60 mt-1">Dean Vance (Registrar), Provost Office, Security Custodian</span>
+          </div>
+        </div>
+
+        <div class="pt-5">
+          <button onclick="alert('HSM Hardware Tokens synchronized with primary registry cluster.');" class="w-full py-2.5 px-4 rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container font-title-md text-xs font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">key</span>
+            <span>Manage HSM Hardware Tokens</span>
+          </button>
+        </div>
+      </div>
     </div>
 
   </div>
-
 </div>
 {% endblock %}

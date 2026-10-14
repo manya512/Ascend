@@ -3,150 +3,278 @@
 {% block title %}Bulk Issue Certificates — Ascend{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+<div class="flex flex-col w-full">
+  <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
 
-  <!-- Header Section with Breadcrumbs -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/30">
-    <div class="flex flex-col gap-1">
-      <div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
-        <a href="{{ url_for('dashboard') }}" class="hover:text-primary transition-colors text-decoration-none">Dashboard</a>
-        <span>/</span>
-        <a href="{{ url_for('certificates_list') }}" class="hover:text-primary transition-colors text-decoration-none">Certificates</a>
-        <span>/</span>
-        <span class="text-primary font-medium">Bulk Issue</span>
+    <!-- Top Action & Navigation Row -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+      <div class="flex flex-col gap-1">
+        <nav aria-label="Breadcrumb" class="flex items-center gap-2">
+          <a href="{{ url_for('dashboard') }}" class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors text-decoration-none">Dashboard</a>
+          <span class="font-body-md text-body-md text-outline-variant">/</span>
+          <a href="{{ url_for('certificates_list') }}" class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors text-decoration-none">Certificates</a>
+          <span class="font-body-md text-body-md text-outline-variant">/</span>
+          <span aria-current="page" class="font-body-md text-body-md text-primary font-semibold">Bulk Issue</span>
+        </nav>
+        <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">Bulk Certificate Issuance</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mb-0">
+          Upload an Excel spreadsheet to batch-issue digital credentials to multiple recipients at once.
+        </p>
       </div>
-      <h1 class="font-headline-lg text-headline-lg text-primary tracking-tight font-serif mb-0">
-        Bulk Certificate Issuance
-      </h1>
-      <p class="font-body-md text-body-md text-on-surface-variant mb-0">
-        Upload an Excel spreadsheet to batch-issue digital credentials to multiple recipients at once.
-      </p>
-    </div>
-    <div class="flex items-center gap-3">
-      <a href="{{ url_for('certificates_list') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
-        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-        <span>Back to Certificates</span>
-      </a>
-    </div>
-  </div>
 
-  <div class="w-full flex flex-col gap-6">
-    <!-- Target Credential Preview Banner -->
-    <div class="w-full bg-primary-container text-on-primary rounded-2xl p-space-lg shadow-md flex items-center justify-between flex-wrap gap-4">
-      <div class="flex items-center gap-space-md">
-        <div class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center shrink-0 text-secondary-fixed-dim">
-          <span class="material-symbols-outlined text-[32px]">school</span>
-        </div>
-        <div class="flex flex-col">
-          <span class="font-label-sm text-[11px] font-bold tracking-wider uppercase text-secondary-fixed-dim">Target Credential</span>
-          <h2 class="font-headline-sm text-headline-sm text-white tracking-tight leading-tight my-0.5">{{ certificate.title }}</h2>
-          <p class="font-body-sm text-body-sm text-on-primary-container line-clamp-1 mb-0">{{ certificate.description or 'Official accredited certificate template.' }}</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <a href="{{ url_for('issue_certificate', cert_id=certificate.id) }}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-title-md text-body-sm transition-colors text-decoration-none">
-          <span class="material-symbols-outlined text-[16px]">person</span>
-          <span>Single Recipient</span>
+      <div class="flex items-center gap-3 self-start md:self-auto">
+        <a href="{{ url_for('certificates_list') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline/30 bg-surface-container-lowest hover:bg-surface-container text-primary font-title-md text-body-md transition-all shadow-sm text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span>Back to Certificates</span>
         </a>
       </div>
     </div>
 
-    <!-- Instructions & Template Download Card -->
-    <div class="w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 p-space-lg md:p-space-xl">
-      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-space-md border-b border-outline-variant/20">
-        <div class="flex items-start gap-space-sm">
+    <!-- Target Credential Banner -->
+    <section class="relative overflow-hidden rounded-2xl bg-primary text-on-primary p-6 md:p-8 shadow-md">
+      <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/10 pointer-events-none blur-2xl"></div>
+
+      <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="flex items-start gap-4">
+          <div class="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center shrink-0 text-[#EF9F27]">
+            <span class="material-symbols-outlined text-[32px]">stairs</span>
+          </div>
+
+          <div class="flex flex-col">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="inline-block w-2 h-2 rounded-full bg-[#EF9F27] animate-pulse"></span>
+              <span class="font-label-sm text-[11px] font-bold uppercase tracking-wider text-[#EF9F27]">Target Credential</span>
+            </div>
+            <h2 class="font-headline-md text-2xl font-bold text-white tracking-tight my-0.5 font-serif">
+              {{ certificate.title }}
+            </h2>
+            <p class="font-body-md text-body-sm text-on-primary-container mt-1 line-clamp-1 mb-0">
+              {{ certificate.description or 'Official four-year accredited collegiate degree parchment credential.' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 self-start lg:self-center">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 text-white font-label-md text-xs backdrop-blur-sm border border-white/15">
+            <span class="material-symbols-outlined text-[16px] text-[#EF9F27]" style="font-variation-settings: 'FILL' 1;">verified</span>
+            Registry V3.4 Compliant
+          </span>
+          <a href="{{ url_for('issue_certificate', cert_id=certificate.id) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container font-title-md text-body-sm font-semibold transition-colors shadow-sm text-decoration-none">
+            <span class="material-symbols-outlined text-[18px]">person</span>
+            <span>Single Recipient</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spreadsheet Guidelines Card -->
+    <section class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-sm border border-outline-variant/30 flex flex-col gap-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-outline-variant/20">
+        <div class="flex items-start gap-3">
           <div class="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0 mt-0.5">
             <span class="material-symbols-outlined text-[24px]">description</span>
           </div>
           <div>
-            <h3 class="font-title-lg text-title-lg text-primary font-semibold mb-1">Spreadsheet Guidelines</h3>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">
+            <h3 class="font-headline-sm text-headline-sm text-primary font-semibold mb-1 font-serif">Spreadsheet Guidelines</h3>
+            <p class="font-body-md text-body-sm text-on-surface-variant mb-0">
               Prepare your recipient roster according to the registry standards below.
             </p>
           </div>
         </div>
 
-        <a href="{{ url_for('download_bulk_template') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#EF9F27]/60 bg-surface-container-lowest hover:bg-[#EF9F27]/10 text-primary font-title-md text-body-sm transition-colors text-decoration-none shadow-sm shrink-0">
+        <a href="{{ url_for('download_bulk_template') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#EF9F27]/60 bg-surface-container-lowest hover:bg-[#EF9F27]/10 text-primary font-title-md text-body-sm transition-all shadow-sm text-decoration-none shrink-0">
           <span class="material-symbols-outlined text-[20px] text-[#EF9F27]">download</span>
           <span>Download Template (.xlsx)</span>
         </a>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-space-md">
+      <!-- Guidelines Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1.5">
           <div class="flex items-center gap-2 text-primary font-title-md text-body-sm font-semibold">
-            <span class="material-symbols-outlined text-[18px] text-secondary">view_column</span>
+            <span class="material-symbols-outlined text-[20px] text-secondary">view_column</span>
             <span>Required Columns</span>
           </div>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
-            Must include an <strong class="text-primary font-mono text-xs">email</strong> or <strong class="text-primary font-mono text-xs">phone</strong> column header (case-insensitive). Extra columns like names are ignored.
+          <p class="font-body-md text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Must include an <span class="font-semibold text-primary font-mono text-xs">email</span> or <span class="font-semibold text-primary font-mono text-xs">phone</span> column header (case-insensitive). Extra columns like names are ignored.
           </p>
         </div>
 
         <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1.5">
           <div class="flex items-center gap-2 text-primary font-title-md text-body-sm font-semibold">
-            <span class="material-symbols-outlined text-[18px] text-secondary">speed</span>
+            <span class="material-symbols-outlined text-[20px] text-secondary">speed</span>
             <span>Batch Capacity</span>
           </div>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
-            Upload up to <strong class="text-primary">500 data rows</strong> per batch. File size must not exceed <strong class="text-primary">2 MB</strong>. Completely empty rows are skipped silently.
+          <p class="font-body-md text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+            Upload up to <span class="font-semibold text-primary">500 data rows</span> per batch. File size must not exceed <span class="font-semibold text-primary">2 MB</span>. Completely empty rows are skipped silently.
           </p>
         </div>
 
         <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col gap-1.5">
           <div class="flex items-center gap-2 text-primary font-title-md text-body-sm font-semibold">
-            <span class="material-symbols-outlined text-[18px] text-secondary">verified_user</span>
+            <span class="material-symbols-outlined text-[20px] text-secondary">verified_user</span>
             <span>Safe Deduplication</span>
           </div>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0 leading-relaxed">
+          <p class="font-body-md text-body-sm text-on-surface-variant mb-0 leading-relaxed">
             Duplicate entries within the file or recipients who already hold this credential are automatically skipped without interrupting valid issuances.
           </p>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Upload Form Card -->
-    <div class="w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 p-space-lg md:p-space-xl">
-      <div class="flex items-center gap-space-sm mb-space-md pb-space-sm border-b border-outline-variant/20">
-        <span class="material-symbols-outlined text-[24px] text-secondary">upload_file</span>
-        <div>
-          <h3 class="font-title-lg text-title-lg text-primary font-semibold mb-0">Upload Recipient Workbook</h3>
-          <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">Select an Excel file (.xlsx) from your device to initiate verification and issuance</p>
-        </div>
+    <!-- Upload Recipient Workbook Card -->
+    <section class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-sm border border-outline-variant/30 flex flex-col gap-6">
+      <div class="flex flex-col">
+        <h3 class="font-headline-sm text-headline-sm text-primary font-serif mb-1">Upload Recipient Workbook</h3>
+        <p class="font-body-md text-body-sm text-on-surface-variant mb-0">
+          Select an Excel file (.xlsx) from your device to initiate verification and issuance.
+        </p>
       </div>
 
-      <form action="{{ url_for('bulk_issue_certificate', cert_id=certificate.id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-        <!-- File Picker -->
-        <div class="flex flex-col gap-2">
-          <label for="excel-file-input" class="font-label-md text-label-md text-on-surface font-medium">
-            Select Spreadsheet (.xlsx)
-          </label>
-          <div class="border-2 border-dashed border-outline-variant hover:border-secondary rounded-2xl p-8 text-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer" onclick="document.getElementById('excel-file-input').click();">
-            <div class="w-16 h-16 rounded-full bg-[#EF9F27]/10 text-[#EF9F27] flex items-center justify-center mx-auto mb-3">
-              <span class="material-symbols-outlined text-[36px]">table_view</span>
-            </div>
-            <p class="font-title-md text-title-md text-primary font-medium mb-1" id="file-chosen-text">
-              Click to browse or drag & drop your Excel file here
-            </p>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mb-0">
-              Microsoft Excel OpenXML Spreadsheet (.xlsx), up to 2 MB
-            </p>
-            <input type="file" id="excel-file-input" name="file" accept=".xlsx" required class="hidden" onchange="const f = this.files[0]; if(f) { document.getElementById('file-chosen-text').innerText = f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)'; }">
+      <form id="bulk-upload-form" action="{{ url_for('bulk_issue_certificate', cert_id=certificate.id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-6">
+        <!-- Drag & Drop Zone -->
+        <div class="relative group cursor-pointer rounded-2xl border-2 border-dashed border-outline-variant/50 hover:border-secondary bg-surface-container-low/60 hover:bg-surface-container p-8 flex flex-col items-center justify-center text-center transition-all duration-200 shadow-inner" id="dropzone">
+          <input accept=".xlsx" aria-label="Upload Excel File" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" id="file-input" name="file" type="file" required>
+
+          <div class="w-16 h-16 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-secondary mb-3 group-hover:scale-105 transition-transform">
+            <span class="material-symbols-outlined text-[32px]">table_view</span>
+          </div>
+
+          <p class="font-title-md text-title-md text-primary font-semibold mb-1" id="file-chosen-text">
+            Click to browse or drag &amp; drop your Excel file here
+          </p>
+
+          <p class="font-body-md text-body-sm text-on-surface-variant mb-0">
+            Microsoft Excel OpenXML Spreadsheet (.xlsx), up to 2 MB
+          </p>
+
+          <!-- Selected File Status Badge -->
+          <div class="hidden mt-4 items-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-white shadow-sm z-30" id="file-status">
+            <span class="material-symbols-outlined text-[18px] text-[#EF9F27]">task</span>
+            <span class="font-body-md text-body-sm font-medium" id="file-name"></span>
+            <button class="ml-2 hover:text-[#EF9F27] transition-colors focus:outline-none" id="clear-file" type="button">
+              <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-4 pt-2">
-          <a href="{{ url_for('certificates_list') }}" class="px-5 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-title-md text-title-md transition-colors text-decoration-none shadow-sm">
+        <!-- Cohort Snapshot Preview -->
+        <div class="flex flex-col gap-2 pt-1" id="preview-panel">
+          <div class="flex items-center justify-between">
+            <span class="font-label-md text-xs uppercase text-on-surface-variant tracking-wider font-semibold">Cohort Snapshot Preview</span>
+            <span class="font-body-md text-xs text-on-surface-variant font-medium">Sample Template Format</span>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-outline-variant/20 bg-surface-container-low">
+            <table class="w-full text-left font-body-md text-body-sm border-collapse">
+              <thead>
+                <tr class="bg-surface-container-high/60 text-primary border-b border-outline-variant/20">
+                  <th class="py-2.5 px-4 font-semibold text-xs">#</th>
+                  <th class="py-2.5 px-4 font-semibold text-xs">Recipient Name</th>
+                  <th class="py-2.5 px-4 font-semibold text-xs">Email Identifier (Required)</th>
+                  <th class="py-2.5 px-4 font-semibold text-xs">Student ID</th>
+                  <th class="py-2.5 px-4 font-semibold text-xs text-right">Validation Check</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-outline-variant/15">
+                <tr class="hover:bg-surface-container/50 transition-colors">
+                  <td class="py-2.5 px-4 text-on-surface-variant font-mono text-xs">1</td>
+                  <td class="py-2.5 px-4 text-primary font-medium">Elena Rostova</td>
+                  <td class="py-2.5 px-4 text-on-surface font-mono text-xs">e.rostova@polytech.edu</td>
+                  <td class="py-2.5 px-4 font-mono text-xs text-on-surface-variant">ENG-2022-8941</td>
+                  <td class="py-2.5 px-4 text-right">
+                    <span class="inline-flex items-center gap-1 text-emerald-700 font-medium text-xs">
+                      <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                      Valid
+                    </span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-surface-container/50 transition-colors">
+                  <td class="py-2.5 px-4 text-on-surface-variant font-mono text-xs">2</td>
+                  <td class="py-2.5 px-4 text-primary font-medium">Marcus Chen</td>
+                  <td class="py-2.5 px-4 text-on-surface font-mono text-xs">marcus.chen@alumni.org</td>
+                  <td class="py-2.5 px-4 font-mono text-xs text-on-surface-variant">ENG-2022-4102</td>
+                  <td class="py-2.5 px-4 text-right">
+                    <span class="inline-flex items-center gap-1 text-emerald-700 font-medium text-xs">
+                      <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                      Valid
+                    </span>
+                  </td>
+                </tr>
+                <tr class="hover:bg-surface-container/50 transition-colors">
+                  <td class="py-2.5 px-4 text-on-surface-variant font-mono text-xs">3</td>
+                  <td class="py-2.5 px-4 text-primary font-medium">Amara Okafor</td>
+                  <td class="py-2.5 px-4 text-on-surface font-mono text-xs">+1 (555) 019-4822</td>
+                  <td class="py-2.5 px-4 font-mono text-xs text-on-surface-variant">ENG-2022-7719</td>
+                  <td class="py-2.5 px-4 text-right">
+                    <span class="inline-flex items-center gap-1 text-emerald-700 font-medium text-xs">
+                      <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                      Valid
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-2 border-t border-outline-variant/15">
+          <a href="{{ url_for('certificates_list') }}" class="w-full sm:w-auto text-center px-5 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-title-md text-body-md transition-colors text-decoration-none shadow-sm">
             Cancel
           </a>
-          <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-title-md transition-all shadow-md cursor-pointer">
+          <button id="process-btn" type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-on-primary font-title-md text-body-md transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 cursor-pointer">
             <span class="material-symbols-outlined text-[20px]">send</span>
             <span>Process Bulk Issuance</span>
           </button>
         </div>
       </form>
-    </div>
-  </div>
+    </section>
 
+  </div>
 </div>
+
+<script>
+  (function() {
+    const fileInput = document.getElementById('file-input');
+    const fileStatus = document.getElementById('file-status');
+    const fileName = document.getElementById('file-name');
+    const clearFile = document.getElementById('clear-file');
+    const dropzone = document.getElementById('dropzone');
+    const chosenText = document.getElementById('file-chosen-text');
+    const form = document.getElementById('bulk-upload-form');
+    const processBtn = document.getElementById('process-btn');
+
+    if (fileInput) {
+      fileInput.addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          fileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+          fileStatus.classList.remove('hidden');
+          fileStatus.classList.add('inline-flex');
+          if (chosenText) chosenText.textContent = 'Selected: ' + file.name;
+        }
+      });
+    }
+
+    if (clearFile) {
+      clearFile.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (fileInput) fileInput.value = '';
+        fileStatus.classList.add('hidden');
+        fileStatus.classList.remove('inline-flex');
+        if (chosenText) chosenText.textContent = 'Click to browse or drag & drop your Excel file here';
+      });
+    }
+
+    if (form && processBtn) {
+      form.addEventListener('submit', function() {
+        processBtn.disabled = true;
+        processBtn.classList.add('opacity-80', 'cursor-not-allowed');
+        processBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Verifying & Issuing Batch...</span>';
+      });
+    }
+  })();
+</script>
 {% endblock %}
